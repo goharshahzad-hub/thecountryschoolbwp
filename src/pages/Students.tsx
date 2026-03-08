@@ -350,6 +350,7 @@ const Students = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Father's Name</TableHead>
+                  <TableHead>Gender</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
