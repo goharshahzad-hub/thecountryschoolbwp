@@ -42,7 +42,7 @@ interface Admission {
 const emptyForm = {
   application_no: "", student_name: "", father_name: "", mother_name: "", date_of_birth: "",
   gender: "Male", religion: "Islam", nationality: "Pakistani", cnic_bform: "", father_cnic: "",
-  father_occupation: "", father_phone: "", mother_phone: "", address: "", previous_school: "",
+  father_occupation: "", father_phone: "", mother_phone: "", whatsapp: "", address: "", previous_school: "",
   previous_class: "", applying_for_class: "", applying_for_section: "A", status: "Pending", remarks: ""
 };
 
