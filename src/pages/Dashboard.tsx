@@ -18,8 +18,9 @@ const Dashboard = () => {
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0 });
+  const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0, admissions: 0 });
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
 
