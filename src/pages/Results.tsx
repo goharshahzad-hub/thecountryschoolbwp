@@ -53,6 +53,7 @@ const Results = () => {
   const [classReportClass, setClassReportClass] = useState<string>("");
   const [classReportType, setClassReportType] = useState<string>("term");
   const [classReportTerm, setClassReportTerm] = useState<string>("Term 1");
+  const [classReportMonth, setClassReportMonth] = useState<string>("January");
   const printRef = useRef<HTMLDivElement>(null);
   const annualPrintRef = useRef<HTMLDivElement>(null);
   const classReportRef = useRef<HTMLDivElement>(null);
