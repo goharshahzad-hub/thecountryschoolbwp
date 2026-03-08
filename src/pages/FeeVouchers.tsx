@@ -484,38 +484,8 @@ const FeeVouchers = () => {
         </CardContent>
       </Card>
 
-      {/* Hidden print template */}
-      <div className="hidden">
-        <div ref={printRef}>
-          {printVoucher && (() => {
-            const student = getStudent(printVoucher.student_id);
-            return (
-              <div className="voucher">
-                <div className="header">
-                  <h1>{settings.school_name} — {settings.campus}</h1>
-                  <p>{settings.city}, Pakistan</p>
-                  <p style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}>FEE VOUCHER</p>
-                </div>
-                <div className="row"><span className="label">Voucher No:</span><span>{printVoucher.voucher_no}</span></div>
-                <div className="row"><span className="label">Student ID:</span><span>{student?.student_id}</span></div>
-                <div className="row"><span className="label">Student Name:</span><span>{student?.name}</span></div>
-                <div className="row"><span className="label">Father's Name:</span><span>{student?.father_name}</span></div>
-                <div className="row"><span className="label">Class:</span><span>{student?.class}-{student?.section}</span></div>
-                <div className="row"><span className="label">Fee Type:</span><span>{printVoucher.fee_type}</span></div>
-                <div className="row"><span className="label">Month / Year:</span><span>{printVoucher.month} {printVoucher.year}</span></div>
-                <div className="row"><span className="label">Due Date:</span><span>{printVoucher.due_date}</span></div>
-                <div className="row"><span className="label">Status:</span><span>{printVoucher.status}</span></div>
-                {printVoucher.remarks && <div className="row"><span className="label">Remarks:</span><span>{printVoucher.remarks}</span></div>}
-                <div className="row total"><span>Total Amount:</span><span>₨ {Number(printVoucher.amount).toLocaleString("en-PK")}</span></div>
-                <div className="footer">
-                  <p>This is a computer-generated voucher. Please pay at the school office before the due date.</p>
-                  <p>📞 {settings.phone} | 📧 {settings.email}</p>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </div>
+
+
     </DashboardLayout>
   );
 };
