@@ -350,6 +350,7 @@ const Students = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Father's Name</TableHead>
+                  <TableHead>Gender</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
@@ -359,7 +360,7 @@ const Students = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
                 ) : filtered.map(s => {
                   const parent = getParentName(s.parent_user_id);
                   return (
@@ -368,6 +369,7 @@ const Students = () => {
                       <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell>{s.class}-{s.section}</TableCell>
                       <TableCell>{s.father_name}</TableCell>
+                      <TableCell>{(s as any).gender || "Male"}</TableCell>
                       <TableCell className="text-muted-foreground">{s.phone}</TableCell>
                       <TableCell>
                         {parent ? (
