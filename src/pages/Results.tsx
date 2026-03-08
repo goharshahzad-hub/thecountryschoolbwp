@@ -94,7 +94,7 @@ const Results = () => {
   const fetchData = async () => {
     const [{ data: r }, { data: st }, { data: sub }] = await Promise.all([
       supabase.from("test_results").select("*").order("created_at", { ascending: false }),
-      supabase.from("students").select("id, student_id, name, class, section, father_name"),
+      supabase.from("students").select("id, student_id, name, class, section, father_name, whatsapp, phone"),
       supabase.from("subjects").select("*").order("name"),
     ]);
     if (r) setResults(r);
