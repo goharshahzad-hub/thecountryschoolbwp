@@ -346,7 +346,7 @@ const FeeVouchers = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>Amount per Student (PKR) *</Label><Input type="number" placeholder="5000" value={bulkForm.amount} onChange={e => setBulkForm({ ...bulkForm, amount: e.target.value })} required /></div>
+                <div className="space-y-2"><Label>Default Amount (PKR) *</Label><Input type="number" placeholder="Used if student has no fee set" value={bulkForm.amount} onChange={e => setBulkForm({ ...bulkForm, amount: e.target.value })} required /></div>
                 <div className="space-y-2">
                   <Label>Fee Type</Label>
                   <Select value={bulkForm.fee_type} onValueChange={v => setBulkForm({ ...bulkForm, fee_type: v })}>
