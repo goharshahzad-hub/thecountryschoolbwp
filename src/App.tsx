@@ -20,6 +20,8 @@ import AdminLogin from "./pages/AdminLogin";
 import ParentLogin from "./pages/ParentLogin";
 import ParentPortal from "./pages/ParentPortal";
 import ResetPassword from "./pages/ResetPassword";
+import AdmissionQuery from "./pages/AdmissionQuery";
+import AdmissionQueries from "./pages/AdmissionQueries";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
