@@ -209,6 +209,50 @@ const Dashboard = () => {
           )}
 
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
+
+          {/* Balance Sheet */}
+          <Card className="mt-4 shadow-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Wallet className="h-5 w-5" /> Balance Sheet
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4 mb-4">
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Total Income (Paid)</p>
+                  <p className="font-display text-lg font-bold text-success">₨ {feeCollected.toLocaleString("en-PK")}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Total Expenses</p>
+                  <p className="font-display text-lg font-bold text-destructive">₨ {totalExpenses.toLocaleString("en-PK")}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Net Balance</p>
+                  <p className={`font-display text-lg font-bold ${netBalance >= 0 ? "text-success" : "text-destructive"}`}>
+                    ₨ {netBalance.toLocaleString("en-PK")}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Pending Receivables</p>
+                  <p className="font-display text-lg font-bold text-warning">₨ {(feePending + feeOverdue).toLocaleString("en-PK")}</p>
+                </div>
+              </div>
+              {expenseByHead.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Top Expense Heads</p>
+                  <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                    {expenseByHead.slice(0, 8).map(([head, total]) => (
+                      <div key={head} className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-2">
+                        <span className="text-xs text-muted-foreground truncate mr-2">{head}</span>
+                        <span className="text-xs font-semibold text-foreground whitespace-nowrap">₨ {total.toLocaleString("en-PK")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
     </DashboardLayout>
