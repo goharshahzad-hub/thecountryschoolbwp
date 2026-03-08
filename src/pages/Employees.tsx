@@ -305,6 +305,7 @@ const Employees = () => {
                         <TableCell className="text-xs">{s.salary ? `₨ ${Number(s.salary).toLocaleString("en-PK")}` : "—"}</TableCell>
                         <TableCell><Badge variant={s.status === "Active" ? "default" : "secondary"} className={s.status === "Active" ? "bg-success text-success-foreground" : ""}>{s.status}</Badge></TableCell>
                         <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setSCardItem(s)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleStaffEdit(s)}><Pencil className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleStaffDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </TableCell>
