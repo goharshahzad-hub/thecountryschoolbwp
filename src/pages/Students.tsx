@@ -370,7 +370,7 @@ const Students = () => {
                       <TableCell>{s.class}-{s.section}</TableCell>
                       <TableCell>{s.father_name}</TableCell>
                       <TableCell>{(s as any).gender || "Male"}</TableCell>
-                      <TableCell className="text-muted-foreground">{s.phone}</TableCell>
+                      <TableCell className="text-muted-foreground">{(s as any).whatsapp || s.phone || "—"}</TableCell>
                       <TableCell>
                         {parent ? (
                           <div className="flex items-center gap-1">
