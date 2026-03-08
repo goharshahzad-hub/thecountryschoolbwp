@@ -59,6 +59,23 @@ const Dashboard = () => {
   const feePending = filteredVouchers.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
   const feeOverdue = filteredVouchers.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
 
+  const filteredExpenses = useMemo(() => {
+    return allExpenses.filter(e => {
+      if (selectedMonth !== "all" && e.month !== selectedMonth) return false;
+      if (selectedYear !== "all" && e.year !== Number(selectedYear)) return false;
+      return true;
+    });
+  }, [allExpenses, selectedMonth, selectedYear]);
+
+  const totalExpenses = filteredExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  const netBalance = feeCollected - totalExpenses;
+
+  const expenseByHead = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredExpenses.forEach(e => { map[e.expense_head] = (map[e.expense_head] || 0) + Number(e.amount); });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [filteredExpenses]);
+
   const chartData = useMemo(() => {
     const monthMap: Record<string, { paid: number; pending: number; overdue: number }> = {};
     allVouchers.forEach(v => {
