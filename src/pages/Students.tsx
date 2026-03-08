@@ -369,6 +369,7 @@ const Students = () => {
                       <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell>{s.class}-{s.section}</TableCell>
                       <TableCell>{s.father_name}</TableCell>
+                      <TableCell>{(s as any).gender || "Male"}</TableCell>
                       <TableCell className="text-muted-foreground">{s.phone}</TableCell>
                       <TableCell>
                         {parent ? (
