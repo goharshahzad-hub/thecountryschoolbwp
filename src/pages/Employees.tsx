@@ -47,6 +47,7 @@ const Employees = () => {
   const [tForm, setTForm] = useState(emptyTeacherForm);
   const [tEditId, setTEditId] = useState<string | null>(null);
   const [tSaving, setTSaving] = useState(false);
+  const [tCardItem, setTCardItem] = useState<any>(null);
 
   // ─── Non-Teaching Staff state ───
   const [staff, setStaff] = useState<NonTeachingStaff[]>([]);
