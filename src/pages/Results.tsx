@@ -1167,6 +1167,17 @@ const Results = () => {
                     </Select>
                   </div>
                 )}
+                {classReportType === "monthly" && (
+                  <div className="space-y-2 min-w-[120px]">
+                    <Label>Month</Label>
+                    <Select value={classReportMonth} onValueChange={setClassReportMonth}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {MONTHS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <Button onClick={handlePrintClassReport} variant="outline" disabled={!classReportClass}>
                   <Printer className="mr-2 h-4 w-4" />Print All Report Cards
                 </Button>
