@@ -1,20 +1,17 @@
 import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield } from "lucide-react";
+import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
-const features = [
-  { icon: GraduationCap, title: "Academic Excellence", desc: "Comprehensive curriculum designed for holistic student development" },
-  { icon: Users, title: "Expert Faculty", desc: "Dedicated and qualified teachers committed to nurturing young minds" },
-  { icon: BookOpen, title: "Modern Learning", desc: "State-of-the-art facilities and innovative teaching methodologies" },
-  { icon: Trophy, title: "Co-Curricular Activities", desc: "Sports, arts, and extracurricular programs for well-rounded growth" },
-  { icon: Shield, title: "Safe Environment", desc: "Secure campus with caring staff ensuring student well-being" },
-  { icon: Clock, title: "Structured Schedule", desc: "Well-organized timetables maximizing learning outcomes" },
-];
+const iconMap: Record<string, LucideIcon> = {
+  GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
+};
 
 const Index = () => {
   const { settings } = useSchoolSettings();
+  const { content } = useWebsiteContent();
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,7 +54,7 @@ const Index = () => {
             {settings.campus}, {settings.city}
           </p>
           <p className="mx-auto mb-8 max-w-2xl text-base text-primary-foreground/60">
-            {settings.motto} — Empowering young minds with quality education, strong values, and a nurturing environment since day one.
+            {settings.motto} — {content.hero.tagline}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/dashboard">
@@ -73,12 +70,7 @@ const Index = () => {
       {/* Stats */}
       <section className="border-b border-border bg-card py-12">
         <div className="container grid grid-cols-2 gap-8 md:grid-cols-4">
-          {[
-            { value: "500+", label: "Students Enrolled" },
-            { value: "35+", label: "Expert Teachers" },
-            { value: "20+", label: "Years of Excellence" },
-            { value: "95%", label: "Success Rate" },
-          ].map((stat, i) => (
+          {content.stats.map((stat, i) => (
             <div key={i} className="text-center animate-count-up" style={{ animationDelay: `${i * 100}ms` }}>
               <p className="font-display text-3xl font-bold text-primary md:text-4xl">{stat.value}</p>
               <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
@@ -91,19 +83,22 @@ const Index = () => {
       <section id="features" className="py-20">
         <div className="container">
           <div className="mb-12 text-center">
-            <h3 className="font-display text-3xl font-bold text-foreground md:text-4xl">Why Choose Us</h3>
-            <p className="mt-3 text-muted-foreground">Building tomorrow's leaders with today's best education</p>
+            <h3 className="font-display text-3xl font-bold text-foreground md:text-4xl">{content.about.heading}</h3>
+            <p className="mt-3 text-muted-foreground">{content.about.subheading}</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
-              <div key={i} className="group rounded-lg border border-border bg-card p-6 shadow-card transition-all hover:shadow-elevated hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <f.icon className="h-6 w-6 text-primary" />
+            {content.features.map((f, i) => {
+              const Icon = iconMap[f.icon] || GraduationCap;
+              return (
+                <div key={i} className="group rounded-lg border border-border bg-card p-6 shadow-card transition-all hover:shadow-elevated hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="mb-2 font-display text-lg font-semibold text-foreground">{f.title}</h4>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
                 </div>
-                <h4 className="mb-2 font-display text-lg font-semibold text-foreground">{f.title}</h4>
-                <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
