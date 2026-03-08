@@ -757,24 +757,77 @@ const FeeVouchers = () => {
                 {filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No challans</TableCell></TableRow> :
                 filtered.map(v => {
                   const student = getStudent(v.student_id);
+                  const isInlineEditing = inlineEditId === v.id;
                   return (
-                    <TableRow key={v.id} data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined}>
-                      <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
-                      <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
-                      <TableCell className="font-medium">{student?.name || "—"}</TableCell>
-                      <TableCell>{student?.class}-{student?.section}</TableCell>
-                      <TableCell>{v.month} {v.year}</TableCell>
-                      <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
-                      <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
-                      <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
-                      <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
-                      <TableCell className="text-right space-x-1">
-                        {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(v)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </TableCell>
-                    </TableRow>
+                    <React.Fragment key={v.id}>
+                      <TableRow data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined} className={isInlineEditing ? "bg-accent/30" : ""}>
+                        <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
+                        <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
+                        <TableCell className="font-medium">{student?.name || "—"}</TableCell>
+                        <TableCell>{student?.class}-{student?.section}</TableCell>
+                        <TableCell>{v.month} {v.year}</TableCell>
+                        <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
+                        <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
+                        <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
+                        <TableCell className="text-right space-x-1">
+                          {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
+                          <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
+                            <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </TableCell>
+                      </TableRow>
+                      {isInlineEditing && (
+                        <TableRow className="bg-accent/10 hover:bg-accent/10">
+                          <TableCell colSpan={10} className="p-3">
+                            <div className="grid grid-cols-5 gap-2 mb-2">
+                              {FEE_FIELDS.map(f => (
+                                <div key={f.key} className="space-y-1">
+                                  <Label className="text-xs text-muted-foreground">{f.label}</Label>
+                                  <Input
+                                    type="number"
+                                    className="h-8 text-sm"
+                                    value={inlineForm[f.key] || "0"}
+                                    onChange={e => setInlineForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-3 mt-2">
+                              <div className="space-y-1">
+                                <Label className="text-xs text-muted-foreground">Status</Label>
+                                <Select value={inlineForm.status} onValueChange={val => setInlineForm(prev => ({ ...prev, status: val }))}>
+                                  <SelectTrigger className="h-8 w-32 text-sm"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Pending">Pending</SelectItem>
+                                    <SelectItem value="Paid">Paid</SelectItem>
+                                    <SelectItem value="Overdue">Overdue</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1 flex-1">
+                                <Label className="text-xs text-muted-foreground">Remarks</Label>
+                                <Input className="h-8 text-sm" value={inlineForm.remarks} onChange={e => setInlineForm(prev => ({ ...prev, remarks: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs text-muted-foreground">New Total</Label>
+                                <p className="h-8 flex items-center font-bold text-sm">₨ {calcInlineTotal().toLocaleString("en-PK")}</p>
+                              </div>
+                              <div className="flex gap-1 pt-4">
+                                <Button size="sm" onClick={saveInlineEdit} disabled={inlineSaving} className="gradient-primary text-primary-foreground">
+                                  <Check className="mr-1 h-4 w-4" />{inlineSaving ? "Saving..." : "Save"}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setInlineEditId(null)}>
+                                  <X className="mr-1 h-4 w-4" />Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
