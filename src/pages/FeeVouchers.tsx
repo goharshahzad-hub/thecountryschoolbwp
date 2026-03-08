@@ -133,7 +133,7 @@ const FeeVouchers = () => {
     const rows = classStudents.map((s, i) => ({
       voucher_no: `VCH-${year}-${month}-${(baseIndex + i).toString().padStart(5, "0")}`,
       student_id: s.id,
-      amount: parseFloat(bulkForm.amount),
+      amount: s.monthly_fee && s.monthly_fee > 0 ? s.monthly_fee : parseFloat(bulkForm.amount),
       fee_type: bulkForm.fee_type,
       month: bulkForm.month,
       year: parseInt(bulkForm.year),
