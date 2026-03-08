@@ -17,12 +17,19 @@ export interface GalleryItem {
   caption: string;
 }
 
+export interface SocialLinks {
+  facebook: { url: string; handle: string };
+  instagram: { url: string; handle: string };
+  youtube: { url: string; handle: string };
+}
+
 export interface WebsiteContent {
   hero: { tagline: string };
   stats: StatItem[];
   features: FeatureItem[];
   about: { heading: string; subheading: string };
   gallery: GalleryItem[];
+  social_links: SocialLinks;
 }
 
 const defaults: WebsiteContent = {
