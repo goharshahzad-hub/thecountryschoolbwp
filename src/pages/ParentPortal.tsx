@@ -116,7 +116,6 @@ const ParentPortal = () => {
           .select("*")
           .in("student_id", studentIds)
           .order("date", { ascending: false })
-          .limit(50)
           .then(({ data: d }) => { if (d) setAttendance(d); });
 
         supabase
