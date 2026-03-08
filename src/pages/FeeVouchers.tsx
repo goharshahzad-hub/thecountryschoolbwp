@@ -76,6 +76,7 @@ const emptyFeeForm = {
   books_charges: "0",
   arrears: "0",
   late_fee: "0",
+  discount: "0",
 };
 
 const FeeVouchers = () => {
