@@ -27,6 +27,15 @@ const Index = () => {
       .then(({ data }) => setIsAdmin(!!data));
   }, [user]);
 
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    supabase.from("announcements").select("*").eq("is_public", true)
+      .order("created_at", { ascending: false }).limit(5)
+      .then(({ data }) => {
+        if (data) setAnnouncements(data.filter(a => !a.expires_at || a.expires_at >= today));
+      });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
