@@ -633,7 +633,7 @@ const FeeVouchers = () => {
           <table>
             <thead>
               <tr>
-                <th>#</th><th>Reg. No</th><th style="text-align:left">Student Name</th><th style="text-align:left">Father's Name</th><th>Month</th><th>Due Date</th><th style="text-align:right">Amount</th><th>Phone</th>
+                <th>#</th><th>Reg. No</th><th style="text-align:left">Student Name</th><th style="text-align:left">Guardian/Father's Name</th><th>Month</th><th>Due Date</th><th style="text-align:right">Amount</th><th>Phone</th>
               </tr>
             </thead>
             <tbody>
