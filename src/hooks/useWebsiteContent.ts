@@ -12,11 +12,17 @@ export interface FeatureItem {
   icon: string;
 }
 
+export interface GalleryItem {
+  url: string;
+  caption: string;
+}
+
 export interface WebsiteContent {
   hero: { tagline: string };
   stats: StatItem[];
   features: FeatureItem[];
   about: { heading: string; subheading: string };
+  gallery: GalleryItem[];
 }
 
 const defaults: WebsiteContent = {
