@@ -270,7 +270,7 @@ const FeeVouchers = () => {
                 <div className="row total"><span>Total Amount:</span><span>₨ {Number(printVoucher.amount).toLocaleString("en-PK")}</span></div>
                 <div className="footer">
                   <p>This is a computer-generated voucher. Please pay at the school office before the due date.</p>
-                  <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                  <p>📞 {settings.phone} | 📧 {settings.email}</p>
                 </div>
               </div>
             );
