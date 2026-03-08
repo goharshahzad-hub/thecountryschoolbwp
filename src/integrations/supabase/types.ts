@@ -257,6 +257,42 @@ export type Database = {
         }
         Relationships: []
       }
+      school_settings: {
+        Row: {
+          address: string
+          campus: string
+          city: string
+          email: string
+          id: string
+          motto: string
+          phone: string
+          school_name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          campus?: string
+          city?: string
+          email?: string
+          id?: string
+          motto?: string
+          phone?: string
+          school_name?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          campus?: string
+          city?: string
+          email?: string
+          id?: string
+          motto?: string
+          phone?: string
+          school_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           class: string
