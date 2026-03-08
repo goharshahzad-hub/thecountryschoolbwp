@@ -55,6 +55,28 @@ const Dashboard = () => {
   const feePending = filteredVouchers.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
   const feeOverdue = filteredVouchers.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
 
+  const chartData = useMemo(() => {
+    const monthMap: Record<string, { paid: number; pending: number; overdue: number }> = {};
+    allVouchers.forEach(v => {
+      const key = `${v.month.slice(0, 3)} ${v.year}`;
+      if (!monthMap[key]) monthMap[key] = { paid: 0, pending: 0, overdue: 0 };
+      const amt = Number(v.amount);
+      if (v.status === "Paid") monthMap[key].paid += amt;
+      else if (v.status === "Pending") monthMap[key].pending += amt;
+      else if (v.status === "Overdue") monthMap[key].overdue += amt;
+    });
+    // Sort by year and month order
+    return Object.entries(monthMap)
+      .map(([name, vals]) => ({ name, ...vals }))
+      .sort((a, b) => {
+        const parse = (n: string) => {
+          const [m, y] = n.split(" ");
+          return Number(y) * 100 + MONTHS.findIndex(mo => mo.startsWith(m));
+        };
+        return parse(a.name) - parse(b.name);
+      });
+  }, [allVouchers]);
+
   const statCards = [
     { label: "Total Students", value: counts.students.toString(), icon: Users, color: "bg-primary/10 text-primary" },
     { label: "Total Teachers", value: counts.teachers.toString(), icon: GraduationCap, color: "bg-secondary/10 text-secondary" },
