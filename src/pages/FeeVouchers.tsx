@@ -119,8 +119,9 @@ const FeeVouchers = () => {
   };
 
   const calcTotal = (f: typeof emptyFeeForm) => {
-    return [f.registration_fee, f.admission_fee, f.security_deposit, f.tuition_fee, f.annual_charges, f.trip_charges, f.books_charges, f.arrears, f.late_fee]
+    const sum = [f.registration_fee, f.admission_fee, f.security_deposit, f.tuition_fee, f.annual_charges, f.trip_charges, f.books_charges, f.arrears, f.late_fee]
       .reduce((s, v) => s + (parseFloat(v) || 0), 0);
+    return sum - (parseFloat(f.discount) || 0);
   };
 
   const handleStudentSelect = (studentId: string) => {
