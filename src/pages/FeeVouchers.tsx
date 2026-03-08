@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Printer, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 
 interface FeeVoucher {
   id: string;
@@ -39,6 +40,7 @@ const months = ["January","February","March","April","May","June","July","August
 
 const FeeVouchers = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [vouchers, setVouchers] = useState<FeeVoucher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
@@ -252,8 +254,8 @@ const FeeVouchers = () => {
             return (
               <div className="voucher">
                 <div className="header">
-                  <h1>The Country School — Fahad Campus</h1>
-                  <p>Bahawalpur, Pakistan</p>
+                  <h1>{settings.school_name} — {settings.campus}</h1>
+                  <p>{settings.city}, Pakistan</p>
                   <p style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}>FEE VOUCHER</p>
                 </div>
                 <div className="row"><span className="label">Voucher No:</span><span>{printVoucher.voucher_no}</span></div>
@@ -269,7 +271,7 @@ const FeeVouchers = () => {
                 <div className="row total"><span>Total Amount:</span><span>₨ {Number(printVoucher.amount).toLocaleString("en-PK")}</span></div>
                 <div className="footer">
                   <p>This is a computer-generated voucher. Please pay at the school office before the due date.</p>
-                  <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                  <p>📞 {settings.phone} | 📧 {settings.email}</p>
                 </div>
               </div>
             );
