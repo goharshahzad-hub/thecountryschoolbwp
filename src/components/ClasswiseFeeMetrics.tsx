@@ -95,7 +95,6 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
             <TableRow>
               <TableHead>Class</TableHead>
               <TableHead className="text-center">Students</TableHead>
-              <TableHead className="text-right">Expected Fee</TableHead>
               {!compact && <TableHead className="text-right">Voucher Total</TableHead>}
               <TableHead className="text-right">Paid</TableHead>
               <TableHead className="text-right">Pending</TableHead>
