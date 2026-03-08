@@ -48,6 +48,13 @@ const AdmissionQueries = () => {
     else { toast.success(`Marked as ${status}`); fetchQueries(); }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this query?")) return;
+    const { error } = await supabase.from("admission_queries").delete().eq("id", id);
+    if (error) toast.error("Failed to delete");
+    else { toast.success("Query deleted"); fetchQueries(); }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-6">
