@@ -302,8 +302,10 @@ const ParentPortal = () => {
 
             {/* Tabs for all sections */}
             <Tabs defaultValue="children" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="children">Children</TabsTrigger>
+                <TabsTrigger value="announcements">Notices</TabsTrigger>
+                <TabsTrigger value="diary">Diary</TabsTrigger>
                 <TabsTrigger value="attendance">Attendance</TabsTrigger>
                 <TabsTrigger value="fees">Fees</TabsTrigger>
                 <TabsTrigger value="results">Results</TabsTrigger>
