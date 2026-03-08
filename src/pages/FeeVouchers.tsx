@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
-import { printA4 } from "@/lib/printUtils";
+
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
