@@ -8,6 +8,7 @@ import { Download, Trash2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
+import StudentwiseFeeMetrics from "@/components/StudentwiseFeeMetrics";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeRecord {
@@ -117,6 +118,10 @@ const Fees = () => {
 
       <div className="mb-6">
         <ClasswiseFeeMetrics vouchers={fees} students={students} />
+      </div>
+
+      <div className="mb-6">
+        <StudentwiseFeeMetrics vouchers={fees} students={students} />
       </div>
 
       <Card className="shadow-card">
