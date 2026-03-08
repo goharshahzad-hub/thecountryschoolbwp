@@ -388,6 +388,70 @@ const Results = () => {
     }
   };
 
+  const sendTermResultAlerts = () => {
+    if (!monthlyClass || monthlyResults.length === 0) return;
+    const allSubIds = [...new Set(monthlyResults.map(r => r.subject_id))];
+    let opened = 0;
+    monthlyClassStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const sResults = monthlyResults.filter(r => r.student_id === s.id);
+      if (sResults.length === 0) return;
+      const subjectLines = allSubIds.map(sid => {
+        const r = sResults.find(r => r.subject_id === sid);
+        if (!r) return null;
+        const subName = getSubject(sid)?.name || "Subject";
+        const isAbsent = r.remarks?.toLowerCase().includes("absent");
+        const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(0);
+        return `• ${subName}: ${isAbsent ? "Absent" : `${r.obtained_marks}/${r.total_marks} (${pct}%)`}`;
+      }).filter(Boolean);
+      if (subjectLines.length === 0) return;
+      const totalObt = sResults.filter(r => !r.remarks?.toLowerCase().includes("absent")).reduce((sum, r) => sum + Number(r.obtained_marks), 0);
+      const totalMax = sResults.reduce((sum, r) => sum + Number(r.total_marks), 0);
+      const overallPct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(0) : "0";
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\n*${monthlyExamType} Result — ${monthlyTerm}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${subjectLines.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => { window.open(`https://wa.me/${phone}?text=${message}`, "_blank"); }, i * 800);
+      opened++;
+    });
+    if (opened === 0) toast({ title: "No contacts", description: "No WhatsApp/phone numbers found.", variant: "destructive" });
+    else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s). Send each one manually.` });
+  };
+
+  const sendAnnualResultAlert = () => {
+    if (!annualStudent) return;
+    const s = getStudent(annualStudent);
+    if (!s) return;
+    const contact = s.whatsapp || s.phone;
+    if (!contact) { toast({ title: "No contact", description: "No WhatsApp/phone number found for this student.", variant: "destructive" }); return; }
+    const terms = ["Term 1", "Term 2", "Term 3"];
+    const allTermResults = terms.map(t => results.filter(r => r.student_id === annualStudent && r.term === t));
+    const allSubjectIds = [...new Set(results.filter(r => r.student_id === annualStudent && terms.includes(r.term)).map(r => r.subject_id))];
+    if (allSubjectIds.length === 0) { toast({ title: "No results", description: "No annual results found.", variant: "destructive" }); return; }
+    let grandTotal = 0, grandObt = 0;
+    const subjectLines = allSubjectIds.map(subId => {
+      const subName = getSubject(subId)?.name || "Subject";
+      let subTotal = 0, subObt = 0;
+      const termMarks = terms.map((t, ti) => {
+        const r = allTermResults[ti].find(r => r.subject_id === subId);
+        if (r) { const isAbsent = r.remarks?.toLowerCase().includes("absent"); subTotal += Number(r.total_marks); if (!isAbsent) subObt += Number(r.obtained_marks); return isAbsent ? "Abs" : `${r.obtained_marks}`; }
+        return "—";
+      });
+      grandTotal += subTotal; grandObt += subObt;
+      const pct = subTotal > 0 ? ((subObt / subTotal) * 100).toFixed(0) : "0";
+      return `• ${subName}: ${termMarks.join(" | ")} = ${subObt}/${subTotal} (${pct}%)`;
+    });
+    const grandPct = grandTotal > 0 ? ((grandObt / grandTotal) * 100).toFixed(0) : "0";
+    const phone = formatPhone(contact);
+    const message = encodeURIComponent(
+      `Dear Parent,\n\n*Annual Combined Result Card ${new Date().getFullYear()}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject Results (T1 | T2 | T3 = Total):*\n${subjectLines.join("\n")}\n\n*Grand Total: ${grandObt}/${grandTotal} (${grandPct}%)*\n*Grade: ${gradeFromPercent(Number(grandPct))}*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+    );
+    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+    toast({ title: "WhatsApp Alert", description: "Opening WhatsApp message. Send it manually." });
+  };
+
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
@@ -758,6 +822,11 @@ const Results = () => {
                 <Button onClick={handlePrintTermCard} variant="outline" disabled={!monthlyClass}>
                   <Printer className="mr-2 h-4 w-4" />Print Result Card
                 </Button>
+                {monthlyClass && monthlyResults.length > 0 && (
+                  <Button onClick={sendTermResultAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
+                  </Button>
+                )}
               </div>
               {monthlyClass && monthlyResults.length > 0 && (
                 <Table>
@@ -865,6 +934,9 @@ const Results = () => {
                 </div>
                 <Button onClick={handlePrintAnnual} variant="outline" disabled={!annualStudent}>
                   <Printer className="mr-2 h-4 w-4" />Print Annual Report
+                </Button>
+                <Button onClick={sendAnnualResultAlert} variant="outline" disabled={!annualStudent} className="border-success/30 text-success hover:bg-success/10">
+                  <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Annual Result
                 </Button>
               </div>
               {annualStudent && (() => {
