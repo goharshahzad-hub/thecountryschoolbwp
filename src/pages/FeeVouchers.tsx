@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X, AlertTriangle, CheckCircle, MessageCircle, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -600,6 +600,29 @@ const FeeVouchers = () => {
     ? defaultersByClass
     : defaultersByClass.filter(([cls]) => cls === defaulterClassFilter);
 
+  // Upcoming due: vouchers with due date = tomorrow, not yet paid
+  const tomorrow = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  }, []);
+
+  const upcomingDue = useMemo(() => {
+    return vouchers.filter(v => v.status !== "Paid" && v.due_date === tomorrow).map(v => {
+      const student = getStudent(v.student_id);
+      return student ? { student, voucher: v } : null;
+    }).filter(Boolean) as { student: Student; voucher: FeeVoucher }[];
+  }, [vouchers, tomorrow, students]);
+
+  const buildWhatsAppUrl = (phone: string, studentName: string, amount: number, dueDate: string, month: string) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;
+    const message = encodeURIComponent(
+      `Assalam o Alaikum,\n\nThis is a reminder from *${settings.school_name}* that the fee for your child *${studentName}* of *₨ ${amount.toLocaleString("en-PK")}* for the month of *${month}* is due on *${dueDate}*.\n\nPlease submit the fee before the due date to avoid a late fee charge of ₨ ${LATE_FEE}.\n\nThank you.\n${settings.school_name}\n${settings.campus}, ${settings.city}`
+    );
+    return `https://wa.me/${fullPhone}?text=${message}`;
+  };
+
   const printDefaulterList = (className?: string) => {
     const classesToPrint = className
       ? defaultersByClass.filter(([cls]) => cls === className)
@@ -821,6 +844,15 @@ const FeeVouchers = () => {
       <Tabs defaultValue="vouchers" className="space-y-4">
         <TabsList>
           <TabsTrigger value="vouchers">All Vouchers</TabsTrigger>
+          <TabsTrigger value="reminders" className="flex items-center gap-1.5">
+            <Bell className="h-3.5 w-3.5" />
+            WhatsApp Reminders
+            {upcomingDue.length > 0 && (
+              <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[hsl(142,70%,45%)] px-1.5 text-[10px] font-bold text-white">
+                {upcomingDue.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="defaulters" className="flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5" />
             Defaulters
@@ -932,6 +964,72 @@ const FeeVouchers = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        {/* WhatsApp Reminders Tab */}
+        <TabsContent value="reminders">
+          <div className="mb-4 flex items-center gap-2">
+            <MessageCircle className="h-4 w-4 text-[hsl(142,70%,45%)]" />
+            <span className="text-sm font-medium text-muted-foreground">
+              {upcomingDue.length} pending fee{upcomingDue.length !== 1 ? "s" : ""} due tomorrow — Send WhatsApp reminders to parents
+            </span>
+          </div>
+
+          {upcomingDue.length === 0 ? (
+            <Card className="shadow-card">
+              <CardContent className="p-8 text-center text-muted-foreground">
+                <CheckCircle className="mx-auto mb-2 h-8 w-8 text-success" />
+                <p>No fees due tomorrow. No reminders needed!</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="shadow-card">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>#</TableHead>
+                      <TableHead>Reg. No</TableHead>
+                      <TableHead>Student Name</TableHead>
+                      <TableHead>Guardian/Father's Name</TableHead>
+                      <TableHead>Class</TableHead>
+                      <TableHead>Month</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>WhatsApp</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {upcomingDue.map((item, i) => {
+                      const phone = item.student.whatsapp || item.student.phone || "";
+                      return (
+                        <TableRow key={item.voucher.id}>
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell className="font-mono text-xs">{item.student.student_id}</TableCell>
+                          <TableCell className="font-medium">{item.student.name}</TableCell>
+                          <TableCell>{item.student.father_name}</TableCell>
+                          <TableCell>{item.student.class}-{item.student.section}</TableCell>
+                          <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
+                          <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
+                          <TableCell className="text-muted-foreground">{phone || "—"}</TableCell>
+                          <TableCell>
+                            {phone ? (
+                              <a href={buildWhatsAppUrl(phone, item.student.name, Number(item.voucher.amount), item.voucher.due_date, item.voucher.month)} target="_blank" rel="noopener noreferrer">
+                                <Button size="sm" className="bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white">
+                                  <MessageCircle className="mr-1 h-3.5 w-3.5" /> Send Reminder
+                                </Button>
+                              </a>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">No phone</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         <TabsContent value="defaulters">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -990,21 +1088,36 @@ const FeeVouchers = () => {
                         <TableHead>Due Date</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead>Phone</TableHead>
+                        <TableHead>Remind</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {items.map((item, i) => (
-                        <TableRow key={item.voucher.id}>
-                          <TableCell>{i + 1}</TableCell>
-                          <TableCell className="font-mono text-xs">{item.student.student_id}</TableCell>
-                          <TableCell className="font-medium">{item.student.name}</TableCell>
-                          <TableCell>{item.student.father_name}</TableCell>
-                          <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
-                          <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
-                          <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
-                          <TableCell className="text-muted-foreground">{item.student.phone || "—"}</TableCell>
-                        </TableRow>
-                      ))}
+                      {items.map((item, i) => {
+                        const phone = item.student.whatsapp || item.student.phone || "";
+                        return (
+                          <TableRow key={item.voucher.id}>
+                            <TableCell>{i + 1}</TableCell>
+                            <TableCell className="font-mono text-xs">{item.student.student_id}</TableCell>
+                            <TableCell className="font-medium">{item.student.name}</TableCell>
+                            <TableCell>{item.student.father_name}</TableCell>
+                            <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
+                            <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
+                            <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
+                            <TableCell className="text-muted-foreground">{phone || "—"}</TableCell>
+                            <TableCell>
+                              {phone ? (
+                                <a href={buildWhatsAppUrl(phone, item.student.name, Number(item.voucher.amount), item.voucher.due_date, item.voucher.month)} target="_blank" rel="noopener noreferrer">
+                                  <Button size="icon" variant="ghost" className="h-8 w-8 text-[hsl(142,70%,45%)]" title="Send WhatsApp Reminder">
+                                    <MessageCircle className="h-4 w-4" />
+                                  </Button>
+                                </a>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
