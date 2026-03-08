@@ -8,6 +8,7 @@ import { Download, Trash2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeRecord {
   id: string;
