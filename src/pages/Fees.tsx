@@ -94,6 +94,10 @@ const Fees = () => {
         ))}
       </div>
 
+      <div className="mb-6">
+        <ClasswiseFeeMetrics vouchers={fees} students={students} />
+      </div>
+
       <Card className="shadow-card">
         <CardContent className="p-0">
           {loading ? (
