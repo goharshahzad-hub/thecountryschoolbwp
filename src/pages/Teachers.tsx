@@ -28,6 +28,10 @@ interface Teacher {
 
 const emptyForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "" };
 
+const generateTeacherId = (count: number) => {
+  return `TCH-${(count + 1).toString().padStart(4, "0")}`;
+};
+
 const Teachers = () => {
   const { toast } = useToast();
   const [teachers, setTeachers] = useState<Teacher[]>([]);

@@ -33,6 +33,11 @@ interface ParentProfile {
 
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending" };
 
+const generateStudentId = (count: number) => {
+  const year = new Date().getFullYear();
+  return `TCS-${year}-${(count + 1).toString().padStart(4, "0")}`;
+};
+
 const Students = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
