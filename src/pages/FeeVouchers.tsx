@@ -600,6 +600,29 @@ const FeeVouchers = () => {
     ? defaultersByClass
     : defaultersByClass.filter(([cls]) => cls === defaulterClassFilter);
 
+  // Upcoming due: vouchers with due date = tomorrow, not yet paid
+  const tomorrow = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  }, []);
+
+  const upcomingDue = useMemo(() => {
+    return vouchers.filter(v => v.status !== "Paid" && v.due_date === tomorrow).map(v => {
+      const student = getStudent(v.student_id);
+      return student ? { student, voucher: v } : null;
+    }).filter(Boolean) as { student: Student; voucher: FeeVoucher }[];
+  }, [vouchers, tomorrow, students]);
+
+  const buildWhatsAppUrl = (phone: string, studentName: string, amount: number, dueDate: string, month: string) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;
+    const message = encodeURIComponent(
+      `Assalam o Alaikum,\n\nThis is a reminder from *${settings.school_name}* that the fee for your child *${studentName}* of *₨ ${amount.toLocaleString("en-PK")}* for the month of *${month}* is due on *${dueDate}*.\n\nPlease submit the fee before the due date to avoid a late fee charge of ₨ ${LATE_FEE}.\n\nThank you.\n${settings.school_name}\n${settings.campus}, ${settings.city}`
+    );
+    return `https://wa.me/${fullPhone}?text=${message}`;
+  };
+
   const printDefaulterList = (className?: string) => {
     const classesToPrint = className
       ? defaultersByClass.filter(([cls]) => cls === className)
