@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Printer, BarChart3, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,8 +44,12 @@ const Results = () => {
   const [reportStudent, setReportStudent] = useState<string>("");
   const [reportTerm, setReportTerm] = useState<string>("Term 1");
   const [annualStudent, setAnnualStudent] = useState<string>("");
+  const [classReportClass, setClassReportClass] = useState<string>("");
+  const [classReportType, setClassReportType] = useState<string>("term");
+  const [classReportTerm, setClassReportTerm] = useState<string>("Term 1");
   const printRef = useRef<HTMLDivElement>(null);
   const annualPrintRef = useRef<HTMLDivElement>(null);
+  const classReportRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
     student_id: "", subject_id: "", exam_type: "Monthly Test", term: "Term 1",
@@ -157,6 +161,13 @@ const Results = () => {
       win.document.close();
     }, 100);
   };
+
+  const handlePrintClassReport = () => {
+    if (!classReportClass) { toast({ title: "Error", description: "Select a class first", variant: "destructive" }); return; }
+    printReportFromRef(classReportRef);
+  };
+
+  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
 
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
@@ -397,6 +408,57 @@ const Results = () => {
         </CardContent>
       </Card>
 
+      {/* Class-wise Report Generation */}
+      <Card className="mb-6 shadow-card">
+        <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><Users className="h-5 w-5" /> Class-wise Report Generation</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-2 min-w-[160px]">
+              <Label>Select Class</Label>
+              <Select value={classReportClass} onValueChange={setClassReportClass}>
+                <SelectTrigger><SelectValue placeholder="Choose class" /></SelectTrigger>
+                <SelectContent>
+                  {uniqueClasses.map(c => (
+                    <SelectItem key={c} value={c}>Class {c} ({students.filter(s => s.class === c).length} students)</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[140px]">
+              <Label>Report Type</Label>
+              <Select value={classReportType} onValueChange={setClassReportType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="term">Term-wise</SelectItem>
+                  <SelectItem value="annual">Annual Combined</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {classReportType === "term" && (
+              <div className="space-y-2 min-w-[120px]">
+                <Label>Term</Label>
+                <Select value={classReportTerm} onValueChange={setClassReportTerm}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Term 1">Term 1</SelectItem>
+                    <SelectItem value="Term 2">Term 2</SelectItem>
+                    <SelectItem value="Term 3">Term 3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <Button onClick={handlePrintClassReport} variant="outline" disabled={!classReportClass}>
+              <Printer className="mr-2 h-4 w-4" />Print All Report Cards
+            </Button>
+          </div>
+          {classReportClass && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              This will generate {classReportType === "annual" ? "annual combined" : `${classReportTerm}`} report cards for all {students.filter(s => s.class === classReportClass).length} students in Class {classReportClass}.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* All Results Table */}
       <Card className="shadow-card">
         <CardHeader className="pb-3">
@@ -605,6 +667,181 @@ const Results = () => {
                 </div>
               </div>
             );
+          })()}
+        </div>
+      </div>
+
+      {/* Hidden print template for class-wise reports */}
+      <div className="hidden">
+        <div ref={classReportRef}>
+          {classReportClass && (() => {
+            const classStudents = students.filter(s => s.class === classReportClass).sort((a, b) => a.name.localeCompare(b.name));
+            const terms = ["Term 1", "Term 2", "Term 3"];
+
+            if (classReportType === "term") {
+              // Term-wise: one report card per student for the selected term
+              return classStudents.map(st => {
+                const sResults = results.filter(r => r.student_id === st.id && r.term === classReportTerm);
+                if (sResults.length === 0) return null;
+                const totalMarks = sResults.reduce((s, r) => s + Number(r.total_marks), 0);
+                const obtainedMarks = sResults.reduce((s, r) => s + Number(r.obtained_marks), 0);
+                const overallPct = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
+                return (
+                  <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
+                    <div className="header">
+                      <h1>The Country School — Fahad Campus</h1>
+                      <h2>REPORT CARD / RESULT CARD</h2>
+                      <p>Academic Year {new Date().getFullYear()}</p>
+                    </div>
+                    <div className="info">
+                      <div>Student ID: <span>{st.student_id}</span></div>
+                      <div>Name: <span>{st.name}</span></div>
+                      <div>Father's Name: <span>{st.father_name}</span></div>
+                      <div>Class: <span>{st.class}-{st.section}</span></div>
+                      <div>Term: <span>{classReportTerm}</span></div>
+                    </div>
+                    <table>
+                      <thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
+                      <tbody>
+                        {sResults.map(r => (
+                          <tr key={r.id}>
+                            <td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td>
+                            <td>{r.total_marks}</td>
+                            <td>{r.obtained_marks}</td>
+                            <td>{((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1)}%</td>
+                            <td><strong>{r.grade}</strong></td>
+                            <td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td>
+                          </tr>
+                        ))}
+                        <tr className="total-row">
+                          <td style={{ textAlign: "left" }}><strong>Grand Total</strong></td>
+                          <td><strong>{totalMarks}</strong></td>
+                          <td><strong>{obtainedMarks}</strong></td>
+                          <td><strong>{overallPct.toFixed(1)}%</strong></td>
+                          <td><strong>{gradeFromPercent(overallPct)}</strong></td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div className="grade-summary">
+                      Overall Grade: <strong>{gradeFromPercent(overallPct)}</strong> | Position: _____ | Attendance: _____%
+                    </div>
+                    <div className="signatures">
+                      <div>Class Teacher</div><div>Principal</div><div>Parent's Signature</div>
+                    </div>
+                    <div className="footer">
+                      <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                      <p>This is a computer-generated report card.</p>
+                    </div>
+                  </div>
+                );
+              });
+            } else {
+              // Annual: combined 3-term report per student
+              return classStudents.map(st => {
+                const allSubjectIds = [...new Set(results.filter(r => r.student_id === st.id).map(r => r.subject_id))];
+                if (allSubjectIds.length === 0) return null;
+                const allTermResults = terms.map(t => results.filter(r => r.student_id === st.id && r.term === t));
+                let grandTotal = 0, grandObt = 0;
+
+                return (
+                  <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
+                    <div className="header">
+                      <h1>The Country School — Fahad Campus</h1>
+                      <h2>ANNUAL COMBINED RESULT CARD</h2>
+                      <p>Academic Year {new Date().getFullYear()}</p>
+                    </div>
+                    <div className="info">
+                      <div>Student ID: <span>{st.student_id}</span></div>
+                      <div>Name: <span>{st.name}</span></div>
+                      <div>Father's Name: <span>{st.father_name}</span></div>
+                      <div>Class: <span>{st.class}-{st.section}</span></div>
+                    </div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th rowSpan={2} style={{ verticalAlign: "bottom" }}>Subject</th>
+                          {terms.map(t => <th key={t} colSpan={3} style={{ borderLeft: "2px solid #333" }}>{t}</th>)}
+                          <th colSpan={3} style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}>Annual</th>
+                        </tr>
+                        <tr>
+                          {terms.map(t => (
+                            <>
+                              <th key={`${t}-t`} style={{ borderLeft: "2px solid #333", fontSize: "10px" }}>Total</th>
+                              <th key={`${t}-o`} style={{ fontSize: "10px" }}>Obt</th>
+                              <th key={`${t}-g`} style={{ fontSize: "10px" }}>Grade</th>
+                            </>
+                          ))}
+                          <th style={{ borderLeft: "2px solid #333", fontSize: "10px", background: "#e8e8e8" }}>Total</th>
+                          <th style={{ fontSize: "10px", background: "#e8e8e8" }}>Obt</th>
+                          <th style={{ fontSize: "10px", background: "#e8e8e8" }}>Grade</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allSubjectIds.map(subId => {
+                          let subTotal = 0, subObt = 0;
+                          return (
+                            <tr key={subId}>
+                              <td style={{ textAlign: "left" }}>{getSubject(subId)?.name}</td>
+                              {terms.map((t, ti) => {
+                                const r = allTermResults[ti].find(r => r.subject_id === subId);
+                                if (r) { subTotal += Number(r.total_marks); subObt += Number(r.obtained_marks); }
+                                return (
+                                  <>
+                                    <td key={`${t}-${subId}-t`} style={{ borderLeft: "2px solid #333" }}>{r ? r.total_marks : "—"}</td>
+                                    <td key={`${t}-${subId}-o`}>{r ? r.obtained_marks : "—"}</td>
+                                    <td key={`${t}-${subId}-g`}><strong>{r ? r.grade : "—"}</strong></td>
+                                  </>
+                                );
+                              })}
+                              <td style={{ borderLeft: "2px solid #333", background: "#f5f5f5" }}><strong>{subTotal || "—"}</strong></td>
+                              <td style={{ background: "#f5f5f5" }}><strong>{subObt || "—"}</strong></td>
+                              <td style={{ background: "#f5f5f5" }}><strong>{subTotal > 0 ? gradeFromPercent((subObt / subTotal) * 100) : "—"}</strong></td>
+                            </tr>
+                          );
+                        })}
+                        {(() => {
+                          const termTotals = terms.map((t, ti) => {
+                            const tr = allTermResults[ti];
+                            const tt = tr.reduce((s, r) => s + Number(r.total_marks), 0);
+                            const to = tr.reduce((s, r) => s + Number(r.obtained_marks), 0);
+                            grandTotal += tt; grandObt += to;
+                            return { tt, to };
+                          });
+                          return (
+                            <tr className="total-row">
+                              <td style={{ textAlign: "left" }}><strong>Grand Total</strong></td>
+                              {termTotals.map((t, i) => (
+                                <>
+                                  <td key={`gt-${i}-t`} style={{ borderLeft: "2px solid #333" }}><strong>{t.tt || "—"}</strong></td>
+                                  <td key={`gt-${i}-o`}><strong>{t.to || "—"}</strong></td>
+                                  <td key={`gt-${i}-g`}><strong>{t.tt > 0 ? gradeFromPercent((t.to / t.tt) * 100) : "—"}</strong></td>
+                                </>
+                              ))}
+                              <td style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}><strong>{grandTotal}</strong></td>
+                              <td style={{ background: "#e8e8e8" }}><strong>{grandObt}</strong></td>
+                              <td style={{ background: "#e8e8e8" }}><strong>{grandTotal > 0 ? gradeFromPercent((grandObt / grandTotal) * 100) : "—"}</strong></td>
+                            </tr>
+                          );
+                        })()}
+                      </tbody>
+                    </table>
+                    <div className="grade-summary">
+                      Overall Annual Grade: <strong>{grandTotal > 0 ? gradeFromPercent((grandObt / grandTotal) * 100) : "N/A"}</strong> |
+                      Overall Percentage: <strong>{grandTotal > 0 ? ((grandObt / grandTotal) * 100).toFixed(1) : "0"}%</strong> |
+                      Position: _____ | Attendance: _____%
+                    </div>
+                    <div className="signatures">
+                      <div>Class Teacher</div><div>Principal</div><div>Parent's Signature</div>
+                    </div>
+                    <div className="footer">
+                      <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                      <p>This is a computer-generated annual result card.</p>
+                    </div>
+                  </div>
+                );
+              });
+            }
           })()}
         </div>
       </div>
