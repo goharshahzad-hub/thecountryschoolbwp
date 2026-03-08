@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
-  FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet
+  FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
+  BookMarked, Megaphone, MessageCircle
 } from "lucide-react";
 
 const navItems = [
@@ -15,10 +16,13 @@ const navItems = [
   { to: "/dashboard/employees", icon: GraduationCap, label: "Employees" },
   { to: "/dashboard/classes", icon: BookOpen, label: "Classes" },
   { to: "/dashboard/attendance", icon: ClipboardCheck, label: "Attendance" },
+  { to: "/dashboard/diary", icon: BookMarked, label: "Diary / Homework" },
+  { to: "/dashboard/announcements", icon: Megaphone, label: "Announcements" },
   { to: "/dashboard/fees", icon: DollarSign, label: "Fees" },
   { to: "/dashboard/admissions", icon: UserPlus, label: "Admissions" },
   { to: "/dashboard/admission-queries", icon: FileText, label: "Admission Queries" },
   { to: "/dashboard/fee-vouchers", icon: Receipt, label: "Fee Vouchers" },
+  { to: "/dashboard/whatsapp-broadcast", icon: MessageCircle, label: "WhatsApp Broadcast" },
   { to: "/dashboard/results", icon: BarChart3, label: "Results" },
   { to: "/dashboard/timetable", icon: Calendar, label: "Timetable" },
   { to: "/dashboard/expenses", icon: Wallet, label: "Expenses" },

@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
-interface Student { id: string; name: string; class: string; section: string | null; }
+interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
+interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -17,25 +18,29 @@ const Dashboard = () => {
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0 });
+  const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0, admissions: 0 });
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedYear, setSelectedYear] = useState<string>("all");
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }, { data: studentData }, { data: expenseData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
+        supabase.from("admissions").select("*", { count: "exact", head: true }).eq("status", "Pending"),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
-        supabase.from("students").select("id, name, class, section, monthly_fee"),
+        supabase.from("students").select("id, name, class, section, monthly_fee, gender"),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
+        supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
       ]);
       setAllVouchers(feeData || []);
       setAllExpenses(expenseData || []);
       setStudents(studentData || []);
-      setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0 });
+      setAttendanceRecords(attData || []);
+      setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0, admissions: ac || 0 });
       setLoading(false);
     };
     fetchStats();
@@ -98,13 +103,33 @@ const Dashboard = () => {
       });
   }, [allVouchers]);
 
+  // Enrollment by class
+  const enrollmentByClass = useMemo(() => {
+    const map: Record<string, number> = {};
+    students.forEach(s => { map[s.class] = (map[s.class] || 0) + 1; });
+    return Object.entries(map).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [students]);
+
+  // Attendance summary (last 30 days)
+  const attendanceSummary = useMemo(() => {
+    const total = attendanceRecords.length;
+    const present = attendanceRecords.filter(a => a.status === "present").length;
+    const absent = attendanceRecords.filter(a => a.status === "absent").length;
+    const late = attendanceRecords.filter(a => a.status === "late").length;
+    return { total, present, absent, late, rate: total > 0 ? Math.round((present / total) * 100) : 0 };
+  }, [attendanceRecords]);
+
+  const COLORS = ["hsl(142,71%,45%)", "hsl(0,84%,60%)", "hsl(38,92%,50%)"];
+
   const statCards = [
     { label: "Total Students", value: counts.students.toString(), icon: Users, color: "bg-primary/10 text-primary" },
     { label: "Total Teachers", value: counts.teachers.toString(), icon: GraduationCap, color: "bg-secondary/10 text-secondary" },
     { label: "Active Classes", value: counts.classes.toString(), icon: BookOpen, color: "bg-accent/10 text-accent-foreground" },
+    { label: "Pending Admissions", value: counts.admissions.toString(), icon: UserPlus, color: "bg-secondary/10 text-secondary" },
     { label: "Fee Collected", value: `₨ ${feeCollected.toLocaleString("en-PK")}`, icon: CheckCircle, color: "bg-success/10 text-success" },
     { label: "Fee Pending", value: `₨ ${feePending.toLocaleString("en-PK")}`, icon: DollarSign, color: "bg-warning/10 text-warning" },
     { label: "Fee Overdue", value: `₨ ${feeOverdue.toLocaleString("en-PK")}`, icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
+    { label: "Attendance (30d)", value: `${attendanceSummary.rate}%`, icon: ClipboardCheck, color: "bg-primary/10 text-primary" },
   ];
 
   const filterLabel = selectedMonth === "all" && selectedYear === "all"
@@ -207,6 +232,62 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Enrollment by Class & Attendance Summary */}
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            {enrollmentByClass.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="font-display text-lg">Students by Class</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={enrollmentByClass} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" height={60} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                      <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
+                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <ClipboardCheck className="h-5 w-5" /> Attendance Summary (Last 30 Days)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {attendanceSummary.total === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">No attendance data available.</p>
+                ) : (
+                  <div className="flex items-center gap-6">
+                    <ResponsiveContainer width="50%" height={200}>
+                      <PieChart>
+                        <Pie data={[
+                          { name: "Present", value: attendanceSummary.present },
+                          { name: "Absent", value: attendanceSummary.absent },
+                          { name: "Late", value: attendanceSummary.late },
+                        ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                          {[0, 1, 2].map(i => <Cell key={i} fill={COLORS[i]} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full" style={{ background: COLORS[0] }} /><span className="text-sm">Present: {attendanceSummary.present}</span></div>
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full" style={{ background: COLORS[1] }} /><span className="text-sm">Absent: {attendanceSummary.absent}</span></div>
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full" style={{ background: COLORS[2] }} /><span className="text-sm">Late: {attendanceSummary.late}</span></div>
+                      <p className="text-xs text-muted-foreground mt-2">Total Records: {attendanceSummary.total}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
 

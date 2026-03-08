@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import logo from "@/assets/logo.jpg";
-import { LogOut, User, GraduationCap, ClipboardCheck, BookOpen, Receipt, Calendar, FileText } from "lucide-react";
+import { LogOut, User, GraduationCap, ClipboardCheck, BookOpen, Receipt, Calendar, FileText, BookMarked, Bell } from "lucide-react";
 
 interface Student {
   id: string;
@@ -81,6 +81,8 @@ const ParentPortal = () => {
   const [feeVouchers, setFeeVouchers] = useState<FeeVoucher[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [profileName, setProfileName] = useState("");
 
   useEffect(() => {
@@ -149,7 +151,31 @@ const ParentPortal = () => {
           const all = results.flatMap(r => r.data || []);
           setTimetable(all);
         });
+
+        // Fetch diary entries for children's classes
+        const diaryPromises = classKeys.map(key => {
+          const [cls, sec] = key.split("|||");
+          return supabase
+            .from("diary_entries")
+            .select("*")
+            .eq("class_name", cls)
+            .eq("section", sec)
+            .order("date", { ascending: false })
+            .limit(20);
+        });
+        Promise.all(diaryPromises).then(results => {
+          const all = results.flatMap(r => r.data || []);
+          setDiaryEntries(all);
+        });
       });
+
+    // Fetch announcements (public)
+    supabase
+      .from("announcements")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => { if (data) setAnnouncements(data); });
   }, [user]);
 
   const handleSignOut = async () => {
@@ -276,8 +302,10 @@ const ParentPortal = () => {
 
             {/* Tabs for all sections */}
             <Tabs defaultValue="children" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="children">Children</TabsTrigger>
+                <TabsTrigger value="announcements">Notices</TabsTrigger>
+                <TabsTrigger value="diary">Diary</TabsTrigger>
                 <TabsTrigger value="attendance">Attendance</TabsTrigger>
                 <TabsTrigger value="fees">Fees</TabsTrigger>
                 <TabsTrigger value="results">Results</TabsTrigger>
@@ -331,6 +359,81 @@ const ParentPortal = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Announcements Tab */}
+              <TabsContent value="announcements">
+                <Card className="shadow-card">
+                  <CardHeader>
+                    <CardTitle className="font-display text-lg flex items-center gap-2">
+                      <Bell className="h-5 w-5 text-primary" />
+                      School Announcements & Notices
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {announcements.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-muted-foreground">No announcements at this time.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {announcements.filter((a: any) => !a.expires_at || a.expires_at >= new Date().toISOString().split("T")[0]).map((a: any) => (
+                          <div key={a.id} className="rounded-lg border border-border p-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-display font-semibold text-foreground">{a.title}</h4>
+                              <Badge variant="outline">{a.type}</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{a.content}</p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {new Date(a.created_at).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Diary Tab */}
+              <TabsContent value="diary">
+                {students.map(student => {
+                  const entries = diaryEntries.filter((d: any) => d.class_name === student.class && d.section === (student.section || "A"));
+                  return (
+                    <Card key={student.id} className="mb-4 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="font-display text-lg flex items-center gap-2">
+                          <BookMarked className="h-5 w-5 text-primary" />
+                          Diary — {student.name} (Class {student.class}-{student.section || "A"})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {entries.length === 0 ? (
+                          <p className="py-8 text-center text-sm text-muted-foreground">No diary entries available.</p>
+                        ) : (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Subject</TableHead>
+                                <TableHead>Homework / Diary</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {entries.map((entry: any) => (
+                                <TableRow key={entry.id}>
+                                  <TableCell className="whitespace-nowrap text-xs">
+                                    {new Date(entry.date).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                                  </TableCell>
+                                  <TableCell className="font-medium">{entry.subject}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap">{entry.homework_text}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </TabsContent>
 
               {/* Attendance Tab */}
