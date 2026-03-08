@@ -408,6 +408,57 @@ const Results = () => {
         </CardContent>
       </Card>
 
+      {/* Class-wise Report Generation */}
+      <Card className="mb-6 shadow-card">
+        <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><Users className="h-5 w-5" /> Class-wise Report Generation</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-2 min-w-[160px]">
+              <Label>Select Class</Label>
+              <Select value={classReportClass} onValueChange={setClassReportClass}>
+                <SelectTrigger><SelectValue placeholder="Choose class" /></SelectTrigger>
+                <SelectContent>
+                  {uniqueClasses.map(c => (
+                    <SelectItem key={c} value={c}>Class {c} ({students.filter(s => s.class === c).length} students)</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[140px]">
+              <Label>Report Type</Label>
+              <Select value={classReportType} onValueChange={setClassReportType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="term">Term-wise</SelectItem>
+                  <SelectItem value="annual">Annual Combined</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {classReportType === "term" && (
+              <div className="space-y-2 min-w-[120px]">
+                <Label>Term</Label>
+                <Select value={classReportTerm} onValueChange={setClassReportTerm}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Term 1">Term 1</SelectItem>
+                    <SelectItem value="Term 2">Term 2</SelectItem>
+                    <SelectItem value="Term 3">Term 3</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <Button onClick={handlePrintClassReport} variant="outline" disabled={!classReportClass}>
+              <Printer className="mr-2 h-4 w-4" />Print All Report Cards
+            </Button>
+          </div>
+          {classReportClass && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              This will generate {classReportType === "annual" ? "annual combined" : `${classReportTerm}`} report cards for all {students.filter(s => s.class === classReportClass).length} students in Class {classReportClass}.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* All Results Table */}
       <Card className="shadow-card">
         <CardHeader className="pb-3">
