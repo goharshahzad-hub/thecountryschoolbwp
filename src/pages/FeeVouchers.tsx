@@ -108,6 +108,44 @@ const FeeVouchers = () => {
     else { toast({ title: editingId ? "Updated" : "Voucher Generated" }); setDialogOpen(false); setEditingId(null); fetchData(); }
   };
 
+  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+
+  const handleBulkGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkForm.class_name || !bulkForm.amount || !bulkForm.due_date) {
+      toast({ title: "Error", description: "Please fill all required fields", variant: "destructive" });
+      return;
+    }
+    const classStudents = students.filter(s => s.class === bulkForm.class_name);
+    if (classStudents.length === 0) {
+      toast({ title: "No Students", description: `No students found in Class ${bulkForm.class_name}`, variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const baseIndex = vouchers.length + 1;
+    const year = new Date().getFullYear();
+    const rows = classStudents.map((s, i) => ({
+      voucher_no: `VCH-${year}-${(baseIndex + i).toString().padStart(5, "0")}`,
+      student_id: s.id,
+      amount: parseFloat(bulkForm.amount),
+      fee_type: bulkForm.fee_type,
+      month: bulkForm.month,
+      year: parseInt(bulkForm.year),
+      due_date: bulkForm.due_date,
+      status: "Pending" as string,
+      remarks: bulkForm.remarks.trim(),
+    }));
+    const { error } = await supabase.from("fee_vouchers").insert(rows);
+    setSaving(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "Bulk Vouchers Generated", description: `${rows.length} vouchers created for Class ${bulkForm.class_name}` });
+      setBulkDialogOpen(false);
+      fetchData();
+    }
+  };
+  };
+
   const markPaid = async (id: string) => {
     await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: new Date().toISOString().split("T")[0] }).eq("id", id);
     fetchData();
