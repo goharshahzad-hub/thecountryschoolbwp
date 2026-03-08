@@ -44,8 +44,12 @@ const Results = () => {
   const [reportStudent, setReportStudent] = useState<string>("");
   const [reportTerm, setReportTerm] = useState<string>("Term 1");
   const [annualStudent, setAnnualStudent] = useState<string>("");
+  const [classReportClass, setClassReportClass] = useState<string>("");
+  const [classReportType, setClassReportType] = useState<string>("term");
+  const [classReportTerm, setClassReportTerm] = useState<string>("Term 1");
   const printRef = useRef<HTMLDivElement>(null);
   const annualPrintRef = useRef<HTMLDivElement>(null);
+  const classReportRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
     student_id: "", subject_id: "", exam_type: "Monthly Test", term: "Term 1",
