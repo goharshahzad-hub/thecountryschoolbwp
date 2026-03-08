@@ -585,6 +585,11 @@ const Results = () => {
                 <Button onClick={handlePrintMonthlyTest} variant="outline" disabled={!mtViewClass || !mtViewMonth}>
                   <Printer className="mr-2 h-4 w-4" />Print Result
                 </Button>
+                {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
+                  <Button onClick={sendMonthlyTestAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
+                  </Button>
+                )}
               </div>
               {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
                 <Table>
