@@ -452,7 +452,42 @@ const Results = () => {
     toast({ title: "WhatsApp Alert", description: "Opening WhatsApp message. Send it manually." });
   };
 
-  const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
+  const sendBulkAnnualAlerts = () => {
+    if (!classReportClass) return;
+    const classStudents = students.filter(s => s.class === classReportClass).sort((a, b) => a.name.localeCompare(b.name));
+    const terms = ["Term 1", "Term 2", "Term 3"];
+    let opened = 0;
+    classStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const allSubjectIds = [...new Set(results.filter(r => r.student_id === s.id && terms.includes(r.term)).map(r => r.subject_id))];
+      if (allSubjectIds.length === 0) return;
+      const allTermResults = terms.map(t => results.filter(r => r.student_id === s.id && r.term === t));
+      let grandTotal = 0, grandObt = 0;
+      const subjectLines = allSubjectIds.map(subId => {
+        const subName = getSubject(subId)?.name || "Subject";
+        let subTotal = 0, subObt = 0;
+        const termMarks = terms.map((t, ti) => {
+          const r = allTermResults[ti].find(r => r.subject_id === subId);
+          if (r) { const isAbsent = r.remarks?.toLowerCase().includes("absent"); subTotal += Number(r.total_marks); if (!isAbsent) subObt += Number(r.obtained_marks); return isAbsent ? "Abs" : `${r.obtained_marks}`; }
+          return "—";
+        });
+        grandTotal += subTotal; grandObt += subObt;
+        const pct = subTotal > 0 ? ((subObt / subTotal) * 100).toFixed(0) : "0";
+        return `• ${subName}: ${termMarks.join(" | ")} = ${subObt}/${subTotal} (${pct}%)`;
+      });
+      const grandPct = grandTotal > 0 ? ((grandObt / grandTotal) * 100).toFixed(0) : "0";
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\n*Annual Combined Result Card ${new Date().getFullYear()}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject Results (T1 | T2 | T3 = Total):*\n${subjectLines.join("\n")}\n\n*Grand Total: ${grandObt}/${grandTotal} (${grandPct}%)*\n*Grade: ${gradeFromPercent(Number(grandPct))}*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => { window.open(`https://wa.me/${phone}?text=${message}`, "_blank"); }, i * 800);
+      opened++;
+    });
+    if (opened === 0) toast({ title: "No contacts", description: "No WhatsApp/phone numbers found.", variant: "destructive" });
+    else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass}. Send each one manually.` });
+  };
+
   const student = getStudent(reportStudent);
 
   const filtered = results.filter(r => {
