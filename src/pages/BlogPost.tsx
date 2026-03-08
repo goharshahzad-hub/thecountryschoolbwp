@@ -54,7 +54,7 @@ Contact us today to learn about our current fee structure and available discount
     readTime: "4 min",
     category: "Admissions",
     keywords: ["school admissions bahawalpur 2026", "admission open bahawalpur", "school enrollment bahawalpur"],
-    content: `The Country School Fahad Campus, Bahawalpur, is now accepting admissions for the academic year 2026. We welcome students from Playgroup to Grade 10 who are eager to learn and grow in a supportive educational environment.
+    content: `The Country School Fahad Campus, Bahawalpur, is now accepting admissions for the academic year 2026. We welcome students from Reception (Playgroup) to Class 8 who are eager to learn and grow in a supportive educational environment.
 
 Our admission process is simple and straightforward:
 1. Submit an online inquiry through our website or visit the campus
