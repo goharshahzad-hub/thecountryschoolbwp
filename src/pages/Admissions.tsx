@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Pencil, Eye } from "lucide-react";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -130,6 +130,13 @@ const Admissions = () => {
     setDialogOpen(true);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this admission application?")) return;
+    const { error } = await supabase.from("admissions").delete().eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted" }); fetchAdmissions(); }
+  };
+
   const statusColor = (s: string) => s === "Approved" ? "border-success/30 text-success" : s === "Rejected" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   return (
@@ -238,6 +245,7 @@ const Admissions = () => {
                     <TableCell><Badge variant="outline" className={statusColor(a.status)}>{a.status}</Badge></TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(a)}><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}

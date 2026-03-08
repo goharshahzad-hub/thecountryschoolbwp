@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Printer, Receipt } from "lucide-react";
+import { Plus, Search, Printer, Receipt, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -47,6 +47,7 @@ const FeeVouchers = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [printVoucher, setPrintVoucher] = useState<FeeVoucher | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -81,8 +82,7 @@ const FeeVouchers = () => {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("fee_vouchers").insert({
-      voucher_no: generateVoucherNo(),
+    const payload = {
       student_id: form.student_id,
       amount: parseFloat(form.amount),
       fee_type: form.fee_type,
@@ -91,16 +91,38 @@ const FeeVouchers = () => {
       due_date: form.due_date,
       status: form.status,
       remarks: form.remarks.trim(),
-    });
+    };
+
+    const { error } = editingId
+      ? await supabase.from("fee_vouchers").update(payload).eq("id", editingId)
+      : await supabase.from("fee_vouchers").insert({ ...payload, voucher_no: generateVoucherNo() });
+
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Voucher Generated" }); setDialogOpen(false); fetchData(); }
+    else { toast({ title: editingId ? "Updated" : "Voucher Generated" }); setDialogOpen(false); setEditingId(null); fetchData(); }
   };
 
   const markPaid = async (id: string) => {
     await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: new Date().toISOString().split("T")[0] }).eq("id", id);
     fetchData();
     toast({ title: "Marked as Paid" });
+  };
+
+  const handleEdit = (v: FeeVoucher) => {
+    setForm({
+      student_id: v.student_id, amount: v.amount.toString(), fee_type: v.fee_type,
+      month: v.month, year: v.year.toString(), due_date: v.due_date,
+      status: v.status, remarks: v.remarks || ""
+    });
+    setEditingId(v.id);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this voucher?")) return;
+    const { error } = await supabase.from("fee_vouchers").delete().eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted" }); fetchData(); }
   };
 
   const handlePrint = (v: FeeVoucher) => {
@@ -142,12 +164,12 @@ const FeeVouchers = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Vouchers</h1>
           <p className="mt-1 text-sm text-muted-foreground">Generate and manage fee vouchers in PKR</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingId(null); }}>
           <DialogTrigger asChild>
             <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Generate Voucher</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle className="font-display">Generate Fee Voucher</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Voucher" : "Generate Fee Voucher"}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-2">
                 <Label>Student *</Label>
@@ -184,7 +206,7 @@ const FeeVouchers = () => {
               <div className="space-y-2"><Label>Year</Label><Input type="number" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} /></div>
               <div className="space-y-2"><Label>Due Date *</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} required /></div>
               <div className="space-y-2"><Label>Remarks</Label><Input value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} /></div>
-              <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Generating..." : "Generate Voucher"}</Button></div>
+              <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Saving..." : editingId ? "Update Voucher" : "Generate Voucher"}</Button></div>
             </form>
           </DialogContent>
         </Dialog>
@@ -235,7 +257,9 @@ const FeeVouchers = () => {
                       <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
                       <TableCell className="text-right space-x-1">
                         {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(v)}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => handlePrint(v)}><Printer className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     </TableRow>
                   );

@@ -539,6 +539,39 @@ export type Database = {
           },
         ]
       }
+      timetable_entries: {
+        Row: {
+          class_name: string
+          created_at: string
+          day_of_week: string
+          id: string
+          section: string
+          subject: string
+          teacher_name: string | null
+          time_slot: string
+        }
+        Insert: {
+          class_name: string
+          created_at?: string
+          day_of_week: string
+          id?: string
+          section?: string
+          subject?: string
+          teacher_name?: string | null
+          time_slot: string
+        }
+        Update: {
+          class_name?: string
+          created_at?: string
+          day_of_week?: string
+          id?: string
+          section?: string
+          subject?: string
+          teacher_name?: string | null
+          time_slot?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

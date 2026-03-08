@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { MessageSquare, Check, X, Clock } from "lucide-react";
+import { MessageSquare, Check, X, Clock, Trash2 } from "lucide-react";
 
 type Query = {
   id: string;
@@ -46,6 +46,13 @@ const AdmissionQueries = () => {
     const { error } = await supabase.from("admission_queries").update({ status }).eq("id", id);
     if (error) toast.error("Failed to update status");
     else { toast.success(`Marked as ${status}`); fetchQueries(); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this query?")) return;
+    const { error } = await supabase.from("admission_queries").delete().eq("id", id);
+    if (error) toast.error("Failed to delete");
+    else { toast.success("Query deleted"); fetchQueries(); }
   };
 
   return (
@@ -106,6 +113,9 @@ const AdmissionQueries = () => {
                               <Check className="h-3 w-3" />
                             </Button>
                           )}
+                          <Button size="sm" variant="outline" onClick={() => handleDelete(q.id)} title="Delete">
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
