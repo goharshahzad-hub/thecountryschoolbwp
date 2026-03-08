@@ -56,6 +56,7 @@ interface TestResult {
   obtained_marks: number;
   total_marks: number;
   grade: string | null;
+  remarks: string | null;
   exam_date: string | null;
   student_id: string;
   subject_id: string;
@@ -561,14 +562,15 @@ const ParentPortal = () => {
                           </TableHeader>
                           <TableBody>
                             {results.map(r => {
+                              const isAbsent = r.remarks?.toLowerCase().includes("absent");
                               const pct = r.total_marks > 0 ? Math.round((r.obtained_marks / r.total_marks) * 100) : 0;
                               return (
                                 <TableRow key={r.id}>
                                   <TableCell className="font-medium">{r.subjects?.name || "-"}</TableCell>
-                                  <TableCell>{r.obtained_marks}</TableCell>
+                                  <TableCell className={isAbsent ? "text-destructive font-bold" : ""}>{isAbsent ? "Absent" : r.obtained_marks}</TableCell>
                                   <TableCell>{r.total_marks}</TableCell>
-                                  <TableCell><Badge variant="outline" className={getPctClass(pct)}>{pct}%</Badge></TableCell>
-                                  <TableCell>{r.grade || getGrade(pct)}</TableCell>
+                                  <TableCell>{isAbsent ? <Badge variant="outline" className="border-destructive/30 text-destructive">Absent</Badge> : <Badge variant="outline" className={getPctClass(pct)}>{pct}%</Badge>}</TableCell>
+                                  <TableCell>{isAbsent ? "Absent" : (r.grade || getGrade(pct))}</TableCell>
                                 </TableRow>
                               );
                             })}

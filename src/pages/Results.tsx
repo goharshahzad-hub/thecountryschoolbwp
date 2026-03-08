@@ -771,13 +771,15 @@ const Results = () => {
                     </TableRow></TableHeader>
                     <TableBody>
                       {studentResults.map(r => {
-                        const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
+                        const isAbsent = r.remarks?.toLowerCase().includes("absent");
+                        const pct = isAbsent ? "—" : ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1) + "%";
                         return (
                           <TableRow key={r.id}>
                             <TableCell className="font-medium">{getSubject(r.subject_id)?.name}</TableCell>
-                            <TableCell>{r.total_marks}</TableCell><TableCell>{r.obtained_marks}</TableCell>
-                            <TableCell>{pct}%</TableCell>
-                            <TableCell><Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge></TableCell>
+                            <TableCell>{r.total_marks}</TableCell>
+                            <TableCell className={isAbsent ? "text-destructive font-bold" : ""}>{isAbsent ? "Absent" : r.obtained_marks}</TableCell>
+                            <TableCell>{pct}</TableCell>
+                            <TableCell><Badge variant="outline" className={isAbsent ? "border-destructive/30 text-destructive" : gradeColor(r.grade || "")}>{isAbsent ? "Absent" : r.grade}</Badge></TableCell>
                             <TableCell className="text-xs text-muted-foreground">{r.remarks}</TableCell>
                           </TableRow>
                         );
@@ -1014,7 +1016,7 @@ const Results = () => {
                 </div>
                 <table><thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
                   <tbody>
-                    {studentResults.map(r => (<tr key={r.id}><td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td><td>{r.total_marks}</td><td>{r.obtained_marks}</td><td>{((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1)}%</td><td><strong>{r.grade}</strong></td><td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td></tr>))}
+                    {studentResults.map(r => { const isAbsent = r.remarks?.toLowerCase().includes("absent"); return (<tr key={r.id}><td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td><td>{r.total_marks}</td><td style={isAbsent ? { color: "red", fontWeight: "bold" } : {}}>{isAbsent ? "Absent" : r.obtained_marks}</td><td>{isAbsent ? "—" : ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1) + "%"}</td><td><strong>{isAbsent ? "Absent" : r.grade}</strong></td><td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td></tr>); })}
                     <tr className="total-row"><td style={{ textAlign: "left" }}><strong>Grand Total</strong></td><td><strong>{totalMarks}</strong></td><td><strong>{obtainedMarks}</strong></td><td><strong>{overallPct.toFixed(1)}%</strong></td><td><strong>{gradeFromPercent(overallPct)}</strong></td><td></td></tr>
                   </tbody>
                 </table>
@@ -1087,7 +1089,7 @@ const Results = () => {
                     <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div><div>Term: <span>{classReportTerm}</span></div></div>
                     <table><thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
                       <tbody>
-                        {sResults.map(r => (<tr key={r.id}><td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td><td>{r.total_marks}</td><td>{r.obtained_marks}</td><td>{((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1)}%</td><td><strong>{r.grade}</strong></td><td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td></tr>))}
+                        {sResults.map(r => { const isAbsent = r.remarks?.toLowerCase().includes("absent"); return (<tr key={r.id}><td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td><td>{r.total_marks}</td><td style={isAbsent ? { color: "red", fontWeight: "bold" } : {}}>{isAbsent ? "Absent" : r.obtained_marks}</td><td>{isAbsent ? "—" : ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1) + "%"}</td><td><strong>{isAbsent ? "Absent" : r.grade}</strong></td><td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td></tr>); })}
                         <tr className="total-row"><td style={{ textAlign: "left" }}><strong>Grand Total</strong></td><td><strong>{totalMarks}</strong></td><td><strong>{obtainedMarks}</strong></td><td><strong>{overallPct.toFixed(1)}%</strong></td><td><strong>{gradeFromPercent(overallPct)}</strong></td><td></td></tr>
                       </tbody>
                     </table>
@@ -1115,7 +1117,7 @@ const Results = () => {
                       <tbody>
                         {allSubjectIds.map(subId => {
                           let subTotal = 0, subObt = 0;
-                          return (<tr key={subId}><td style={{ textAlign: "left" }}>{getSubject(subId)?.name}</td>{terms.map((t, ti) => { const r = allTermResults[ti].find(r => r.subject_id === subId); if (r) { subTotal += Number(r.total_marks); subObt += Number(r.obtained_marks); } return (<><td key={`${t}-${subId}-t`} style={{ borderLeft: "2px solid #333" }}>{r ? r.total_marks : "—"}</td><td key={`${t}-${subId}-o`}>{r ? r.obtained_marks : "—"}</td><td key={`${t}-${subId}-g`}><strong>{r ? r.grade : "—"}</strong></td></>); })}<td style={{ borderLeft: "2px solid #333", background: "#f5f5f5" }}><strong>{subTotal || "—"}</strong></td><td style={{ background: "#f5f5f5" }}><strong>{subObt || "—"}</strong></td><td style={{ background: "#f5f5f5" }}><strong>{subTotal > 0 ? gradeFromPercent((subObt / subTotal) * 100) : "—"}</strong></td></tr>);
+                          return (<tr key={subId}><td style={{ textAlign: "left" }}>{getSubject(subId)?.name}</td>{terms.map((t, ti) => { const r = allTermResults[ti].find(r => r.subject_id === subId); const isAbsent = r?.remarks?.toLowerCase().includes("absent"); if (r && !isAbsent) { subTotal += Number(r.total_marks); subObt += Number(r.obtained_marks); } else if (r && isAbsent) { subTotal += Number(r.total_marks); } return (<><td key={`${t}-${subId}-t`} style={{ borderLeft: "2px solid #333" }}>{r ? r.total_marks : "—"}</td><td key={`${t}-${subId}-o`} style={isAbsent ? { color: "red", fontWeight: "bold" } : {}}>{isAbsent ? "Absent" : r ? r.obtained_marks : "—"}</td><td key={`${t}-${subId}-g`}><strong>{isAbsent ? "Abs" : r ? r.grade : "—"}</strong></td></>); })}<td style={{ borderLeft: "2px solid #333", background: "#f5f5f5" }}><strong>{subTotal || "—"}</strong></td><td style={{ background: "#f5f5f5" }}><strong>{subObt || "—"}</strong></td><td style={{ background: "#f5f5f5" }}><strong>{subTotal > 0 ? gradeFromPercent((subObt / subTotal) * 100) : "—"}</strong></td></tr>);
                         })}
                         {(() => {
                           const termTotals = terms.map((t, ti) => { const tr = allTermResults[ti]; const tt = tr.reduce((s, r) => s + Number(r.total_marks), 0); const to = tr.reduce((s, r) => s + Number(r.obtained_marks), 0); grandTotal += tt; grandObt += to; return { tt, to }; });
