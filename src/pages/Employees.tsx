@@ -318,6 +318,47 @@ const Employees = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      {/* Teacher ID Card Dialog */}
+      <Dialog open={!!tCardItem} onOpenChange={o => { if (!o) setTCardItem(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">Teacher ID Card</DialogTitle></DialogHeader>
+          {tCardItem && (
+            <IDCard data={{
+              photo_url: (tCardItem as any).photo_url,
+              id_number: tCardItem.teacher_id,
+              name: tCardItem.name,
+              subtitle: tCardItem.subject || "Teacher",
+              extra_lines: [
+                `<strong>ID:</strong> ${tCardItem.teacher_id}`,
+                tCardItem.classes ? `<strong>Classes:</strong> ${tCardItem.classes}` : "",
+                tCardItem.phone ? `<strong>Phone:</strong> ${tCardItem.phone}` : "",
+              ].filter(Boolean),
+              type: "teacher",
+            }} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Staff ID Card Dialog */}
+      <Dialog open={!!sCardItem} onOpenChange={o => { if (!o) setSCardItem(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">Staff ID Card</DialogTitle></DialogHeader>
+          {sCardItem && (
+            <IDCard data={{
+              photo_url: (sCardItem as any).photo_url,
+              id_number: sCardItem.staff_id,
+              name: sCardItem.name,
+              subtitle: sCardItem.designation || "Staff",
+              extra_lines: [
+                `<strong>ID:</strong> ${sCardItem.staff_id}`,
+                sCardItem.department ? `<strong>Dept:</strong> ${sCardItem.department}` : "",
+                sCardItem.phone ? `<strong>Phone:</strong> ${sCardItem.phone}` : "",
+              ].filter(Boolean),
+              type: "staff",
+            }} />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
