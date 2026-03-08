@@ -110,16 +110,19 @@ const Attendance = () => {
   };
 
   const absentStudents = filteredStudents.filter(s => attendance[s.id] === "absent");
+  const lateStudents = filteredStudents.filter(s => attendance[s.id] === "late");
 
-  const sendWhatsAppAlerts = () => {
+  const sendWhatsAppAlerts = (type: "absent" | "late") => {
     const dateStr = new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    const targetStudents = type === "absent" ? absentStudents : lateStudents;
+    const statusText = type === "absent" ? "absent" : "late";
     let opened = 0;
-    absentStudents.forEach((s, i) => {
+    targetStudents.forEach((s, i) => {
       const contact = s.whatsapp || s.phone;
       if (!contact) return;
       const phone = formatPhone(contact);
       const message = encodeURIComponent(
-        `Dear Parent,\n\nThis is to inform you that your child, *${s.name}* (${s.student_id}), was marked *absent* on ${dateStr}, at *${settings.school_name}*, *${settings.campus}*, *${settings.city}*.\n\nPlease contact the school for any queries. Phone: ${settings.phone}\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.`
+        `Dear Parent,\n\nThis is to inform you that your child, *${s.name}* (${s.student_id}), was marked *${statusText}* on ${dateStr}, at *${settings.school_name}*, *${settings.campus}*, *${settings.city}*.\n\nPlease contact the school for any queries. Phone: ${settings.phone}\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.`
       );
       setTimeout(() => {
         window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
@@ -127,7 +130,7 @@ const Attendance = () => {
       opened++;
     });
     if (opened === 0) {
-      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found for absent students.", variant: "destructive" });
+      toast({ title: "No contacts", description: `No WhatsApp/phone numbers found for ${statusText} students.`, variant: "destructive" });
     } else {
       toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
     }
