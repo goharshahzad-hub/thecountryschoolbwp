@@ -15,6 +15,14 @@ const iconMap: Record<string, LucideIcon> = {
 const Index = () => {
   const { settings } = useSchoolSettings();
   const { content } = useWebsiteContent();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
