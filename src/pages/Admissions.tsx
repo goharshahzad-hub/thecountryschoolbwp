@@ -42,7 +42,7 @@ interface Admission {
 const emptyForm = {
   application_no: "", student_name: "", father_name: "", mother_name: "", date_of_birth: "",
   gender: "Male", religion: "Islam", nationality: "Pakistani", cnic_bform: "", father_cnic: "",
-  father_occupation: "", father_phone: "", mother_phone: "", address: "", previous_school: "",
+  father_occupation: "", father_phone: "", mother_phone: "", whatsapp: "", address: "", previous_school: "",
   previous_class: "", applying_for_class: "", applying_for_section: "A", status: "Pending", remarks: ""
 };
 
@@ -99,6 +99,7 @@ const Admissions = () => {
       father_occupation: form.father_occupation.trim(),
       father_phone: form.father_phone.trim(),
       mother_phone: form.mother_phone.trim(),
+      whatsapp: form.whatsapp.trim(),
       address: form.address.trim(),
       previous_school: form.previous_school.trim(),
       previous_class: form.previous_class.trim(),
@@ -124,7 +125,7 @@ const Admissions = () => {
       religion: a.religion || "Islam", nationality: a.nationality || "Pakistani",
       cnic_bform: a.cnic_bform || "", father_cnic: a.father_cnic || "",
       father_occupation: a.father_occupation || "", father_phone: a.father_phone || "",
-      mother_phone: a.mother_phone || "", address: a.address || "",
+      mother_phone: a.mother_phone || "", whatsapp: (a as any).whatsapp || "", address: a.address || "",
       previous_school: a.previous_school || "", previous_class: a.previous_class || "",
       applying_for_class: a.applying_for_class, applying_for_section: a.applying_for_section || "A",
       status: a.status, remarks: a.remarks || ""
@@ -186,6 +187,7 @@ const Admissions = () => {
                   <div className="space-y-2"><Label>Father's Phone</Label><Input placeholder="0300-XXXXXXX" value={form.father_phone} onChange={e => setForm({ ...form, father_phone: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Name</Label><Input value={form.mother_name} onChange={e => setForm({ ...form, mother_name: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Phone</Label><Input value={form.mother_phone} onChange={e => setForm({ ...form, mother_phone: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>WhatsApp Number</Label><Input placeholder="0300-XXXXXXX" value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value })} /></div>
                   <div className="col-span-2 space-y-2"><Label>Address</Label><Textarea placeholder="Complete address" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
                 </div>
               </div>

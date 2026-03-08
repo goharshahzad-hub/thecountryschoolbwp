@@ -32,7 +32,7 @@ interface ParentProfile {
   phone: string | null;
 }
 
-const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending", monthly_fee: "" };
+const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", status: "Active", fee_status: "Pending", monthly_fee: "" };
 
 const generateStudentId = (count: number) => {
   const year = new Date().getFullYear();
@@ -87,6 +87,7 @@ const Students = () => {
       const { error } = await supabase.from("students").update({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
+        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
       } as any).eq("id", editingId);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -95,6 +96,7 @@ const Students = () => {
       const { error } = await supabase.from("students").insert({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
+        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
       } as any);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -108,7 +110,7 @@ const Students = () => {
   };
 
   const handleEdit = (s: Student) => {
-    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || "") });
+    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || "") });
     setEditingId(s.id);
     setDialogOpen(true);
   };
@@ -190,8 +192,16 @@ const Students = () => {
                   <Input placeholder="Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Phone</Label>
+                  <Label>Father's Phone</Label>
                   <Input placeholder="0322-XXXXXXX" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mother's Phone</Label>
+                  <Input placeholder="0300-XXXXXXX" value={form.mother_phone} onChange={e => setForm({ ...form, mother_phone: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>WhatsApp Number</Label>
+                  <Input placeholder="0300-XXXXXXX" value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Class *</Label>

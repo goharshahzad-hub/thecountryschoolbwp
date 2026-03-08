@@ -58,9 +58,11 @@ export type Database = {
           father_name: string
           id: string
           message: string | null
+          mother_phone: string | null
           phone: string
           status: string
           student_name: string
+          whatsapp: string | null
         }
         Insert: {
           applying_for_class: string
@@ -69,9 +71,11 @@ export type Database = {
           father_name: string
           id?: string
           message?: string | null
+          mother_phone?: string | null
           phone: string
           status?: string
           student_name: string
+          whatsapp?: string | null
         }
         Update: {
           applying_for_class?: string
@@ -80,9 +84,11 @@ export type Database = {
           father_name?: string
           id?: string
           message?: string | null
+          mother_phone?: string | null
           phone?: string
           status?: string
           student_name?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -112,6 +118,7 @@ export type Database = {
           status: string
           student_name: string
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
@@ -138,6 +145,7 @@ export type Database = {
           status?: string
           student_name: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
@@ -164,6 +172,7 @@ export type Database = {
           status?: string
           student_name?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -373,6 +382,7 @@ export type Database = {
           fee_status: string
           id: string
           monthly_fee: number | null
+          mother_phone: string | null
           name: string
           parent_user_id: string | null
           phone: string | null
@@ -380,6 +390,7 @@ export type Database = {
           status: string
           student_id: string
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           class: string
@@ -388,6 +399,7 @@ export type Database = {
           fee_status?: string
           id?: string
           monthly_fee?: number | null
+          mother_phone?: string | null
           name: string
           parent_user_id?: string | null
           phone?: string | null
@@ -395,6 +407,7 @@ export type Database = {
           status?: string
           student_id: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           class?: string
@@ -403,6 +416,7 @@ export type Database = {
           fee_status?: string
           id?: string
           monthly_fee?: number | null
+          mother_phone?: string | null
           name?: string
           parent_user_id?: string | null
           phone?: string | null
@@ -410,6 +424,7 @@ export type Database = {
           status?: string
           student_id?: string
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
