@@ -36,6 +36,7 @@ const SettingsPage = () => {
       setAboutSubheading(content.about.subheading);
       setStats([...content.stats]);
       setFeatures([...content.features]);
+      setGallery([...content.gallery]);
     }
   }, [contentLoading, content]);
 
