@@ -21,6 +21,7 @@ export interface SocialLinks {
   facebook: { url: string; handle: string };
   instagram: { url: string; handle: string };
   youtube: { url: string; handle: string };
+  tiktok: { url: string; handle: string };
 }
 
 export interface WebsiteContent {
