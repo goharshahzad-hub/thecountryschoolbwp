@@ -142,7 +142,6 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
             <TableRow className="bg-muted/50 font-semibold">
               <TableCell>Total</TableCell>
               <TableCell className="text-center">{students.length}</TableCell>
-              <TableCell className="text-right">₨ {metrics.reduce((s, m) => s + m.expectedMonthly, 0).toLocaleString("en-PK")}</TableCell>
               {!compact && (
                 <TableCell className="text-right">₨ {totals.totalAmount.toLocaleString("en-PK")}</TableCell>
               )}
