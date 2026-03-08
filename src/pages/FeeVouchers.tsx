@@ -159,10 +159,12 @@ const FeeVouchers = () => {
 
   const handleStudentSelect = (studentId: string) => {
     const student = students.find(s => s.id === studentId);
+    const arrears = calcStudentArrears(studentId, form.month, parseInt(form.year));
     setForm(f => ({
       ...f,
       student_id: studentId,
       tuition_fee: student?.monthly_fee ? String(student.monthly_fee) : f.tuition_fee,
+      arrears: String(arrears),
     }));
   };
 
