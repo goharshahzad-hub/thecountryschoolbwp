@@ -15,6 +15,7 @@ const navItems = [
   { to: "/dashboard/attendance", icon: ClipboardCheck, label: "Attendance" },
   { to: "/dashboard/fees", icon: DollarSign, label: "Fees" },
   { to: "/dashboard/admissions", icon: UserPlus, label: "Admissions" },
+  { to: "/dashboard/admission-queries", icon: FileText, label: "Admission Queries" },
   { to: "/dashboard/fee-vouchers", icon: Receipt, label: "Fee Vouchers" },
   { to: "/dashboard/results", icon: BarChart3, label: "Results" },
   { to: "/dashboard/timetable", icon: Calendar, label: "Timetable" },

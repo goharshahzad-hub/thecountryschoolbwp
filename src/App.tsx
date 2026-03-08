@@ -20,6 +20,8 @@ import AdminLogin from "./pages/AdminLogin";
 import ParentLogin from "./pages/ParentLogin";
 import ParentPortal from "./pages/ParentPortal";
 import ResetPassword from "./pages/ResetPassword";
+import AdmissionQuery from "./pages/AdmissionQuery";
+import AdmissionQueries from "./pages/AdmissionQueries";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/admission-query" element={<AdmissionQuery />} />
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/students" element={<Students />} />
@@ -41,6 +44,7 @@ const App = () => (
             <Route path="/dashboard/attendance" element={<Attendance />} />
             <Route path="/dashboard/fees" element={<Fees />} />
             <Route path="/dashboard/admissions" element={<Admissions />} />
+            <Route path="/dashboard/admission-queries" element={<AdmissionQueries />} />
             <Route path="/dashboard/fee-vouchers" element={<FeeVouchers />} />
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/timetable" element={<Timetable />} />
