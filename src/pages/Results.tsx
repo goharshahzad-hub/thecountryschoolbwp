@@ -287,6 +287,116 @@ const Results = () => {
         </CardContent>
       </Card>
 
+      {/* Annual Combined Report Card */}
+      <Card className="mb-6 shadow-card">
+        <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Annual Combined Result Card</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-2 flex-1 min-w-[200px]">
+              <Label>Select Student</Label>
+              <Select value={annualStudent} onValueChange={setAnnualStudent}>
+                <SelectTrigger><SelectValue placeholder="Choose student" /></SelectTrigger>
+                <SelectContent>{students.map(s => <SelectItem key={s.id} value={s.id}>{s.student_id} - {s.name} (Class {s.class})</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handlePrintAnnual} variant="outline" disabled={!annualStudent}>
+              <Printer className="mr-2 h-4 w-4" />Print Annual Report
+            </Button>
+          </div>
+
+          {annualStudent && (() => {
+            const annualStudentData = getStudent(annualStudent);
+            const terms = ["Term 1", "Term 2", "Term 3"];
+            const allTermResults = terms.map(t => results.filter(r => r.student_id === annualStudent && r.term === t));
+            const allSubjectIds = [...new Set(results.filter(r => r.student_id === annualStudent).map(r => r.subject_id))];
+            if (allSubjectIds.length === 0) return <p className="mt-4 text-sm text-muted-foreground">No results found for this student.</p>;
+
+            return (
+              <div className="mt-4 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead rowSpan={2}>Subject</TableHead>
+                      {terms.map(t => <TableHead key={t} colSpan={3} className="text-center border-l border-border">{t}</TableHead>)}
+                      <TableHead colSpan={3} className="text-center border-l border-border bg-muted">Annual</TableHead>
+                    </TableRow>
+                    <TableRow>
+                      {terms.map(t => (
+                        <>{/* @ts-ignore */}
+                          <TableHead key={`${t}-t`} className="text-center border-l border-border text-xs">Total</TableHead>
+                          <TableHead key={`${t}-o`} className="text-center text-xs">Obt</TableHead>
+                          <TableHead key={`${t}-g`} className="text-center text-xs">Grade</TableHead>
+                        </>
+                      ))}
+                      <TableHead className="text-center border-l border-border text-xs bg-muted">Total</TableHead>
+                      <TableHead className="text-center text-xs bg-muted">Obt</TableHead>
+                      <TableHead className="text-center text-xs bg-muted">Grade</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allSubjectIds.map(subId => {
+                      let annualTotal = 0, annualObt = 0;
+                      return (
+                        <TableRow key={subId}>
+                          <TableCell className="font-medium">{getSubject(subId)?.name}</TableCell>
+                          {terms.map(t => {
+                            const r = allTermResults[terms.indexOf(t)].find(r => r.subject_id === subId);
+                            if (r) { annualTotal += Number(r.total_marks); annualObt += Number(r.obtained_marks); }
+                            return (
+                              <>{/* @ts-ignore */}
+                                <TableCell key={`${t}-${subId}-t`} className="text-center border-l border-border">{r ? r.total_marks : "—"}</TableCell>
+                                <TableCell key={`${t}-${subId}-o`} className="text-center">{r ? r.obtained_marks : "—"}</TableCell>
+                                <TableCell key={`${t}-${subId}-g`} className="text-center">
+                                  {r ? <Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge> : "—"}
+                                </TableCell>
+                              </>
+                            );
+                          })}
+                          <TableCell className="text-center border-l border-border bg-muted/50 font-medium">{annualTotal || "—"}</TableCell>
+                          <TableCell className="text-center bg-muted/50 font-medium">{annualObt || "—"}</TableCell>
+                          <TableCell className="text-center bg-muted/50">
+                            {annualTotal > 0 ? <Badge variant="outline" className={gradeColor(gradeFromPercent((annualObt / annualTotal) * 100))}>{gradeFromPercent((annualObt / annualTotal) * 100)}</Badge> : "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {(() => {
+                      let grandTotal = 0, grandObt = 0;
+                      const termTotals = terms.map(t => {
+                        const tr = allTermResults[terms.indexOf(t)];
+                        const tt = tr.reduce((s, r) => s + Number(r.total_marks), 0);
+                        const to = tr.reduce((s, r) => s + Number(r.obtained_marks), 0);
+                        grandTotal += tt; grandObt += to;
+                        return { tt, to };
+                      });
+                      return (
+                        <TableRow className="font-bold bg-muted/50">
+                          <TableCell>Grand Total</TableCell>
+                          {termTotals.map((t, i) => (
+                            <>{/* @ts-ignore */}
+                              <TableCell key={`gt-${i}-t`} className="text-center border-l border-border">{t.tt || "—"}</TableCell>
+                              <TableCell key={`gt-${i}-o`} className="text-center">{t.to || "—"}</TableCell>
+                              <TableCell key={`gt-${i}-g`} className="text-center">
+                                {t.tt > 0 ? <Badge variant="outline" className={gradeColor(gradeFromPercent((t.to / t.tt) * 100))}>{gradeFromPercent((t.to / t.tt) * 100)}</Badge> : "—"}
+                              </TableCell>
+                            </>
+                          ))}
+                          <TableCell className="text-center border-l border-border">{grandTotal}</TableCell>
+                          <TableCell className="text-center">{grandObt}</TableCell>
+                          <TableCell className="text-center">
+                            {grandTotal > 0 ? <Badge variant="outline" className={gradeColor(gradeFromPercent((grandObt / grandTotal) * 100))}>{gradeFromPercent((grandObt / grandTotal) * 100)}</Badge> : "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })()}
+                  </TableBody>
+                </Table>
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
       {/* All Results Table */}
       <Card className="shadow-card">
         <CardHeader className="pb-3">
