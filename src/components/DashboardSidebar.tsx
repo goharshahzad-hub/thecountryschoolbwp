@@ -30,16 +30,18 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [pendingQueries, setPendingQueries] = useState(0);
 
   useEffect(() => {
-    const fetchPending = async () => {
-      const { count } = await supabase
-        .from("admin_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
-      setPendingRequests(count || 0);
+    const fetchCounts = async () => {
+      const [reqRes, queryRes] = await Promise.all([
+        supabase.from("admin_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("admission_queries").select("*", { count: "exact", head: true }).eq("status", "New"),
+      ]);
+      setPendingRequests(reqRes.count || 0);
+      setPendingQueries(queryRes.count || 0);
     };
-    fetchPending();
+    fetchCounts();
   }, []);
 
   const handleLogout = async () => {
