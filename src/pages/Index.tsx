@@ -70,9 +70,11 @@ const Index = () => {
             {settings.motto} — {content.hero.tagline}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/dashboard">
-              <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Access Dashboard</Button>
-            </Link>
+            {isAdmin && (
+              <Link to="/dashboard">
+                <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Access Dashboard</Button>
+              </Link>
+            )}
             <a href="#contact">
               <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">Contact Us</Button>
             </a>
