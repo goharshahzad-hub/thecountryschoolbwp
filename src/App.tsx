@@ -11,8 +11,12 @@ import Teachers from "./pages/Teachers";
 import Classes from "./pages/Classes";
 import Attendance from "./pages/Attendance";
 import Fees from "./pages/Fees";
+import Admissions from "./pages/Admissions";
+import FeeVouchers from "./pages/FeeVouchers";
+import Results from "./pages/Results";
 import Timetable from "./pages/Timetable";
 import SettingsPage from "./pages/Settings";
+import AdminLogin from "./pages/AdminLogin";
 import ParentLogin from "./pages/ParentLogin";
 import ParentPortal from "./pages/ParentPortal";
 import ResetPassword from "./pages/ResetPassword";
@@ -29,12 +33,16 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/students" element={<Students />} />
             <Route path="/dashboard/teachers" element={<Teachers />} />
             <Route path="/dashboard/classes" element={<Classes />} />
             <Route path="/dashboard/attendance" element={<Attendance />} />
             <Route path="/dashboard/fees" element={<Fees />} />
+            <Route path="/dashboard/admissions" element={<Admissions />} />
+            <Route path="/dashboard/fee-vouchers" element={<FeeVouchers />} />
+            <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/timetable" element={<Timetable />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
             <Route path="/parent-login" element={<ParentLogin />} />
