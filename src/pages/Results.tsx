@@ -488,6 +488,7 @@ const Results = () => {
     else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass}. Send each one manually.` });
   };
 
+  const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
   const filtered = results.filter(r => {
