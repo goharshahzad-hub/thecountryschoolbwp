@@ -84,7 +84,7 @@ const AdminLogin = () => {
       return;
     }
 
-    // Submit admin access request
+    // Submit admin access request & notify school via email
     if (data.user) {
       await supabase.from("admin_requests").insert({
         user_id: data.user.id,
@@ -92,6 +92,11 @@ const AdminLogin = () => {
         email: email.trim(),
         phone: phone.trim(),
       });
+
+      // Send email notification to school (fire-and-forget)
+      supabase.functions.invoke("notify-admin-request", {
+        body: { full_name: fullName.trim(), email: email.trim(), phone: phone.trim() },
+      }).catch(() => {}); // don't block signup if email fails
     }
 
     setLoading(false);
