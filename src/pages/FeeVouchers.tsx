@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Printer, Receipt, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Printer, Receipt, Pencil, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -46,6 +46,7 @@ const FeeVouchers = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [printVoucher, setPrintVoucher] = useState<FeeVoucher | null>(null);
@@ -54,6 +55,11 @@ const FeeVouchers = () => {
   const [form, setForm] = useState({
     student_id: "", amount: "", fee_type: "Monthly", month: months[new Date().getMonth()],
     year: new Date().getFullYear().toString(), due_date: "", status: "Pending", remarks: ""
+  });
+
+  const [bulkForm, setBulkForm] = useState({
+    class_name: "", amount: "", fee_type: "Monthly", month: months[new Date().getMonth()],
+    year: new Date().getFullYear().toString(), due_date: "", remarks: ""
   });
 
   const fetchData = async () => {
@@ -100,6 +106,43 @@ const FeeVouchers = () => {
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: editingId ? "Updated" : "Voucher Generated" }); setDialogOpen(false); setEditingId(null); fetchData(); }
+  };
+
+  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+
+  const handleBulkGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkForm.class_name || !bulkForm.amount || !bulkForm.due_date) {
+      toast({ title: "Error", description: "Please fill all required fields", variant: "destructive" });
+      return;
+    }
+    const classStudents = students.filter(s => s.class === bulkForm.class_name);
+    if (classStudents.length === 0) {
+      toast({ title: "No Students", description: `No students found in Class ${bulkForm.class_name}`, variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const baseIndex = vouchers.length + 1;
+    const year = new Date().getFullYear();
+    const rows = classStudents.map((s, i) => ({
+      voucher_no: `VCH-${year}-${(baseIndex + i).toString().padStart(5, "0")}`,
+      student_id: s.id,
+      amount: parseFloat(bulkForm.amount),
+      fee_type: bulkForm.fee_type,
+      month: bulkForm.month,
+      year: parseInt(bulkForm.year),
+      due_date: bulkForm.due_date,
+      status: "Pending" as string,
+      remarks: bulkForm.remarks.trim(),
+    }));
+    const { error } = await supabase.from("fee_vouchers").insert(rows);
+    setSaving(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "Bulk Vouchers Generated", description: `${rows.length} vouchers created for Class ${bulkForm.class_name}` });
+      setBulkDialogOpen(false);
+      fetchData();
+    }
   };
 
   const markPaid = async (id: string) => {
@@ -164,52 +207,100 @@ const FeeVouchers = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Vouchers</h1>
           <p className="mt-1 text-sm text-muted-foreground">Generate and manage fee vouchers in PKR</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingId(null); }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Generate Voucher</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Voucher" : "Generate Fee Voucher"}</DialogTitle></DialogHeader>
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 space-y-2">
-                <Label>Student *</Label>
-                <Select value={form.student_id} onValueChange={v => setForm({ ...form, student_id: v })}>
-                  <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
-                  <SelectContent>
-                    {students.map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.student_id} - {s.name} (Class {s.class})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>Amount (PKR) *</Label><Input type="number" placeholder="5000" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required /></div>
-              <div className="space-y-2">
-                <Label>Fee Type</Label>
-                <Select value={form.fee_type} onValueChange={v => setForm({ ...form, fee_type: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
-                    <SelectItem value="Admission">Admission</SelectItem>
-                    <SelectItem value="Exam">Exam Fee</SelectItem>
-                    <SelectItem value="Transport">Transport</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Month</Label>
-                <Select value={form.month} onValueChange={v => setForm({ ...form, month: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>Year</Label><Input type="number" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Due Date *</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} required /></div>
-              <div className="space-y-2"><Label>Remarks</Label><Input value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} /></div>
-              <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Saving..." : editingId ? "Update Voucher" : "Generate Voucher"}</Button></div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline"><Users className="mr-2 h-4 w-4" />Class-wise Generate</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle className="font-display">Generate Class-wise Vouchers</DialogTitle></DialogHeader>
+              <form onSubmit={handleBulkGenerate} className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label>Class *</Label>
+                  <Select value={bulkForm.class_name} onValueChange={v => setBulkForm({ ...bulkForm, class_name: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
+                    <SelectContent>
+                      {uniqueClasses.map(c => (
+                        <SelectItem key={c} value={c}>Class {c} ({students.filter(s => s.class === c).length} students)</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Amount per Student (PKR) *</Label><Input type="number" placeholder="5000" value={bulkForm.amount} onChange={e => setBulkForm({ ...bulkForm, amount: e.target.value })} required /></div>
+                <div className="space-y-2">
+                  <Label>Fee Type</Label>
+                  <Select value={bulkForm.fee_type} onValueChange={v => setBulkForm({ ...bulkForm, fee_type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                      <SelectItem value="Admission">Admission</SelectItem>
+                      <SelectItem value="Exam">Exam Fee</SelectItem>
+                      <SelectItem value="Transport">Transport</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Month</Label>
+                  <Select value={bulkForm.month} onValueChange={v => setBulkForm({ ...bulkForm, month: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Year</Label><Input type="number" value={bulkForm.year} onChange={e => setBulkForm({ ...bulkForm, year: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Due Date *</Label><Input type="date" value={bulkForm.due_date} onChange={e => setBulkForm({ ...bulkForm, due_date: e.target.value })} required /></div>
+                <div className="space-y-2"><Label>Remarks</Label><Input value={bulkForm.remarks} onChange={e => setBulkForm({ ...bulkForm, remarks: e.target.value })} /></div>
+                <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Generating..." : `Generate for All Students in Class`}</Button></div>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingId(null); }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Single Voucher</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Voucher" : "Generate Fee Voucher"}</DialogTitle></DialogHeader>
+              <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label>Student *</Label>
+                  <Select value={form.student_id} onValueChange={v => setForm({ ...form, student_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                    <SelectContent>
+                      {students.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.student_id} - {s.name} (Class {s.class})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Amount (PKR) *</Label><Input type="number" placeholder="5000" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required /></div>
+                <div className="space-y-2">
+                  <Label>Fee Type</Label>
+                  <Select value={form.fee_type} onValueChange={v => setForm({ ...form, fee_type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                      <SelectItem value="Admission">Admission</SelectItem>
+                      <SelectItem value="Exam">Exam Fee</SelectItem>
+                      <SelectItem value="Transport">Transport</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Month</Label>
+                  <Select value={form.month} onValueChange={v => setForm({ ...form, month: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2"><Label>Year</Label><Input type="number" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Due Date *</Label><Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} required /></div>
+                <div className="space-y-2"><Label>Remarks</Label><Input value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} /></div>
+                <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Saving..." : editingId ? "Update Voucher" : "Generate Voucher"}</Button></div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Summary Cards */}
