@@ -1109,6 +1109,11 @@ const Results = () => {
                 <Button onClick={handlePrintClassReport} variant="outline" disabled={!classReportClass}>
                   <Printer className="mr-2 h-4 w-4" />Print All Report Cards
                 </Button>
+                {classReportClass && classReportType === "annual" && (
+                  <Button onClick={sendBulkAnnualAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Annual ({students.filter(s => s.class === classReportClass).length})
+                  </Button>
+                )}
               </div>
               {classReportClass && (
                 <p className="mt-3 text-sm text-muted-foreground">
