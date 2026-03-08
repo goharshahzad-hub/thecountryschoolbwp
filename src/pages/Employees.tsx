@@ -130,7 +130,7 @@ const Employees = () => {
       staff_id: sForm.staff_id.trim(), name: sForm.name.trim(), designation: sForm.designation.trim(),
       department: sForm.department.trim(), phone: sForm.phone.trim(), cnic: sForm.cnic.trim(),
       salary: sForm.salary ? parseFloat(sForm.salary) : 0, qualification: sForm.qualification.trim(),
-      address: sForm.address.trim(), status: sForm.status, joining_date: sForm.joining_date || null,
+      address: sForm.address.trim(), status: sForm.status, joining_date: sForm.joining_date || null, photo_url: sForm.photo_url,
     };
     const { error } = sEditId
       ? await supabase.from("non_teaching_staff" as any).update(payload as any).eq("id", sEditId)
