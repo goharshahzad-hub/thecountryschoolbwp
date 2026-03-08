@@ -30,16 +30,18 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [pendingQueries, setPendingQueries] = useState(0);
 
   useEffect(() => {
-    const fetchPending = async () => {
-      const { count } = await supabase
-        .from("admin_requests")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
-      setPendingRequests(count || 0);
+    const fetchCounts = async () => {
+      const [reqRes, queryRes] = await Promise.all([
+        supabase.from("admin_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("admission_queries").select("*", { count: "exact", head: true }).eq("status", "New"),
+      ]);
+      setPendingRequests(reqRes.count || 0);
+      setPendingQueries(queryRes.count || 0);
     };
-    fetchPending();
+    fetchCounts();
   }, []);
 
   const handleLogout = async () => {
@@ -62,7 +64,10 @@ const DashboardSidebar = () => {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
-          const showBadge = item.to === "/dashboard/admin-requests" && pendingRequests > 0;
+          const showBadge =
+            (item.to === "/dashboard/admin-requests" && pendingRequests > 0) ||
+            (item.to === "/dashboard/admission-queries" && pendingQueries > 0);
+          const badgeCount = item.to === "/dashboard/admin-requests" ? pendingRequests : pendingQueries;
           return (
             <Link
               key={item.to}
@@ -77,7 +82,7 @@ const DashboardSidebar = () => {
               <span className="flex-1">{item.label}</span>
               {showBadge && (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                  {pendingRequests}
+                  {badgeCount}
                 </span>
               )}
             </Link>
