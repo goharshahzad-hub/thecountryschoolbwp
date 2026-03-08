@@ -27,6 +27,8 @@ import ExpensesPage from "./pages/Expenses";
 import Diary from "./pages/Diary";
 import AnnouncementsPage from "./pages/Announcements";
 import WhatsAppBroadcast from "./pages/WhatsAppBroadcast";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
