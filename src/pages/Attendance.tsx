@@ -98,7 +98,39 @@ const Attendance = () => {
     });
     await Promise.all(updates);
     setSaving(false);
+    setSaved(true);
     toast({ title: "Saved", description: "Attendance saved successfully." });
+  };
+
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9+]/g, "");
+    if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+    if (cleaned.startsWith("+")) cleaned = cleaned.slice(1);
+    return cleaned;
+  };
+
+  const absentStudents = filteredStudents.filter(s => attendance[s.id] === "absent");
+
+  const sendWhatsAppAlerts = () => {
+    const dateStr = new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    let opened = 0;
+    absentStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\nThis is to inform you that your child *${s.name}* (${s.student_id}) was marked *absent* on ${dateStr} at *${settings.school_name} — ${settings.campus}*.\n\nPlease contact the school for any queries.\nPhone: ${settings.phone}\n\nRegards,\n${settings.school_name}`
+      );
+      setTimeout(() => {
+        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+      }, i * 800);
+      opened++;
+    });
+    if (opened === 0) {
+      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found for absent students.", variant: "destructive" });
+    } else {
+      toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
+    }
   };
 
   const handleDelete = async (studentId: string) => {
