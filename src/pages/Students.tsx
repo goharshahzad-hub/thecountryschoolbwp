@@ -55,7 +55,7 @@ const Students = () => {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
+  const [cardStudent, setCardStudent] = useState<any>(null);
   const fetchData = async () => {
     const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
       supabase.from("students").select("*").order("created_at", { ascending: false }),
