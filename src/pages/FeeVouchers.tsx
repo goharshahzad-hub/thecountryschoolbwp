@@ -1088,21 +1088,36 @@ const FeeVouchers = () => {
                         <TableHead>Due Date</TableHead>
                         <TableHead className="text-right">Amount</TableHead>
                         <TableHead>Phone</TableHead>
+                        <TableHead>Remind</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {items.map((item, i) => (
-                        <TableRow key={item.voucher.id}>
-                          <TableCell>{i + 1}</TableCell>
-                          <TableCell className="font-mono text-xs">{item.student.student_id}</TableCell>
-                          <TableCell className="font-medium">{item.student.name}</TableCell>
-                          <TableCell>{item.student.father_name}</TableCell>
-                          <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
-                          <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
-                          <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
-                          <TableCell className="text-muted-foreground">{item.student.phone || "—"}</TableCell>
-                        </TableRow>
-                      ))}
+                      {items.map((item, i) => {
+                        const phone = item.student.whatsapp || item.student.phone || "";
+                        return (
+                          <TableRow key={item.voucher.id}>
+                            <TableCell>{i + 1}</TableCell>
+                            <TableCell className="font-mono text-xs">{item.student.student_id}</TableCell>
+                            <TableCell className="font-medium">{item.student.name}</TableCell>
+                            <TableCell>{item.student.father_name}</TableCell>
+                            <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
+                            <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
+                            <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
+                            <TableCell className="text-muted-foreground">{phone || "—"}</TableCell>
+                            <TableCell>
+                              {phone ? (
+                                <a href={buildWhatsAppUrl(phone, item.student.name, Number(item.voucher.amount), item.voucher.due_date, item.voucher.month)} target="_blank" rel="noopener noreferrer">
+                                  <Button size="icon" variant="ghost" className="h-8 w-8 text-[hsl(142,70%,45%)]" title="Send WhatsApp Reminder">
+                                    <MessageCircle className="h-4 w-4" />
+                                  </Button>
+                                </a>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </CardContent>
