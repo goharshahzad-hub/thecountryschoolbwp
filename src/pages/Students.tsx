@@ -373,6 +373,7 @@ const Students = () => {
                         <Badge variant="outline" className={s.fee_status === "Paid" ? "border-success/30 text-success" : s.fee_status === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive"}>{s.fee_status}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => setCardStudent(s)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => openLinkDialog(s)} title="Link parent"><Link2 className="h-4 w-4 text-primary" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
