@@ -192,8 +192,16 @@ const Students = () => {
                   <Input placeholder="Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Phone</Label>
+                  <Label>Father's Phone</Label>
                   <Input placeholder="0322-XXXXXXX" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mother's Phone</Label>
+                  <Input placeholder="0300-XXXXXXX" value={form.mother_phone} onChange={e => setForm({ ...form, mother_phone: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>WhatsApp Number</Label>
+                  <Input placeholder="0300-XXXXXXX" value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Class *</Label>
