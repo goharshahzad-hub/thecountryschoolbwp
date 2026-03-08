@@ -188,8 +188,13 @@ const Attendance = () => {
             <Save className="mr-2 h-4 w-4" />{saving ? "Saving..." : "Save Attendance"}
           </Button>
           {saved && absentStudents.length > 0 && (
-            <Button variant="outline" size="sm" onClick={sendWhatsAppAlerts} className="border-success/30 text-success hover:bg-success/10">
+            <Button variant="outline" size="sm" onClick={() => sendWhatsAppAlerts("absent")} className="border-success/30 text-success hover:bg-success/10">
               <MessageCircle className="mr-2 h-4 w-4" />Alert Absent ({absentStudents.length})
+            </Button>
+          )}
+          {saved && lateStudents.length > 0 && (
+            <Button variant="outline" size="sm" onClick={() => sendWhatsAppAlerts("late")} className="border-warning/30 text-warning hover:bg-warning/10">
+              <MessageCircle className="mr-2 h-4 w-4" />Alert Late ({lateStudents.length})
             </Button>
           )}
         </div>
