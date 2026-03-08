@@ -324,6 +324,10 @@ const FeeVouchers = () => {
         ))}
       </div>
 
+      <div className="mb-6">
+        <ClasswiseFeeMetrics vouchers={vouchers} students={students} />
+      </div>
+
       <Card className="shadow-card">
         <CardHeader className="pb-3">
           <div className="relative">
