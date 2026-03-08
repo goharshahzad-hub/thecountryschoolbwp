@@ -151,7 +151,31 @@ const ParentPortal = () => {
           const all = results.flatMap(r => r.data || []);
           setTimetable(all);
         });
+
+        // Fetch diary entries for children's classes
+        const diaryPromises = classKeys.map(key => {
+          const [cls, sec] = key.split("|||");
+          return supabase
+            .from("diary_entries")
+            .select("*")
+            .eq("class_name", cls)
+            .eq("section", sec)
+            .order("date", { ascending: false })
+            .limit(20);
+        });
+        Promise.all(diaryPromises).then(results => {
+          const all = results.flatMap(r => r.data || []);
+          setDiaryEntries(all);
+        });
       });
+
+    // Fetch announcements (public)
+    supabase
+      .from("announcements")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => { if (data) setAnnouncements(data); });
   }, [user]);
 
   const handleSignOut = async () => {
