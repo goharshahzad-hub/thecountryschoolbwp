@@ -351,7 +351,7 @@ const Students = () => {
                   <TableHead>Class</TableHead>
                   <TableHead>Father's Name</TableHead>
                   <TableHead>Gender</TableHead>
-                  <TableHead>Phone</TableHead>
+                  <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Fee</TableHead>
@@ -370,7 +370,7 @@ const Students = () => {
                       <TableCell>{s.class}-{s.section}</TableCell>
                       <TableCell>{s.father_name}</TableCell>
                       <TableCell>{(s as any).gender || "Male"}</TableCell>
-                      <TableCell className="text-muted-foreground">{s.phone}</TableCell>
+                      <TableCell className="text-muted-foreground">{(s as any).whatsapp || s.phone || "—"}</TableCell>
                       <TableCell>
                         {parent ? (
                           <div className="flex items-center gap-1">
