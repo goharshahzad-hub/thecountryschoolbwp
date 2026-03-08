@@ -18,6 +18,8 @@ interface Student {
   name: string;
   class: string;
   section: string | null;
+  whatsapp: string | null;
+  phone: string | null;
 }
 
 interface ClassOption {
