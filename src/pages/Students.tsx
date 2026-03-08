@@ -32,7 +32,7 @@ interface ParentProfile {
   phone: string | null;
 }
 
-const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending" };
+const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending", monthly_fee: "" };
 
 const generateStudentId = (count: number) => {
   const year = new Date().getFullYear();
