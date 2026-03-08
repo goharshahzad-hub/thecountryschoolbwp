@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X, AlertTriangle, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeVoucher {
   id: string;
@@ -50,6 +52,8 @@ interface Student {
   section: string | null;
   father_name: string;
   monthly_fee: number | null;
+  phone: string | null;
+  whatsapp: string | null;
 }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -118,7 +122,7 @@ const FeeVouchers = () => {
   const fetchData = async () => {
     const [{ data: v }, { data: s }] = await Promise.all([
       supabase.from("fee_vouchers").select("*").order("created_at", { ascending: false }),
-      supabase.from("students").select("id, student_id, name, class, section, father_name, monthly_fee"),
+      supabase.from("students").select("id, student_id, name, class, section, father_name, monthly_fee, phone, whatsapp"),
     ]);
     if (v) setVouchers(v);
     if (s) setStudents(s);
@@ -437,28 +441,28 @@ const FeeVouchers = () => {
     const voucherStyles = `
       @page { size: A4 landscape; margin: 8mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 9px; color: #222; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #222; }
       .voucher-container { display: flex; width: 100%; height: 100vh; gap: 0; }
-      .slip { flex: 1; border: 1px solid #333; padding: 8px 10px; display: flex; flex-direction: column; }
+      .slip { flex: 1; border: 1px solid #333; padding: 10px 12px; display: flex; flex-direction: column; }
       .slip + .slip { border-left: 2px dashed #999; }
-      .slip-title { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 6px; letter-spacing: 1px; }
-      .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
-      .slip-campus { text-align: center; font-size: 8px; color: #666; margin-bottom: 4px; }
-      .slip-heading { text-align: center; font-size: 11px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 6px; }
-      .slip-info { width: 100%; border-collapse: collapse; font-size: 8px; margin-bottom: 6px; }
-      .slip-info td { padding: 2px 4px; border: 1px solid #ddd; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 12px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 4px; margin-bottom: 6px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 15px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 10px; color: #666; margin-bottom: 4px; }
+      .slip-heading { text-align: center; font-size: 13px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 4px 0; margin-bottom: 6px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 6px; }
+      .slip-info td { padding: 3px 5px; border: 1px solid #ddd; }
       .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
-      .desc-title { font-weight: bold; font-size: 9px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
-      .fee-table { width: 100%; border-collapse: collapse; font-size: 8px; }
-      .fee-table td { padding: 2px 4px; border: 1px solid #ddd; }
+      .desc-title { font-weight: bold; font-size: 11px; background: #eee; padding: 3px 5px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+      .fee-table td { padding: 3px 5px; border: 1px solid #ddd; }
       .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
-      .totals-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 4px; }
-      .totals-table td { padding: 3px 4px; border: 1px solid #999; font-weight: bold; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; }
+      .totals-table td { padding: 4px 5px; border: 1px solid #999; font-weight: bold; }
       .totals-table .amt { text-align: right; width: 35%; }
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-sign { display: flex; justify-content: space-between; margin-top: auto; padding-top: 20px; font-size: 8px; }
+      .slip-sign { display: flex; justify-content: space-between; margin-top: auto; padding-top: 20px; font-size: 9px; }
       .slip-sign div { border-top: 1px solid #333; padding-top: 3px; width: 70px; text-align: center; }
       @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
     `;
@@ -488,30 +492,30 @@ const FeeVouchers = () => {
     const voucherStyles = `
       @page { size: A4 landscape; margin: 8mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 9px; color: #222; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #222; }
       .voucher-container { display: flex; width: 100%; height: 100vh; gap: 0; }
       .page-break { page-break-after: always; }
       .page-break:last-child { page-break-after: auto; }
-      .slip { flex: 1; border: 1px solid #333; padding: 8px 10px; display: flex; flex-direction: column; }
+      .slip { flex: 1; border: 1px solid #333; padding: 10px 12px; display: flex; flex-direction: column; }
       .slip + .slip { border-left: 2px dashed #999; }
-      .slip-title { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 6px; letter-spacing: 1px; }
-      .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
-      .slip-campus { text-align: center; font-size: 8px; color: #666; margin-bottom: 4px; }
-      .slip-heading { text-align: center; font-size: 11px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 6px; }
-      .slip-info { width: 100%; border-collapse: collapse; font-size: 8px; margin-bottom: 6px; }
-      .slip-info td { padding: 2px 4px; border: 1px solid #ddd; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 12px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 4px; margin-bottom: 6px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 15px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 10px; color: #666; margin-bottom: 4px; }
+      .slip-heading { text-align: center; font-size: 13px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 4px 0; margin-bottom: 6px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 6px; }
+      .slip-info td { padding: 3px 5px; border: 1px solid #ddd; }
       .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
-      .desc-title { font-weight: bold; font-size: 9px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
-      .fee-table { width: 100%; border-collapse: collapse; font-size: 8px; }
-      .fee-table td { padding: 2px 4px; border: 1px solid #ddd; }
+      .desc-title { font-weight: bold; font-size: 11px; background: #eee; padding: 3px 5px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+      .fee-table td { padding: 3px 5px; border: 1px solid #ddd; }
       .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
-      .totals-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 4px; }
-      .totals-table td { padding: 3px 4px; border: 1px solid #999; font-weight: bold; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; }
+      .totals-table td { padding: 4px 5px; border: 1px solid #999; font-weight: bold; }
       .totals-table .amt { text-align: right; width: 35%; }
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-sign { display: flex; justify-content: space-between; margin-top: auto; padding-top: 20px; font-size: 8px; }
+      .slip-sign { display: flex; justify-content: space-between; margin-top: auto; padding-top: 20px; font-size: 9px; }
       .slip-sign div { border-top: 1px solid #333; padding-top: 3px; width: 70px; text-align: center; }
       @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
     `;
@@ -571,6 +575,83 @@ const FeeVouchers = () => {
     { key: "late_fee", label: "Last Month Late Fee" },
     { key: "discount", label: "Discount" },
   ];
+
+  // Defaulter list: vouchers past due date that are not Paid
+  const today = new Date().toISOString().split("T")[0];
+  const defaulters = useMemo(() => {
+    return vouchers.filter(v => v.status !== "Paid" && v.due_date < today);
+  }, [vouchers, today]);
+
+  const defaultersByClass = useMemo(() => {
+    const map: Record<string, { student: Student; voucher: FeeVoucher }[]> = {};
+    defaulters.forEach(v => {
+      const student = getStudent(v.student_id);
+      if (!student) return;
+      const cls = `${student.class}-${student.section || "A"}`;
+      if (!map[cls]) map[cls] = [];
+      map[cls].push({ student, voucher: v });
+    });
+    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [defaulters, students]);
+
+  const [defaulterClassFilter, setDefaulterClassFilter] = useState<string>("all");
+
+  const filteredDefaulterClasses = defaulterClassFilter === "all"
+    ? defaultersByClass
+    : defaultersByClass.filter(([cls]) => cls === defaulterClassFilter);
+
+  const printDefaulterList = (className?: string) => {
+    const classesToPrint = className
+      ? defaultersByClass.filter(([cls]) => cls === className)
+      : filteredDefaulterClasses;
+
+    if (classesToPrint.length === 0) return;
+
+    const pages = classesToPrint.map(([cls, items]) => {
+      const rows = items.map((item, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${item.student.student_id}</td>
+          <td style="text-align:left">${item.student.name}</td>
+          <td style="text-align:left">${item.student.father_name}</td>
+          <td>${item.voucher.month} ${item.voucher.year}</td>
+          <td>${item.voucher.due_date}</td>
+          <td style="text-align:right; font-weight:bold">₨ ${Number(item.voucher.amount).toLocaleString("en-PK")}</td>
+          <td>${item.student.phone || item.student.whatsapp || "—"}</td>
+        </tr>
+      `).join("");
+      const classTotal = items.reduce((s, item) => s + Number(item.voucher.amount), 0);
+      return `
+        <div class="print-page">
+          ${schoolHeader("Fee Defaulter List")}
+          <div class="print-info">
+            <div><span>Class:</span> ${cls}</div>
+            <div><span>Date:</span> ${new Date().toLocaleDateString("en-PK")}</div>
+            <div><span>Total Defaulters:</span> ${items.length}</div>
+            <div><span>Total Outstanding:</span> ₨ ${classTotal.toLocaleString("en-PK")}</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Reg. No</th><th style="text-align:left">Student Name</th><th style="text-align:left">Father's Name</th><th>Month</th><th>Due Date</th><th style="text-align:right">Amount</th><th>Phone</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+              <tr class="total-row">
+                <td colspan="6" style="text-align:right">Total Outstanding</td>
+                <td style="text-align:right">₨ ${classTotal.toLocaleString("en-PK")}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+          ${schoolFooter()}
+        </div>
+      `;
+    });
+
+    printA4(pages.join(""), "Fee Defaulter List");
+  };
 
   return (
     <DashboardLayout>
@@ -737,104 +818,201 @@ const FeeVouchers = () => {
         <ClasswiseFeeMetrics vouchers={vouchers} students={students} />
       </div>
 
-      <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+      <Tabs defaultValue="vouchers" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="vouchers">All Vouchers</TabsTrigger>
+          <TabsTrigger value="defaulters" className="flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Defaulters
+            {defaulters.length > 0 && (
+              <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                {defaulters.length}
+              </span>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      <Card className="shadow-card">
-        <CardHeader className="pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search vouchers..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
-            <Table>
-              <TableHeader><TableRow>
-                <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
-                <TableHead>Challan No</TableHead><TableHead>Student</TableHead><TableHead>Class</TableHead><TableHead>Month</TableHead><TableHead>Tuition</TableHead><TableHead>Total</TableHead><TableHead>Due Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
-              </TableRow></TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No challans</TableCell></TableRow> :
-                filtered.map(v => {
-                  const student = getStudent(v.student_id);
-                  const isInlineEditing = inlineEditId === v.id;
-                  return (
-                    <React.Fragment key={v.id}>
-                      <TableRow data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined} className={isInlineEditing ? "bg-accent/30" : ""}>
-                        <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
-                        <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
-                        <TableCell className="font-medium">{student?.name || "—"}</TableCell>
-                        <TableCell>{student?.class}-{student?.section}</TableCell>
-                        <TableCell>{v.month} {v.year}</TableCell>
-                        <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
-                        <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
-                        <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
-                        <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
-                        <TableCell className="text-right space-x-1">
-                          {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
-                          <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
-                            <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                        </TableCell>
-                      </TableRow>
-                      {isInlineEditing && (
-                        <TableRow className="bg-accent/10 hover:bg-accent/10">
-                          <TableCell colSpan={10} className="p-3">
-                            <div className="grid grid-cols-5 gap-2 mb-2">
-                              {FEE_FIELDS.map(f => (
-                                <div key={f.key} className="space-y-1">
-                                  <Label className="text-xs text-muted-foreground">{f.label}</Label>
-                                  <Input
-                                    type="number"
-                                    className="h-8 text-sm"
-                                    value={inlineForm[f.key] || "0"}
-                                    onChange={e => setInlineForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                  />
+        <TabsContent value="vouchers">
+          <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="Search vouchers..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
+                <Table>
+                  <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
+                    <TableHead>Challan No</TableHead><TableHead>Student</TableHead><TableHead>Class</TableHead><TableHead>Month</TableHead><TableHead>Tuition</TableHead><TableHead>Total</TableHead><TableHead>Due Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                  </TableRow></TableHeader>
+                  <TableBody>
+                    {filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No challans</TableCell></TableRow> :
+                    filtered.map(v => {
+                      const student = getStudent(v.student_id);
+                      const isInlineEditing = inlineEditId === v.id;
+                      return (
+                        <React.Fragment key={v.id}>
+                          <TableRow data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined} className={isInlineEditing ? "bg-accent/30" : ""}>
+                            <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
+                            <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
+                            <TableCell className="font-medium">{student?.name || "—"}</TableCell>
+                            <TableCell>{student?.class}-{student?.section}</TableCell>
+                            <TableCell>{v.month} {v.year}</TableCell>
+                            <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
+                            <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
+                            <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
+                            <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
+                            <TableCell className="text-right space-x-1">
+                              {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
+                              <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
+                                <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                            </TableCell>
+                          </TableRow>
+                          {isInlineEditing && (
+                            <TableRow className="bg-accent/10 hover:bg-accent/10">
+                              <TableCell colSpan={10} className="p-3">
+                                <div className="grid grid-cols-5 gap-2 mb-2">
+                                  {FEE_FIELDS.map(f => (
+                                    <div key={f.key} className="space-y-1">
+                                      <Label className="text-xs text-muted-foreground">{f.label}</Label>
+                                      <Input
+                                        type="number"
+                                        className="h-8 text-sm"
+                                        value={inlineForm[f.key] || "0"}
+                                        onChange={e => setInlineForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                      />
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
-                            <div className="flex items-center gap-3 mt-2">
-                              <div className="space-y-1">
-                                <Label className="text-xs text-muted-foreground">Status</Label>
-                                <Select value={inlineForm.status} onValueChange={val => setInlineForm(prev => ({ ...prev, status: val }))}>
-                                  <SelectTrigger className="h-8 w-32 text-sm"><SelectValue /></SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Pending">Pending</SelectItem>
-                                    <SelectItem value="Paid">Paid</SelectItem>
-                                    <SelectItem value="Overdue">Overdue</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1 flex-1">
-                                <Label className="text-xs text-muted-foreground">Remarks</Label>
-                                <Input className="h-8 text-sm" value={inlineForm.remarks} onChange={e => setInlineForm(prev => ({ ...prev, remarks: e.target.value }))} />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs text-muted-foreground">New Total</Label>
-                                <p className="h-8 flex items-center font-bold text-sm">₨ {calcInlineTotal().toLocaleString("en-PK")}</p>
-                              </div>
-                              <div className="flex gap-1 pt-4">
-                                <Button size="sm" onClick={saveInlineEdit} disabled={inlineSaving} className="gradient-primary text-primary-foreground">
-                                  <Check className="mr-1 h-4 w-4" />{inlineSaving ? "Saving..." : "Save"}
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => setInlineEditId(null)}>
-                                  <X className="mr-1 h-4 w-4" />Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          </TableCell>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-muted-foreground">Status</Label>
+                                    <Select value={inlineForm.status} onValueChange={val => setInlineForm(prev => ({ ...prev, status: val }))}>
+                                      <SelectTrigger className="h-8 w-32 text-sm"><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Pending">Pending</SelectItem>
+                                        <SelectItem value="Paid">Paid</SelectItem>
+                                        <SelectItem value="Overdue">Overdue</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-1 flex-1">
+                                    <Label className="text-xs text-muted-foreground">Remarks</Label>
+                                    <Input className="h-8 text-sm" value={inlineForm.remarks} onChange={e => setInlineForm(prev => ({ ...prev, remarks: e.target.value }))} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-muted-foreground">New Total</Label>
+                                    <p className="h-8 flex items-center font-bold text-sm">₨ {calcInlineTotal().toLocaleString("en-PK")}</p>
+                                  </div>
+                                  <div className="flex gap-1 pt-4">
+                                    <Button size="sm" onClick={saveInlineEdit} disabled={inlineSaving} className="gradient-primary text-primary-foreground">
+                                      <Check className="mr-1 h-4 w-4" />{inlineSaving ? "Saving..." : "Save"}
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setInlineEditId(null)}>
+                                      <X className="mr-1 h-4 w-4" />Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="defaulters">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <span className="text-sm font-medium text-muted-foreground">
+                {defaulters.length} unpaid voucher{defaulters.length !== 1 ? "s" : ""} past due date
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Select value={defaulterClassFilter} onValueChange={setDefaulterClassFilter}>
+                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by class" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {defaultersByClass.map(([cls]) => (
+                    <SelectItem key={cls} value={cls}>Class {cls}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={() => printDefaulterList()}>
+                <Printer className="mr-2 h-4 w-4" /> Print Defaulter List
+              </Button>
+            </div>
+          </div>
+
+          {filteredDefaulterClasses.length === 0 ? (
+            <Card className="shadow-card">
+              <CardContent className="p-8 text-center text-muted-foreground">
+                <CheckCircle className="mx-auto mb-2 h-8 w-8 text-success" />
+                <p>No defaulters found. All fees are up to date!</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredDefaulterClasses.map(([cls, items]) => (
+              <Card key={cls} className="shadow-card mb-4">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                  <CardTitle className="font-display text-base">
+                    Class {cls}
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      ({items.length} defaulter{items.length !== 1 ? "s" : ""} — ₨ {items.reduce((s, i) => s + Number(i.voucher.amount), 0).toLocaleString("en-PK")})
+                    </span>
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => printDefaulterList(cls)}>
+                    <Printer className="mr-1 h-3.5 w-3.5" /> Print
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Reg. No</TableHead>
+                        <TableHead>Student Name</TableHead>
+                        <TableHead>Father's Name</TableHead>
+                        <TableHead>Month</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead>Phone</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((item, i) => (
+                        <TableRow key={item.voucher.id}>
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell className="font-mono text-xs">{item.student.student_id}</TableCell>
+                          <TableCell className="font-medium">{item.student.name}</TableCell>
+                          <TableCell>{item.student.father_name}</TableCell>
+                          <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
+                          <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
+                          <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
+                          <TableCell className="text-muted-foreground">{item.student.phone || "—"}</TableCell>
                         </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            ))
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </DashboardLayout>
   );
 };
