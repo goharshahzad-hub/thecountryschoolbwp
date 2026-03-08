@@ -216,7 +216,7 @@ const Results = () => {
 
   const handlePrintMonthlyCard = () => {
     if (!monthlyClass) { toast({ title: "Error", description: "Select a class", variant: "destructive" }); return; }
-    const subjectName = monthlySubject ? getSubject(monthlySubject)?.name : "All Subjects";
+    const subjectName = (monthlySubject && monthlySubject !== "all") ? getSubject(monthlySubject)?.name : "All Subjects";
     const classStudentsFiltered = monthlyClassStudents;
     
     // If subject selected, show single subject marks table; else show all subjects
