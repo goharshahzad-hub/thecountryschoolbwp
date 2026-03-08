@@ -771,13 +771,15 @@ const Results = () => {
                     </TableRow></TableHeader>
                     <TableBody>
                       {studentResults.map(r => {
-                        const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
+                        const isAbsent = r.remarks?.toLowerCase().includes("absent");
+                        const pct = isAbsent ? "—" : ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1) + "%";
                         return (
                           <TableRow key={r.id}>
                             <TableCell className="font-medium">{getSubject(r.subject_id)?.name}</TableCell>
-                            <TableCell>{r.total_marks}</TableCell><TableCell>{r.obtained_marks}</TableCell>
-                            <TableCell>{pct}%</TableCell>
-                            <TableCell><Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge></TableCell>
+                            <TableCell>{r.total_marks}</TableCell>
+                            <TableCell className={isAbsent ? "text-destructive font-bold" : ""}>{isAbsent ? "Absent" : r.obtained_marks}</TableCell>
+                            <TableCell>{pct}</TableCell>
+                            <TableCell><Badge variant="outline" className={isAbsent ? "border-destructive/30 text-destructive" : gradeColor(r.grade || "")}>{isAbsent ? "Absent" : r.grade}</Badge></TableCell>
                             <TableCell className="text-xs text-muted-foreground">{r.remarks}</TableCell>
                           </TableRow>
                         );
