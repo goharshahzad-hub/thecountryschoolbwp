@@ -204,7 +204,7 @@ const Admissions = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label>Guardian/Father's Name *</Label><Input value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required /></div>
                   <div className="space-y-2"><Label>Guardian/Father's CNIC</Label><Input placeholder="XXXXX-XXXXXXX-X" value={form.father_cnic} onChange={e => setForm({ ...form, father_cnic: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Father's Occupation</Label><Input value={form.father_occupation} onChange={e => setForm({ ...form, father_occupation: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Guardian/Father's Occupation</Label><Input value={form.father_occupation} onChange={e => setForm({ ...form, father_occupation: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Father's Phone</Label><Input placeholder="0300-XXXXXXX" value={form.father_phone} onChange={e => setForm({ ...form, father_phone: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Name</Label><Input value={form.mother_name} onChange={e => setForm({ ...form, mother_name: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Phone</Label><Input value={form.mother_phone} onChange={e => setForm({ ...form, mother_phone: e.target.value })} /></div>
