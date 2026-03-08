@@ -16,6 +16,8 @@ const ParentLogin = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("");
