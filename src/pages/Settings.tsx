@@ -26,6 +26,7 @@ const SettingsPage = () => {
   const [aboutSubheading, setAboutSubheading] = useState("");
   const [stats, setStats] = useState<StatItem[]>([]);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [savingContent, setSavingContent] = useState(false);
 
   useEffect(() => {
