@@ -379,7 +379,7 @@ const FeeVouchers = () => {
     else { toast({ title: "Voucher Updated" }); setInlineEditId(null); fetchData(); }
   };
 
-
+  const handlePrint = (v: FeeVoucher) => {
     const student = getStudent(v.student_id);
     const payableByDue = Number(v.amount) - Number(v.late_fee || 0);
     const lateFeeCharges = v.late_fee_amount || LATE_FEE;
