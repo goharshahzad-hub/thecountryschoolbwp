@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { MessageSquare, Check, X, Clock } from "lucide-react";
+import { MessageSquare, Check, X, Clock, Trash2 } from "lucide-react";
 
 type Query = {
   id: string;
