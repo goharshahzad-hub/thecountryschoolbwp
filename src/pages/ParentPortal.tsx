@@ -132,7 +132,6 @@ const ParentPortal = () => {
           .select("*, subjects(name)")
           .in("student_id", studentIds)
           .order("exam_date", { ascending: false })
-          .limit(50)
           .then(({ data: d }) => { if (d) setTestResults(d as any); });
 
         // Fetch timetable for children's classes
