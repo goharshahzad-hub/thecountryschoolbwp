@@ -99,6 +99,7 @@ const Admissions = () => {
       father_occupation: form.father_occupation.trim(),
       father_phone: form.father_phone.trim(),
       mother_phone: form.mother_phone.trim(),
+      whatsapp: form.whatsapp.trim(),
       address: form.address.trim(),
       previous_school: form.previous_school.trim(),
       previous_class: form.previous_class.trim(),
