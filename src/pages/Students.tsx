@@ -198,6 +198,10 @@ const Students = () => {
                   <Input placeholder="10" value={form.class} onChange={e => setForm({ ...form, class: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
+                  <Label>Monthly Fee (PKR)</Label>
+                  <Input type="number" placeholder="0" value={form.monthly_fee} onChange={e => setForm({ ...form, monthly_fee: e.target.value })} />
+                </div>
+                <div className="space-y-2">
                   <Label>Section</Label>
                   <Select value={form.section} onValueChange={v => setForm({ ...form, section: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
