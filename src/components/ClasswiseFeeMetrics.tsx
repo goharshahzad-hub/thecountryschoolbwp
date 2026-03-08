@@ -107,7 +107,6 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
               <TableRow key={m.className}>
                 <TableCell className="font-medium">Class {m.className}</TableCell>
                 <TableCell className="text-center">{m.totalStudents}</TableCell>
-                <TableCell className="text-right font-medium">₨ {m.expectedMonthly.toLocaleString("en-PK")}</TableCell>
                 {!compact && (
                   <TableCell className="text-right font-medium">₨ {m.totalAmount.toLocaleString("en-PK")}</TableCell>
                 )}
