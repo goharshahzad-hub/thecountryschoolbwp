@@ -164,12 +164,12 @@ const FeeVouchers = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Vouchers</h1>
           <p className="mt-1 text-sm text-muted-foreground">Generate and manage fee vouchers in PKR</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingId(null); }}>
           <DialogTrigger asChild>
             <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Generate Voucher</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle className="font-display">Generate Fee Voucher</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Voucher" : "Generate Fee Voucher"}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-2">
                 <Label>Student *</Label>
