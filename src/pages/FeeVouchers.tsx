@@ -77,8 +77,10 @@ const FeeVouchers = () => {
   const getStudent = (id: string) => students.find(s => s.id === id);
 
   const generateVoucherNo = () => {
-    const year = new Date().getFullYear();
-    return `VCH-${year}-${(vouchers.length + 1).toString().padStart(5, "0")}`;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    return `VCH-${year}-${month}-${(vouchers.length + 1).toString().padStart(5, "0")}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
