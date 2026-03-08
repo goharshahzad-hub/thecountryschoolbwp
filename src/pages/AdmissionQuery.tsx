@@ -39,13 +39,16 @@ const AdmissionQuery = () => {
     }
     setSubmitting(true);
     const { error } = await supabase.from("admission_queries").insert([form]);
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       toast.error("Failed to submit query. Please try again.");
-    } else {
-      setSubmitted(true);
-      toast.success("Admission query submitted successfully!");
+      return;
     }
+    // Send email notification (fire and forget)
+    supabase.functions.invoke("notify-admission-query", { body: form }).catch(() => {});
+    setSubmitting(false);
+    setSubmitted(true);
+    toast.success("Admission query submitted successfully!");
   };
 
   return (
