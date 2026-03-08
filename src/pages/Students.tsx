@@ -95,8 +95,8 @@ const Students = () => {
       const { error } = await supabase.from("students").insert({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        status: form.status, fee_status: form.fee_status,
-      });
+        status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+      } as any);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Added", description: "Student added successfully." });
     }
