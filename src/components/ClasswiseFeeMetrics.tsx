@@ -13,6 +13,7 @@ interface Student {
   name: string;
   class: string;
   section: string | null;
+  monthly_fee?: number | null;
 }
 
 interface ClasswiseFeeMetricsProps {
