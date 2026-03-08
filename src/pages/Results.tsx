@@ -670,6 +670,181 @@ const Results = () => {
           })()}
         </div>
       </div>
+
+      {/* Hidden print template for class-wise reports */}
+      <div className="hidden">
+        <div ref={classReportRef}>
+          {classReportClass && (() => {
+            const classStudents = students.filter(s => s.class === classReportClass).sort((a, b) => a.name.localeCompare(b.name));
+            const terms = ["Term 1", "Term 2", "Term 3"];
+
+            if (classReportType === "term") {
+              // Term-wise: one report card per student for the selected term
+              return classStudents.map(st => {
+                const sResults = results.filter(r => r.student_id === st.id && r.term === classReportTerm);
+                if (sResults.length === 0) return null;
+                const totalMarks = sResults.reduce((s, r) => s + Number(r.total_marks), 0);
+                const obtainedMarks = sResults.reduce((s, r) => s + Number(r.obtained_marks), 0);
+                const overallPct = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
+                return (
+                  <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
+                    <div className="header">
+                      <h1>The Country School — Fahad Campus</h1>
+                      <h2>REPORT CARD / RESULT CARD</h2>
+                      <p>Academic Year {new Date().getFullYear()}</p>
+                    </div>
+                    <div className="info">
+                      <div>Student ID: <span>{st.student_id}</span></div>
+                      <div>Name: <span>{st.name}</span></div>
+                      <div>Father's Name: <span>{st.father_name}</span></div>
+                      <div>Class: <span>{st.class}-{st.section}</span></div>
+                      <div>Term: <span>{classReportTerm}</span></div>
+                    </div>
+                    <table>
+                      <thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
+                      <tbody>
+                        {sResults.map(r => (
+                          <tr key={r.id}>
+                            <td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td>
+                            <td>{r.total_marks}</td>
+                            <td>{r.obtained_marks}</td>
+                            <td>{((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1)}%</td>
+                            <td><strong>{r.grade}</strong></td>
+                            <td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td>
+                          </tr>
+                        ))}
+                        <tr className="total-row">
+                          <td style={{ textAlign: "left" }}><strong>Grand Total</strong></td>
+                          <td><strong>{totalMarks}</strong></td>
+                          <td><strong>{obtainedMarks}</strong></td>
+                          <td><strong>{overallPct.toFixed(1)}%</strong></td>
+                          <td><strong>{gradeFromPercent(overallPct)}</strong></td>
+                          <td></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div className="grade-summary">
+                      Overall Grade: <strong>{gradeFromPercent(overallPct)}</strong> | Position: _____ | Attendance: _____%
+                    </div>
+                    <div className="signatures">
+                      <div>Class Teacher</div><div>Principal</div><div>Parent's Signature</div>
+                    </div>
+                    <div className="footer">
+                      <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                      <p>This is a computer-generated report card.</p>
+                    </div>
+                  </div>
+                );
+              });
+            } else {
+              // Annual: combined 3-term report per student
+              return classStudents.map(st => {
+                const allSubjectIds = [...new Set(results.filter(r => r.student_id === st.id).map(r => r.subject_id))];
+                if (allSubjectIds.length === 0) return null;
+                const allTermResults = terms.map(t => results.filter(r => r.student_id === st.id && r.term === t));
+                let grandTotal = 0, grandObt = 0;
+
+                return (
+                  <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
+                    <div className="header">
+                      <h1>The Country School — Fahad Campus</h1>
+                      <h2>ANNUAL COMBINED RESULT CARD</h2>
+                      <p>Academic Year {new Date().getFullYear()}</p>
+                    </div>
+                    <div className="info">
+                      <div>Student ID: <span>{st.student_id}</span></div>
+                      <div>Name: <span>{st.name}</span></div>
+                      <div>Father's Name: <span>{st.father_name}</span></div>
+                      <div>Class: <span>{st.class}-{st.section}</span></div>
+                    </div>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th rowSpan={2} style={{ verticalAlign: "bottom" }}>Subject</th>
+                          {terms.map(t => <th key={t} colSpan={3} style={{ borderLeft: "2px solid #333" }}>{t}</th>)}
+                          <th colSpan={3} style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}>Annual</th>
+                        </tr>
+                        <tr>
+                          {terms.map(t => (
+                            <>
+                              <th key={`${t}-t`} style={{ borderLeft: "2px solid #333", fontSize: "10px" }}>Total</th>
+                              <th key={`${t}-o`} style={{ fontSize: "10px" }}>Obt</th>
+                              <th key={`${t}-g`} style={{ fontSize: "10px" }}>Grade</th>
+                            </>
+                          ))}
+                          <th style={{ borderLeft: "2px solid #333", fontSize: "10px", background: "#e8e8e8" }}>Total</th>
+                          <th style={{ fontSize: "10px", background: "#e8e8e8" }}>Obt</th>
+                          <th style={{ fontSize: "10px", background: "#e8e8e8" }}>Grade</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allSubjectIds.map(subId => {
+                          let subTotal = 0, subObt = 0;
+                          return (
+                            <tr key={subId}>
+                              <td style={{ textAlign: "left" }}>{getSubject(subId)?.name}</td>
+                              {terms.map((t, ti) => {
+                                const r = allTermResults[ti].find(r => r.subject_id === subId);
+                                if (r) { subTotal += Number(r.total_marks); subObt += Number(r.obtained_marks); }
+                                return (
+                                  <>
+                                    <td key={`${t}-${subId}-t`} style={{ borderLeft: "2px solid #333" }}>{r ? r.total_marks : "—"}</td>
+                                    <td key={`${t}-${subId}-o`}>{r ? r.obtained_marks : "—"}</td>
+                                    <td key={`${t}-${subId}-g`}><strong>{r ? r.grade : "—"}</strong></td>
+                                  </>
+                                );
+                              })}
+                              <td style={{ borderLeft: "2px solid #333", background: "#f5f5f5" }}><strong>{subTotal || "—"}</strong></td>
+                              <td style={{ background: "#f5f5f5" }}><strong>{subObt || "—"}</strong></td>
+                              <td style={{ background: "#f5f5f5" }}><strong>{subTotal > 0 ? gradeFromPercent((subObt / subTotal) * 100) : "—"}</strong></td>
+                            </tr>
+                          );
+                        })}
+                        {(() => {
+                          const termTotals = terms.map((t, ti) => {
+                            const tr = allTermResults[ti];
+                            const tt = tr.reduce((s, r) => s + Number(r.total_marks), 0);
+                            const to = tr.reduce((s, r) => s + Number(r.obtained_marks), 0);
+                            grandTotal += tt; grandObt += to;
+                            return { tt, to };
+                          });
+                          return (
+                            <tr className="total-row">
+                              <td style={{ textAlign: "left" }}><strong>Grand Total</strong></td>
+                              {termTotals.map((t, i) => (
+                                <>
+                                  <td key={`gt-${i}-t`} style={{ borderLeft: "2px solid #333" }}><strong>{t.tt || "—"}</strong></td>
+                                  <td key={`gt-${i}-o`}><strong>{t.to || "—"}</strong></td>
+                                  <td key={`gt-${i}-g`}><strong>{t.tt > 0 ? gradeFromPercent((t.to / t.tt) * 100) : "—"}</strong></td>
+                                </>
+                              ))}
+                              <td style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}><strong>{grandTotal}</strong></td>
+                              <td style={{ background: "#e8e8e8" }}><strong>{grandObt}</strong></td>
+                              <td style={{ background: "#e8e8e8" }}><strong>{grandTotal > 0 ? gradeFromPercent((grandObt / grandTotal) * 100) : "—"}</strong></td>
+                            </tr>
+                          );
+                        })()}
+                      </tbody>
+                    </table>
+                    <div className="grade-summary">
+                      Overall Annual Grade: <strong>{grandTotal > 0 ? gradeFromPercent((grandObt / grandTotal) * 100) : "N/A"}</strong> |
+                      Overall Percentage: <strong>{grandTotal > 0 ? ((grandObt / grandTotal) * 100).toFixed(1) : "0"}%</strong> |
+                      Position: _____ | Attendance: _____%
+                    </div>
+                    <div className="signatures">
+                      <div>Class Teacher</div><div>Principal</div><div>Parent's Signature</div>
+                    </div>
+                    <div className="footer">
+                      <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                      <p>This is a computer-generated annual result card.</p>
+                    </div>
+                  </div>
+                );
+              });
+            }
+          })()}
+        </div>
+      </div>
     </DashboardLayout>
   );
 };
