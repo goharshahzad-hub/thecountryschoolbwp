@@ -935,6 +935,9 @@ const Results = () => {
                 <Button onClick={handlePrintAnnual} variant="outline" disabled={!annualStudent}>
                   <Printer className="mr-2 h-4 w-4" />Print Annual Report
                 </Button>
+                <Button onClick={sendAnnualResultAlert} variant="outline" disabled={!annualStudent} className="border-success/30 text-success hover:bg-success/10">
+                  <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Annual Result
+                </Button>
               </div>
               {annualStudent && (() => {
                 const annualStudentData = getStudent(annualStudent);
