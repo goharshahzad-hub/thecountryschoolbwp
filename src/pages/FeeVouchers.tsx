@@ -237,6 +237,7 @@ const FeeVouchers = () => {
       books_charges: String(v.books_charges || 0),
       arrears: String(v.arrears || 0),
       late_fee: String(v.late_fee || 0),
+      discount: String((v as any).discount || 0),
     });
     setEditingId(v.id);
     setDialogOpen(true);
