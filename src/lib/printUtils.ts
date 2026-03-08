@@ -102,11 +102,41 @@ export const printA4 = (htmlContent: string, title: string = "Print") => {
   if (!win) return;
   win.document.write(`<!DOCTYPE html>
 <html><head>
-<title>${title}</title>
-<style>${A4_STYLES}</style>
+<title>${title} — Preview</title>
+<style>
+${A4_STYLES}
+.print-preview-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: #c0392b; color: #fff; display: flex; align-items: center;
+  justify-content: space-between; padding: 8px 20px; font-family: Arial, sans-serif;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.print-preview-bar span { font-size: 14px; font-weight: bold; }
+.print-preview-bar button {
+  background: #fff; color: #c0392b; border: none; padding: 8px 24px;
+  border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;
+}
+.print-preview-bar button:hover { background: #f0f0f0; }
+.print-preview-bar .close-btn {
+  background: transparent; color: #fff; font-size: 13px; border: 1px solid rgba(255,255,255,0.4);
+  padding: 6px 16px; border-radius: 4px; margin-left: 8px;
+}
+.print-preview-bar .close-btn:hover { background: rgba(255,255,255,0.15); }
+body { padding-top: 50px; }
+@media print {
+  .print-preview-bar { display: none !important; }
+  body { padding-top: 0; }
+}
+</style>
 </head><body>
+<div class="print-preview-bar">
+  <span>📄 ${title} — Print Preview</span>
+  <div>
+    <button onclick="window.print()">🖨️ Print</button>
+    <button class="close-btn" onclick="window.close()">✕ Close</button>
+  </div>
+</div>
 ${htmlContent}
-<script>window.print();window.close()<\/script>
 </body></html>`);
   win.document.close();
 };
