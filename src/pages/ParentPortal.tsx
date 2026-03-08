@@ -56,6 +56,7 @@ interface TestResult {
   obtained_marks: number;
   total_marks: number;
   grade: string | null;
+  remarks: string | null;
   exam_date: string | null;
   student_id: string;
   subject_id: string;
