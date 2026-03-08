@@ -35,6 +35,7 @@ const DashboardSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [pendingRequests, setPendingRequests] = useState(0);
   const [pendingQueries, setPendingQueries] = useState(0);
 
