@@ -24,6 +24,9 @@ import AdmissionQuery from "./pages/AdmissionQuery";
 import AdmissionQueries from "./pages/AdmissionQueries";
 import AdminRequests from "./pages/AdminRequests";
 import ExpensesPage from "./pages/Expenses";
+import Diary from "./pages/Diary";
+import AnnouncementsPage from "./pages/Announcements";
+import WhatsAppBroadcast from "./pages/WhatsAppBroadcast";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
