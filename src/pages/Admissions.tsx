@@ -70,9 +70,11 @@ const Admissions = () => {
   );
 
   const generateAppNo = () => {
-    const year = new Date().getFullYear();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
     const count = admissions.length + 1;
-    return `ADM-${year}-${count.toString().padStart(4, "0")}`;
+    return `ADM-${year}-${month}-${count.toString().padStart(4, "0")}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -125,9 +125,11 @@ const FeeVouchers = () => {
     }
     setSaving(true);
     const baseIndex = vouchers.length + 1;
-    const year = new Date().getFullYear();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
     const rows = classStudents.map((s, i) => ({
-      voucher_no: `VCH-${year}-${(baseIndex + i).toString().padStart(5, "0")}`,
+      voucher_no: `VCH-${year}-${month}-${(baseIndex + i).toString().padStart(5, "0")}`,
       student_id: s.id,
       amount: parseFloat(bulkForm.amount),
       fee_type: bulkForm.fee_type,
