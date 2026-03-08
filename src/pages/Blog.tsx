@@ -60,7 +60,7 @@ Contact us today to learn about our current fee structure and available discount
     readTime: "4 min",
     category: "Admissions",
     keywords: ["school admissions bahawalpur 2026", "admission open bahawalpur", "school enrollment bahawalpur"],
-    content: `The Country School Fahad Campus, Bahawalpur, is now accepting admissions for the academic year 2026. We welcome students from Playgroup to Grade 10 who are eager to learn and grow in a supportive educational environment.
+    content: `The Country School Fahad Campus, Bahawalpur, is now accepting admissions for the academic year 2026. We welcome students from Reception (Playgroup) to Class 8 who are eager to learn and grow in a supportive educational environment.
 
 Our admission process is simple and straightforward:
 1. Submit an online inquiry through our website or visit the campus
@@ -106,7 +106,7 @@ Join us at The Country School and give your child the advantage of a Bloomfield 
     keywords: ["primary school bahawalpur", "early childhood education bahawalpur", "playgroup school bahawalpur"],
     content: `The early years of education are the most critical in a child's development. At The Country School Fahad Campus, we provide exceptional primary education that builds strong foundations in literacy, numeracy, and social skills.
 
-Our early childhood education program is designed for children from Playgroup onwards. We use activity-based learning methods that make education fun and engaging for young learners. Our classrooms are bright, safe, and equipped with age-appropriate learning materials.
+Our early childhood education program is designed for children from Reception (Playgroup) onwards. We use activity-based learning methods that make education fun and engaging for young learners. Our classrooms are bright, safe, and equipped with age-appropriate learning materials.
 
 Key features of our primary education program:
 - Small class sizes for personalized attention
