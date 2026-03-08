@@ -361,6 +361,81 @@ const ParentPortal = () => {
                 </Card>
               </TabsContent>
 
+              {/* Announcements Tab */}
+              <TabsContent value="announcements">
+                <Card className="shadow-card">
+                  <CardHeader>
+                    <CardTitle className="font-display text-lg flex items-center gap-2">
+                      <Bell className="h-5 w-5 text-primary" />
+                      School Announcements & Notices
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {announcements.length === 0 ? (
+                      <p className="py-8 text-center text-sm text-muted-foreground">No announcements at this time.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {announcements.filter((a: any) => !a.expires_at || a.expires_at >= new Date().toISOString().split("T")[0]).map((a: any) => (
+                          <div key={a.id} className="rounded-lg border border-border p-4">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-display font-semibold text-foreground">{a.title}</h4>
+                              <Badge variant="outline">{a.type}</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{a.content}</p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {new Date(a.created_at).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Diary Tab */}
+              <TabsContent value="diary">
+                {students.map(student => {
+                  const entries = diaryEntries.filter((d: any) => d.class_name === student.class && d.section === (student.section || "A"));
+                  return (
+                    <Card key={student.id} className="mb-4 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="font-display text-lg flex items-center gap-2">
+                          <BookMarked className="h-5 w-5 text-primary" />
+                          Diary — {student.name} (Class {student.class}-{student.section || "A"})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {entries.length === 0 ? (
+                          <p className="py-8 text-center text-sm text-muted-foreground">No diary entries available.</p>
+                        ) : (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Subject</TableHead>
+                                <TableHead>Homework / Diary</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {entries.map((entry: any) => (
+                                <TableRow key={entry.id}>
+                                  <TableCell className="whitespace-nowrap text-xs">
+                                    {new Date(entry.date).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                                  </TableCell>
+                                  <TableCell className="font-medium">{entry.subject}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground whitespace-pre-wrap">{entry.homework_text}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </TabsContent>
+
               {/* Attendance Tab */}
               <TabsContent value="attendance">
                 {/* Monthly Summary per Child */}
