@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Shield, BookOpen, Users, Heart, Building, Library, Laptop, TreePine, MapPin } from "lucide-react";
+import { ArrowLeft, Shield, BookOpen, Users, Heart, Building, Laptop, TreePine, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
