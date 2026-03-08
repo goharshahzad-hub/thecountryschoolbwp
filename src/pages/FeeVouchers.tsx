@@ -97,6 +97,16 @@ const FeeVouchers = () => {
     month: MONTHS[new Date().getMonth()],
     year: new Date().getFullYear().toString(),
     remarks: "",
+    registration_fee: "0",
+    admission_fee: "0",
+    security_deposit: "0",
+    tuition_fee: "",
+    annual_charges: "0",
+    trip_charges: "0",
+    books_charges: "0",
+    arrears: "0",
+    late_fee: "0",
+    discount: "0",
   });
 
   const fetchData = async () => {
