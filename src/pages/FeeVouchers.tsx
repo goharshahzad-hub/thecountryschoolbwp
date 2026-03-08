@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X, AlertTriangle, CheckCircle, MessageCircle, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
