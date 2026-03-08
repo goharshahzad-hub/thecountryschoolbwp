@@ -46,6 +46,7 @@ const FeeVouchers = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [printVoucher, setPrintVoucher] = useState<FeeVoucher | null>(null);
@@ -54,6 +55,11 @@ const FeeVouchers = () => {
   const [form, setForm] = useState({
     student_id: "", amount: "", fee_type: "Monthly", month: months[new Date().getMonth()],
     year: new Date().getFullYear().toString(), due_date: "", status: "Pending", remarks: ""
+  });
+
+  const [bulkForm, setBulkForm] = useState({
+    class_name: "", amount: "", fee_type: "Monthly", month: months[new Date().getMonth()],
+    year: new Date().getFullYear().toString(), due_date: "", remarks: ""
   });
 
   const fetchData = async () => {
