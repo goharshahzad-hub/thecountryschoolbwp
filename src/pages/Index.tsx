@@ -175,7 +175,7 @@ const Index = () => {
             <h3 className="font-display text-3xl font-bold text-foreground">Follow Us</h3>
             <p className="mt-3 text-muted-foreground">Stay connected on social media</p>
           </div>
-          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Facebook */}
             {content.social_links?.facebook?.url && (
               <a href={content.social_links.facebook.url} target="_blank" rel="noopener noreferrer" className="group flex flex-col items-center rounded-lg border border-border bg-card p-6 shadow-card transition-all hover:shadow-elevated hover:-translate-y-1">
@@ -204,6 +204,16 @@ const Index = () => {
                 </div>
                 <p className="font-display text-sm font-semibold text-foreground">YouTube</p>
                 <p className="mt-1 text-xs text-muted-foreground">{content.social_links.youtube.handle}</p>
+              </a>
+            )}
+            {/* TikTok */}
+            {content.social_links?.tiktok?.url && (
+              <a href={content.social_links.tiktok.url} target="_blank" rel="noopener noreferrer" className="group flex flex-col items-center rounded-lg border border-border bg-card p-6 shadow-card transition-all hover:shadow-elevated hover:-translate-y-1">
+                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                  <svg className="h-7 w-7 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.73a8.19 8.19 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.16z"/></svg>
+                </div>
+                <p className="font-display text-sm font-semibold text-foreground">TikTok</p>
+                <p className="mt-1 text-xs text-muted-foreground">{content.social_links.tiktok.handle}</p>
               </a>
             )}
           </div>
