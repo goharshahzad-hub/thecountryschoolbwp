@@ -14,7 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attendance_records: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          class: string
+          created_at: string
+          father_name: string
+          fee_status: string
+          id: string
+          name: string
+          parent_user_id: string | null
+          phone: string | null
+          section: string | null
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class: string
+          created_at?: string
+          father_name: string
+          fee_status?: string
+          id?: string
+          name: string
+          parent_user_id?: string | null
+          phone?: string | null
+          section?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class?: string
+          created_at?: string
+          father_name?: string
+          fee_status?: string
+          id?: string
+          name?: string
+          parent_user_id?: string | null
+          phone?: string | null
+          section?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
