@@ -36,6 +36,7 @@ interface Student {
   class: string;
   section: string | null;
   father_name: string;
+  monthly_fee: number | null;
 }
 
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -66,7 +67,7 @@ const FeeVouchers = () => {
   const fetchData = async () => {
     const [{ data: v }, { data: s }] = await Promise.all([
       supabase.from("fee_vouchers").select("*").order("created_at", { ascending: false }),
-      supabase.from("students").select("id, student_id, name, class, section, father_name")
+      supabase.from("students").select("id, student_id, name, class, section, father_name, monthly_fee")
     ]);
     if (v) setVouchers(v);
     if (s) setStudents(s);
@@ -132,7 +133,7 @@ const FeeVouchers = () => {
     const rows = classStudents.map((s, i) => ({
       voucher_no: `VCH-${year}-${month}-${(baseIndex + i).toString().padStart(5, "0")}`,
       student_id: s.id,
-      amount: parseFloat(bulkForm.amount),
+      amount: s.monthly_fee && s.monthly_fee > 0 ? s.monthly_fee : parseFloat(bulkForm.amount),
       fee_type: bulkForm.fee_type,
       month: bulkForm.month,
       year: parseInt(bulkForm.year),
@@ -345,7 +346,7 @@ const FeeVouchers = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>Amount per Student (PKR) *</Label><Input type="number" placeholder="5000" value={bulkForm.amount} onChange={e => setBulkForm({ ...bulkForm, amount: e.target.value })} required /></div>
+                <div className="space-y-2"><Label>Default Amount (PKR) *</Label><Input type="number" placeholder="Used if student has no fee set" value={bulkForm.amount} onChange={e => setBulkForm({ ...bulkForm, amount: e.target.value })} required /></div>
                 <div className="space-y-2">
                   <Label>Fee Type</Label>
                   <Select value={bulkForm.fee_type} onValueChange={v => setBulkForm({ ...bulkForm, fee_type: v })}>
@@ -382,7 +383,10 @@ const FeeVouchers = () => {
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label>Student *</Label>
-                  <Select value={form.student_id} onValueChange={v => setForm({ ...form, student_id: v })}>
+                  <Select value={form.student_id} onValueChange={v => {
+                    const student = students.find(s => s.id === v);
+                    setForm({ ...form, student_id: v, amount: student?.monthly_fee ? String(student.monthly_fee) : form.amount });
+                  }}>
                     <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
                     <SelectContent>
                       {students.map(s => (
