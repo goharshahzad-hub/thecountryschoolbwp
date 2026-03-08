@@ -58,6 +58,7 @@ interface TestResult {
   grade: string | null;
   exam_date: string | null;
   student_id: string;
+  subject_id: string;
   subjects: { name: string } | null;
 }
 
@@ -132,7 +133,6 @@ const ParentPortal = () => {
           .select("*, subjects(name)")
           .in("student_id", studentIds)
           .order("exam_date", { ascending: false })
-          .limit(50)
           .then(({ data: d }) => { if (d) setTestResults(d as any); });
 
         // Fetch timetable for children's classes
@@ -500,56 +500,186 @@ const ParentPortal = () => {
 
               {/* Results Tab */}
               <TabsContent value="results">
-                <Card className="shadow-card">
-                  <CardHeader>
-                    <CardTitle className="font-display text-lg">Test Results</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {testResults.length === 0 ? (
-                      <p className="py-8 text-center text-sm text-muted-foreground">No test results found.</p>
-                    ) : (
+                {students.map(student => {
+                  const studentResults = testResults.filter(r => r.student_id === student.id);
+                  if (studentResults.length === 0) {
+                    return (
+                      <Card key={student.id} className="mb-4 shadow-card">
+                        <CardHeader><CardTitle className="font-display text-lg">{student.name} — Results</CardTitle></CardHeader>
+                        <CardContent><p className="py-4 text-center text-sm text-muted-foreground">No results found.</p></CardContent>
+                      </Card>
+                    );
+                  }
+
+                  // Monthly Tests
+                  const monthlyTests = studentResults.filter(r => r.exam_type === "Monthly Test");
+                  const monthlyByMonth: Record<string, typeof studentResults> = {};
+                  monthlyTests.forEach(r => {
+                    const key = r.exam_date ? new Date(r.exam_date).toLocaleDateString("en-PK", { month: "long", year: "numeric" }) : "Unknown";
+                    if (!monthlyByMonth[key]) monthlyByMonth[key] = [];
+                    monthlyByMonth[key].push(r);
+                  });
+
+                  // Term Results
+                  const terms = ["Term 1", "Term 2", "Term 3"];
+                  const termResults: Record<string, typeof studentResults> = {};
+                  terms.forEach(t => {
+                    const tr = studentResults.filter(r => r.term === t && r.exam_type !== "Monthly Test");
+                    if (tr.length > 0) termResults[t] = tr;
+                  });
+
+                  // Annual (all terms combined)
+                  const allTermResults = studentResults.filter(r => r.exam_type !== "Monthly Test");
+                  const subjectMap: Record<string, { name: string; terms: Record<string, { obtained: number; total: number }> }> = {};
+                  allTermResults.forEach(r => {
+                    const subName = r.subjects?.name || "Unknown";
+                    const subId = r.subject_id || subName;
+                    if (!subjectMap[subId]) subjectMap[subId] = { name: subName, terms: {} };
+                    if (!subjectMap[subId].terms[r.term]) subjectMap[subId].terms[r.term] = { obtained: 0, total: 0 };
+                    subjectMap[subId].terms[r.term].obtained += r.obtained_marks;
+                    subjectMap[subId].terms[r.term].total += r.total_marks;
+                  });
+
+                  const getGrade = (pct: number) => pct >= 90 ? "A+" : pct >= 80 ? "A" : pct >= 70 ? "B" : pct >= 60 ? "C" : pct >= 50 ? "D" : "F";
+                  const getPctClass = (pct: number) => pct >= 80 ? "border-success/30 text-success" : pct >= 50 ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive";
+
+                  const ResultTable = ({ results }: { results: typeof studentResults }) => {
+                    const totalObt = results.reduce((s, r) => s + r.obtained_marks, 0);
+                    const totalMax = results.reduce((s, r) => s + r.total_marks, 0);
+                    const overallPct = totalMax > 0 ? Math.round((totalObt / totalMax) * 100) : 0;
+                    return (
                       <div className="overflow-x-auto">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Student</TableHead>
                               <TableHead>Subject</TableHead>
-                              <TableHead>Exam</TableHead>
-                              <TableHead>Term</TableHead>
-                              <TableHead>Marks</TableHead>
+                              <TableHead>Obtained</TableHead>
+                              <TableHead>Total</TableHead>
                               <TableHead>%</TableHead>
                               <TableHead>Grade</TableHead>
-                              <TableHead>Date</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {testResults.map(r => {
+                            {results.map(r => {
                               const pct = r.total_marks > 0 ? Math.round((r.obtained_marks / r.total_marks) * 100) : 0;
                               return (
                                 <TableRow key={r.id}>
-                                  <TableCell className="font-medium">{getStudentName(r.student_id)}</TableCell>
-                                  <TableCell>{r.subjects?.name || "-"}</TableCell>
-                                  <TableCell>{r.exam_type}</TableCell>
-                                  <TableCell>{r.term}</TableCell>
-                                  <TableCell>{r.obtained_marks}/{r.total_marks}</TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline" className={
-                                      pct >= 80 ? "border-success/30 text-success" :
-                                      pct >= 50 ? "border-warning/30 text-warning" :
-                                      "border-destructive/30 text-destructive"
-                                    }>{pct}%</Badge>
-                                  </TableCell>
-                                  <TableCell>{r.grade || "-"}</TableCell>
-                                  <TableCell>{r.exam_date ? new Date(r.exam_date).toLocaleDateString("en-PK") : "-"}</TableCell>
+                                  <TableCell className="font-medium">{r.subjects?.name || "-"}</TableCell>
+                                  <TableCell>{r.obtained_marks}</TableCell>
+                                  <TableCell>{r.total_marks}</TableCell>
+                                  <TableCell><Badge variant="outline" className={getPctClass(pct)}>{pct}%</Badge></TableCell>
+                                  <TableCell>{r.grade || getGrade(pct)}</TableCell>
                                 </TableRow>
                               );
                             })}
+                            <TableRow className="bg-muted/30 font-semibold">
+                              <TableCell>Total</TableCell>
+                              <TableCell>{totalObt}</TableCell>
+                              <TableCell>{totalMax}</TableCell>
+                              <TableCell><Badge variant="outline" className={getPctClass(overallPct)}>{overallPct}%</Badge></TableCell>
+                              <TableCell>{getGrade(overallPct)}</TableCell>
+                            </TableRow>
                           </TableBody>
                         </Table>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    );
+                  };
+
+                  return (
+                    <div key={student.id} className="mb-6 space-y-4">
+                      <h2 className="font-display text-xl font-bold text-foreground">{student.name} — Academic Record</h2>
+
+                      {/* Monthly Tests */}
+                      {Object.keys(monthlyByMonth).length > 0 && (
+                        <Card className="shadow-card">
+                          <CardHeader><CardTitle className="font-display text-base">📝 Monthly Tests</CardTitle></CardHeader>
+                          <CardContent className="space-y-4 p-4">
+                            {Object.entries(monthlyByMonth).map(([month, results]) => (
+                              <div key={month}>
+                                <p className="mb-2 text-sm font-semibold text-muted-foreground">{month}</p>
+                                <ResultTable results={results} />
+                              </div>
+                            ))}
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Term-wise Results */}
+                      {Object.keys(termResults).length > 0 && (
+                        <Card className="shadow-card">
+                          <CardHeader><CardTitle className="font-display text-base">📊 Term-wise Results</CardTitle></CardHeader>
+                          <CardContent className="space-y-4 p-4">
+                            {Object.entries(termResults).map(([term, results]) => (
+                              <div key={term}>
+                                <p className="mb-2 text-sm font-semibold text-muted-foreground">{term}</p>
+                                <ResultTable results={results} />
+                              </div>
+                            ))}
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Annual Report Card */}
+                      {Object.keys(subjectMap).length > 0 && (
+                        <Card className="shadow-card">
+                          <CardHeader><CardTitle className="font-display text-base">🎓 Annual Report Card (All Terms Combined)</CardTitle></CardHeader>
+                          <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Subject</TableHead>
+                                    {terms.map(t => <TableHead key={t}>{t}</TableHead>)}
+                                    <TableHead>Total</TableHead>
+                                    <TableHead>%</TableHead>
+                                    <TableHead>Grade</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {(() => {
+                                    let grandObt = 0, grandTotal = 0;
+                                    const rows = Object.entries(subjectMap).map(([subId, sub]) => {
+                                      let subObt = 0, subTotal = 0;
+                                      const termCells = terms.map(t => {
+                                        const d = sub.terms[t];
+                                        if (d) { subObt += d.obtained; subTotal += d.total; }
+                                        return <TableCell key={t}>{d ? `${d.obtained}/${d.total}` : "-"}</TableCell>;
+                                      });
+                                      grandObt += subObt; grandTotal += subTotal;
+                                      const pct = subTotal > 0 ? Math.round((subObt / subTotal) * 100) : 0;
+                                      return (
+                                        <TableRow key={subId}>
+                                          <TableCell className="font-medium">{sub.name}</TableCell>
+                                          {termCells}
+                                          <TableCell className="font-semibold">{subObt}/{subTotal}</TableCell>
+                                          <TableCell><Badge variant="outline" className={getPctClass(pct)}>{pct}%</Badge></TableCell>
+                                          <TableCell>{getGrade(pct)}</TableCell>
+                                        </TableRow>
+                                      );
+                                    });
+                                    const gPct = grandTotal > 0 ? Math.round((grandObt / grandTotal) * 100) : 0;
+                                    return (
+                                      <>
+                                        {rows}
+                                        <TableRow className="bg-muted/30 font-semibold">
+                                          <TableCell>Grand Total</TableCell>
+                                          {terms.map(t => <TableCell key={t}>-</TableCell>)}
+                                          <TableCell>{grandObt}/{grandTotal}</TableCell>
+                                          <TableCell><Badge variant="outline" className={getPctClass(gPct)}>{gPct}%</Badge></TableCell>
+                                          <TableCell>{getGrade(gPct)}</TableCell>
+                                        </TableRow>
+                                      </>
+                                    );
+                                  })()}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  );
+                })}
               </TabsContent>
 
               {/* Timetable Tab */}
