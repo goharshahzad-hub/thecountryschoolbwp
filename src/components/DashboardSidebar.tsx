@@ -1,13 +1,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "next-themes";
 import logo from "@/assets/logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
   FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
-  BookMarked, Megaphone, MessageCircle
+  BookMarked, Megaphone, MessageCircle, Moon, Sun
 } from "lucide-react";
 
 const navItems = [
@@ -34,6 +35,7 @@ const DashboardSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [pendingRequests, setPendingRequests] = useState(0);
   const [pendingQueries, setPendingQueries] = useState(0);
 
@@ -95,8 +97,14 @@ const DashboardSidebar = () => {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="border-t border-sidebar-border p-3 space-y-1">
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+        </button>
         <Link
           to="/"
           className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
