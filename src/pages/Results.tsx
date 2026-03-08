@@ -162,6 +162,13 @@ const Results = () => {
     }, 100);
   };
 
+  const handlePrintClassReport = () => {
+    if (!classReportClass) { toast({ title: "Error", description: "Select a class first", variant: "destructive" }); return; }
+    printReportFromRef(classReportRef);
+  };
+
+  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
