@@ -844,6 +844,15 @@ const FeeVouchers = () => {
       <Tabs defaultValue="vouchers" className="space-y-4">
         <TabsList>
           <TabsTrigger value="vouchers">All Vouchers</TabsTrigger>
+          <TabsTrigger value="reminders" className="flex items-center gap-1.5">
+            <Bell className="h-3.5 w-3.5" />
+            WhatsApp Reminders
+            {upcomingDue.length > 0 && (
+              <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[hsl(142,70%,45%)] px-1.5 text-[10px] font-bold text-white">
+                {upcomingDue.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="defaulters" className="flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5" />
             Defaulters
