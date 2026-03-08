@@ -233,6 +233,62 @@ const Dashboard = () => {
             </Card>
           )}
 
+          {/* Enrollment by Class & Attendance Summary */}
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            {enrollmentByClass.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="font-display text-lg">Students by Class</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={enrollmentByClass} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" height={60} />
+                      <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                      <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
+                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <ClipboardCheck className="h-5 w-5" /> Attendance Summary (Last 30 Days)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {attendanceSummary.total === 0 ? (
+                  <p className="py-8 text-center text-muted-foreground">No attendance data available.</p>
+                ) : (
+                  <div className="flex items-center gap-6">
+                    <ResponsiveContainer width="50%" height={200}>
+                      <PieChart>
+                        <Pie data={[
+                          { name: "Present", value: attendanceSummary.present },
+                          { name: "Absent", value: attendanceSummary.absent },
+                          { name: "Late", value: attendanceSummary.late },
+                        ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                          {[0, 1, 2].map(i => <Cell key={i} fill={COLORS[i]} />)}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full" style={{ background: COLORS[0] }} /><span className="text-sm">Present: {attendanceSummary.present}</span></div>
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full" style={{ background: COLORS[1] }} /><span className="text-sm">Absent: {attendanceSummary.absent}</span></div>
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full" style={{ background: COLORS[2] }} /><span className="text-sm">Late: {attendanceSummary.late}</span></div>
+                      <p className="text-xs text-muted-foreground mt-2">Total Records: {attendanceSummary.total}</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
 
           {/* Balance Sheet */}
