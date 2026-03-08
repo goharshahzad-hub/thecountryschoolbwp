@@ -55,6 +55,7 @@ const defaults: WebsiteContent = {
     facebook: { url: "https://www.facebook.com/tcsmtfcbwp/", handle: "@tcsmtfcbwp" },
     instagram: { url: "https://www.instagram.com/thecountryschoolbwp/", handle: "@thecountryschoolbwp" },
     youtube: { url: "https://www.youtube.com/@thecountryschoolbwp", handle: "@thecountryschoolbwp" },
+    tiktok: { url: "https://www.tiktok.com/@thecountryschoolbwp", handle: "@thecountryschoolbwp" },
   },
 };
 

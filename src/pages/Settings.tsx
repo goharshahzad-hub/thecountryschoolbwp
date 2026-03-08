@@ -31,6 +31,7 @@ const SettingsPage = () => {
     facebook: { url: "", handle: "" },
     instagram: { url: "", handle: "" },
     youtube: { url: "", handle: "" },
+    tiktok: { url: "", handle: "" },
   });
   const [savingContent, setSavingContent] = useState(false);
 
