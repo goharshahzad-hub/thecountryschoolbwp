@@ -35,7 +35,7 @@ interface ParentProfile {
   phone: string | null;
 }
 
-const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "" };
+const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "" };
 
 const generateStudentId = (count: number) => {
   const year = new Date().getFullYear();
@@ -90,7 +90,7 @@ const Students = () => {
       const { error } = await supabase.from("students").update({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
+        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(), gender: form.gender,
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
         photo_url: form.photo_url,
       } as any).eq("id", editingId);
@@ -100,7 +100,7 @@ const Students = () => {
       const { error } = await supabase.from("students").insert({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
+        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(), gender: form.gender,
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
         photo_url: form.photo_url,
       } as any);
@@ -115,7 +115,7 @@ const Students = () => {
   };
 
   const handleEdit = (s: Student) => {
-    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || ""), photo_url: (s as any).photo_url || "" });
+    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", gender: (s as any).gender || "Male", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || ""), photo_url: (s as any).photo_url || "" });
     setEditingId(s.id);
     setDialogOpen(true);
   };
@@ -231,6 +231,16 @@ const Students = () => {
                       <SelectItem value="A">A</SelectItem>
                       <SelectItem value="B">B</SelectItem>
                       <SelectItem value="C">C</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Gender</Label>
+                  <Select value={form.gender} onValueChange={v => setForm({ ...form, gender: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -434,6 +434,7 @@ export type Database = {
           created_at: string
           father_name: string
           fee_status: string
+          gender: string
           id: string
           monthly_fee: number | null
           mother_phone: string | null
@@ -452,6 +453,7 @@ export type Database = {
           created_at?: string
           father_name: string
           fee_status?: string
+          gender?: string
           id?: string
           monthly_fee?: number | null
           mother_phone?: string | null
@@ -470,6 +472,7 @@ export type Database = {
           created_at?: string
           father_name?: string
           fee_status?: string
+          gender?: string
           id?: string
           monthly_fee?: number | null
           mother_phone?: string | null
