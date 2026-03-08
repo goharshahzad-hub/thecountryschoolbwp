@@ -236,9 +236,14 @@ const FeeVouchers = () => {
     const useBulkTuition = bulkForm.tuition_fee.trim() !== "";
     const bulkTuition = parseFloat(bulkForm.tuition_fee) || 0;
 
+    const bulkYear = parseInt(bulkForm.year);
+
     const rows = classStudents.map((s, i) => {
       const tuition = useBulkTuition ? bulkTuition : (s.monthly_fee || 0);
-      const total = bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + bulkArrears + bulkLateFee - bulkDiscount;
+      // Auto-calculate per-student arrears from last month's unpaid + late fee
+      const studentArrears = calcStudentArrears(s.id, bulkForm.month, bulkYear);
+      const arrears = studentArrears > 0 ? studentArrears : bulkArrears;
+      const total = bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + arrears + bulkLateFee - bulkDiscount;
       return {
         voucher_no: generateVoucherNo(i),
         student_id: s.id,
@@ -246,7 +251,7 @@ const FeeVouchers = () => {
         tuition_fee: tuition,
         fee_type: "Monthly",
         month: bulkForm.month,
-        year: parseInt(bulkForm.year),
+        year: bulkYear,
         due_date: dueDate,
         issue_date: new Date().toISOString().split("T")[0],
         status: "Pending" as string,
@@ -257,7 +262,7 @@ const FeeVouchers = () => {
         annual_charges: bulkAnnual,
         trip_charges: bulkTrip,
         books_charges: bulkBooks,
-        arrears: bulkArrears,
+        arrears: arrears,
         late_fee: bulkLateFee,
         discount: bulkDiscount,
         late_fee_amount: LATE_FEE,
