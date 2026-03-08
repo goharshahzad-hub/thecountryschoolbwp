@@ -108,7 +108,7 @@ const Students = () => {
   };
 
   const handleEdit = (s: Student) => {
-    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", status: s.status, fee_status: s.fee_status });
+    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || "") });
     setEditingId(s.id);
     setDialogOpen(true);
   };
