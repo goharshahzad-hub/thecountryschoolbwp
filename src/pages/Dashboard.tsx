@@ -103,13 +103,33 @@ const Dashboard = () => {
       });
   }, [allVouchers]);
 
+  // Enrollment by class
+  const enrollmentByClass = useMemo(() => {
+    const map: Record<string, number> = {};
+    students.forEach(s => { map[s.class] = (map[s.class] || 0) + 1; });
+    return Object.entries(map).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [students]);
+
+  // Attendance summary (last 30 days)
+  const attendanceSummary = useMemo(() => {
+    const total = attendanceRecords.length;
+    const present = attendanceRecords.filter(a => a.status === "present").length;
+    const absent = attendanceRecords.filter(a => a.status === "absent").length;
+    const late = attendanceRecords.filter(a => a.status === "late").length;
+    return { total, present, absent, late, rate: total > 0 ? Math.round((present / total) * 100) : 0 };
+  }, [attendanceRecords]);
+
+  const COLORS = ["hsl(142,71%,45%)", "hsl(0,84%,60%)", "hsl(38,92%,50%)"];
+
   const statCards = [
     { label: "Total Students", value: counts.students.toString(), icon: Users, color: "bg-primary/10 text-primary" },
     { label: "Total Teachers", value: counts.teachers.toString(), icon: GraduationCap, color: "bg-secondary/10 text-secondary" },
     { label: "Active Classes", value: counts.classes.toString(), icon: BookOpen, color: "bg-accent/10 text-accent-foreground" },
+    { label: "Pending Admissions", value: counts.admissions.toString(), icon: UserPlus, color: "bg-secondary/10 text-secondary" },
     { label: "Fee Collected", value: `₨ ${feeCollected.toLocaleString("en-PK")}`, icon: CheckCircle, color: "bg-success/10 text-success" },
     { label: "Fee Pending", value: `₨ ${feePending.toLocaleString("en-PK")}`, icon: DollarSign, color: "bg-warning/10 text-warning" },
     { label: "Fee Overdue", value: `₨ ${feeOverdue.toLocaleString("en-PK")}`, icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
+    { label: "Attendance (30d)", value: `${attendanceSummary.rate}%`, icon: ClipboardCheck, color: "bg-primary/10 text-primary" },
   ];
 
   const filterLabel = selectedMonth === "all" && selectedYear === "all"
