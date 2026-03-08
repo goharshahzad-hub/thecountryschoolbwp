@@ -351,7 +351,7 @@ const Students = () => {
                   <TableHead>Class</TableHead>
                   <TableHead>Father's Name</TableHead>
                   <TableHead>Gender</TableHead>
-                  <TableHead>Phone</TableHead>
+                  <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Fee</TableHead>
