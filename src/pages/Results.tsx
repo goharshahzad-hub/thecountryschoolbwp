@@ -165,6 +165,103 @@ const Results = () => {
 
   const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
 
+  // Bulk entry: students in selected class
+  const bulkClassStudents = bulkClass ? students.filter(s => s.class === bulkClass).sort((a, b) => a.name.localeCompare(b.name)) : [];
+
+  const handleBulkSubmit = async () => {
+    if (!bulkClass || !bulkSubject) {
+      toast({ title: "Error", description: "Select class and subject", variant: "destructive" });
+      return;
+    }
+    const entries = bulkClassStudents
+      .filter(s => bulkMarks[s.id] && bulkMarks[s.id].trim() !== "")
+      .map(s => {
+        const obtained = parseFloat(bulkMarks[s.id]);
+        const total = parseFloat(bulkTotalMarks);
+        return {
+          student_id: s.id,
+          subject_id: bulkSubject,
+          exam_type: bulkExamType,
+          term: bulkTerm,
+          total_marks: total,
+          obtained_marks: obtained,
+          grade: gradeFromPercent((obtained / total) * 100),
+          exam_date: bulkExamDate || null,
+          remarks: "",
+        };
+      });
+    if (entries.length === 0) {
+      toast({ title: "Error", description: "Enter marks for at least one student", variant: "destructive" });
+      return;
+    }
+    setBulkSaving(true);
+    const { error } = await supabase.from("test_results").insert(entries);
+    setBulkSaving(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "Success", description: `${entries.length} results saved` });
+      setBulkMarks({});
+      fetchData();
+    }
+  };
+
+  // Monthly test card data
+  const monthlyClassStudents = monthlyClass ? students.filter(s => s.class === monthlyClass).sort((a, b) => a.name.localeCompare(b.name)) : [];
+  const monthlyResults = results.filter(r =>
+    monthlyClassStudents.some(s => s.id === r.student_id) &&
+    (monthlySubject ? r.subject_id === monthlySubject : true) &&
+    r.term === monthlyTerm &&
+    r.exam_type === monthlyExamType
+  );
+
+  const handlePrintMonthlyCard = () => {
+    if (!monthlyClass) { toast({ title: "Error", description: "Select a class", variant: "destructive" }); return; }
+    const subjectName = monthlySubject ? getSubject(monthlySubject)?.name : "All Subjects";
+    const classStudentsFiltered = monthlyClassStudents;
+    
+    // If subject selected, show single subject marks table; else show all subjects
+    let tableHtml = "";
+    if (monthlySubject) {
+      const subResults = monthlyResults.filter(r => r.subject_id === monthlySubject);
+      const rows = classStudentsFiltered.map((s, i) => {
+        const r = subResults.find(r => r.student_id === s.id);
+        return `<tr>
+          <td>${i + 1}</td><td style="text-align:left">${s.student_id}</td><td style="text-align:left">${s.name}</td>
+          <td>${r ? r.total_marks : "—"}</td><td>${r ? r.obtained_marks : "—"}</td>
+          <td>${r ? ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1) + "%" : "—"}</td>
+          <td>${r ? r.grade : "—"}</td>
+        </tr>`;
+      }).join("");
+      tableHtml = `<table><thead><tr><th>#</th><th>ID</th><th>Student Name</th><th>Total</th><th>Obtained</th><th>%</th><th>Grade</th></tr></thead><tbody>${rows}</tbody></table>`;
+    } else {
+      // All subjects for each student
+      const allSubIds = [...new Set(monthlyResults.map(r => r.subject_id))];
+      const headerCols = allSubIds.map(sid => `<th>${getSubject(sid)?.name || "—"}</th>`).join("");
+      const rows = classStudentsFiltered.map((s, i) => {
+        const cols = allSubIds.map(sid => {
+          const r = monthlyResults.find(r => r.student_id === s.id && r.subject_id === sid);
+          return `<td>${r ? `${r.obtained_marks}/${r.total_marks}` : "—"}</td>`;
+        }).join("");
+        const total = allSubIds.reduce((sum, sid) => { const r = monthlyResults.find(r => r.student_id === s.id && r.subject_id === sid); return sum + (r ? Number(r.obtained_marks) : 0); }, 0);
+        const maxTotal = allSubIds.reduce((sum, sid) => { const r = monthlyResults.find(r => r.student_id === s.id && r.subject_id === sid); return sum + (r ? Number(r.total_marks) : 0); }, 0);
+        return `<tr><td>${i + 1}</td><td style="text-align:left">${s.name}</td>${cols}<td><strong>${total}/${maxTotal}</strong></td><td><strong>${maxTotal > 0 ? ((total / maxTotal) * 100).toFixed(1) + "%" : "—"}</strong></td></tr>`;
+      }).join("");
+      tableHtml = `<table><thead><tr><th>#</th><th>Student Name</th>${headerCols}<th>Total</th><th>%</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    printA4(`<div class="print-page">
+      ${schoolHeader(`${monthlyExamType.toUpperCase()} — ${monthlyTerm}`)}
+      <div class="print-info">
+        <div>Class: <span>${monthlyClass}</span></div>
+        <div>Subject: <span>${subjectName}</span></div>
+        <div>Term: <span>${monthlyTerm}</span></div>
+        <div>Total Students: <span>${classStudentsFiltered.length}</span></div>
+      </div>
+      ${tableHtml}
+      ${schoolFooter()}
+    </div>`, `${monthlyExamType} - Class ${monthlyClass}`);
+  };
+
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
