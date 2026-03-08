@@ -92,6 +92,7 @@ const Students = () => {
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
         mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+        photo_url: form.photo_url,
       } as any).eq("id", editingId);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Updated", description: "Student updated successfully." });
