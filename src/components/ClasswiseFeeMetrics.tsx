@@ -39,8 +39,10 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
   const classNames = [...new Set(students.map(s => s.class))].sort();
 
   const metrics: ClassMetric[] = classNames.map(cls => {
-    const classStudentIds = new Set(students.filter(s => s.class === cls).map(s => s.id));
+    const classStudents = students.filter(s => s.class === cls);
+    const classStudentIds = new Set(classStudents.map(s => s.id));
     const classVouchers = vouchers.filter(v => classStudentIds.has(v.student_id));
+    const expectedMonthly = classStudents.reduce((s, st) => s + ((st as any).monthly_fee || 0), 0);
 
     const paid = classVouchers.filter(v => v.status === "Paid");
     const pending = classVouchers.filter(v => v.status === "Pending");
@@ -52,6 +54,7 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
     return {
       className: cls,
       totalStudents: classStudentIds.size,
+      expectedMonthly,
       totalAmount,
       paidAmount,
       pendingAmount: pending.reduce((s, v) => s + Number(v.amount), 0),
