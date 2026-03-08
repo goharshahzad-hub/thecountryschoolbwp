@@ -155,7 +155,21 @@ const Students = () => {
           <p className="mt-1 text-sm text-muted-foreground">Manage all enrolled students ({students.length} total)</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm"><Download className="mr-2 h-4 w-4" />Export</Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = filtered.map(s => `
+              <tr>
+                <td>${s.student_id}</td><td style="text-align:left">${s.name}</td>
+                <td>${s.class}-${s.section}</td><td style="text-align:left">${s.father_name}</td>
+                <td>${s.phone || "—"}</td><td>${s.status}</td><td>${s.fee_status}</td>
+              </tr>`).join("");
+            printA4(`<div class="print-page">
+              ${schoolHeader("STUDENT LIST")}
+              <p class="list-subtitle">Total Students: ${filtered.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
+              <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
+              <tbody>${rows}</tbody></table>
+              ${schoolFooter()}
+            </div>`, "Student List");
+          }}><Printer className="mr-2 h-4 w-4" />Print List</Button>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, student_id: generateStudentId(students.length) })}><Plus className="mr-2 h-4 w-4" />Add Student</Button>
