@@ -39,6 +39,7 @@ const Index = () => {
           <nav className="hidden items-center gap-6 md:flex">
             <a href="#about" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">About</a>
             <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Features</a>
+            <a href="#gallery" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Gallery</a>
             <Link to="/admission-query" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Admission Inquiry</Link>
             <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contact</a>
           </nav>
@@ -117,6 +118,30 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Photo Gallery */}
+      {content.gallery && content.gallery.length > 0 && (
+        <section id="gallery" className="border-t border-border bg-muted/30 py-20">
+          <div className="container">
+            <div className="mb-12 text-center">
+              <h3 className="font-display text-3xl font-bold text-foreground md:text-4xl">Photo Gallery</h3>
+              <p className="mt-3 text-muted-foreground">Glimpses of life at our school</p>
+            </div>
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {content.gallery.map((img, i) => (
+                <div key={i} className="group relative overflow-hidden rounded-lg shadow-card transition-all hover:shadow-elevated animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                  <img src={img.url} alt={img.caption || "Gallery photo"} className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                  {img.caption && (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                      <p className="text-xs font-medium text-white">{img.caption}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Contact */}
       <section id="contact" className="border-t border-border bg-card py-20">

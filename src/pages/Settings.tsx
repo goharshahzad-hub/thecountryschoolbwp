@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useWebsiteContent, StatItem, FeatureItem } from "@/hooks/useWebsiteContent";
+import { useWebsiteContent, StatItem, FeatureItem, GalleryItem } from "@/hooks/useWebsiteContent";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import GalleryManager from "@/components/GalleryManager";
 import logo from "@/assets/logo.jpg";
 
 const SettingsPage = () => {
@@ -25,6 +26,7 @@ const SettingsPage = () => {
   const [aboutSubheading, setAboutSubheading] = useState("");
   const [stats, setStats] = useState<StatItem[]>([]);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [savingContent, setSavingContent] = useState(false);
 
   useEffect(() => {
@@ -34,6 +36,7 @@ const SettingsPage = () => {
       setAboutSubheading(content.about.subheading);
       setStats([...content.stats]);
       setFeatures([...content.features]);
+      setGallery([...content.gallery]);
     }
   }, [contentLoading, content]);
 
@@ -70,6 +73,7 @@ const SettingsPage = () => {
       updateSection("about", { heading: aboutHeading, subheading: aboutSubheading }),
       updateSection("stats", stats),
       updateSection("features", features),
+      updateSection("gallery", gallery),
     ]);
     setSavingContent(false);
     if (results.some(e => e)) toast.error("Failed to save some content");
@@ -208,6 +212,9 @@ const SettingsPage = () => {
             ))}
           </CardContent>
         </Card>
+
+        {/* Gallery */}
+        <GalleryManager gallery={gallery} setGallery={setGallery} />
 
         <Button onClick={handleSaveContent} disabled={savingContent} className="w-full gradient-primary text-primary-foreground">
           {savingContent ? "Saving..." : "Save Website Content"}

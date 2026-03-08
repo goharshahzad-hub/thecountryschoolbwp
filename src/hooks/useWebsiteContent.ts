@@ -12,11 +12,17 @@ export interface FeatureItem {
   icon: string;
 }
 
+export interface GalleryItem {
+  url: string;
+  caption: string;
+}
+
 export interface WebsiteContent {
   hero: { tagline: string };
   stats: StatItem[];
   features: FeatureItem[];
   about: { heading: string; subheading: string };
+  gallery: GalleryItem[];
 }
 
 const defaults: WebsiteContent = {
@@ -36,6 +42,7 @@ const defaults: WebsiteContent = {
     { title: "Structured Schedule", desc: "Well-organized timetables maximizing learning outcomes", icon: "Clock" },
   ],
   about: { heading: "Why Choose Us", subheading: "Building tomorrow's leaders with today's best education" },
+  gallery: [],
 };
 
 export const useWebsiteContent = () => {
