@@ -58,6 +58,7 @@ interface TestResult {
   grade: string | null;
   exam_date: string | null;
   student_id: string;
+  subject_id: string;
   subjects: { name: string } | null;
 }
 
