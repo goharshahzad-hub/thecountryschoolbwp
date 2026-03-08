@@ -198,7 +198,14 @@ const Students = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Father's Phone</Label>
-                  <Input placeholder="0322-XXXXXXX" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+                  <Input placeholder="0322-XXXXXXX" value={form.phone} onChange={e => {
+                    const val = e.target.value;
+                    setForm(f => ({
+                      ...f,
+                      phone: val,
+                      ...(!f.whatsapp ? { whatsapp: val } : {}),
+                    }));
+                  }} />
                 </div>
                 <div className="space-y-2">
                   <Label>Mother's Phone</Label>
