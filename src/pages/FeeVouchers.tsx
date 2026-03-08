@@ -94,6 +94,9 @@ const FeeVouchers = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyFeeForm);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null);
+  const [inlineForm, setInlineForm] = useState<Record<string, string>>({});
+  const [inlineSaving, setInlineSaving] = useState(false);
 
   const [bulkForm, setBulkForm] = useState({
     class_name: "",
