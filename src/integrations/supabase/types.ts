@@ -252,6 +252,54 @@ export type Database = {
           },
         ]
       }
+      expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          expense_date: string
+          expense_head: string
+          id: string
+          month: string
+          paid_to: string | null
+          payment_method: string
+          receipt_no: string | null
+          remarks: string | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          expense_date?: string
+          expense_head: string
+          id?: string
+          month: string
+          paid_to?: string | null
+          payment_method?: string
+          receipt_no?: string | null
+          remarks?: string | null
+          updated_at?: string
+          year?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          expense_date?: string
+          expense_head?: string
+          id?: string
+          month?: string
+          paid_to?: string | null
+          payment_method?: string
+          receipt_no?: string | null
+          remarks?: string | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       fee_vouchers: {
         Row: {
           admission_fee: number
