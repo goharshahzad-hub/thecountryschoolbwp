@@ -86,16 +86,18 @@ const Index = () => {
       </section>
 
       {/* Stats */}
-      <section className="border-b border-border bg-card py-12">
-        <div className="container grid grid-cols-2 gap-8 md:grid-cols-4">
-          {content.stats.map((stat, i) => (
-            <div key={i} className="text-center animate-count-up" style={{ animationDelay: `${i * 100}ms` }}>
-              <p className="font-display text-3xl font-bold text-primary md:text-4xl">{stat.value}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {content.stats && content.stats.length > 0 && (
+        <section className="border-b border-border bg-card py-12">
+          <div className="container grid grid-cols-2 gap-8 md:grid-cols-4">
+            {content.stats.map((stat, i) => (
+              <div key={i} className="text-center animate-count-up" style={{ animationDelay: `${i * 100}ms` }}>
+                <p className="font-display text-3xl font-bold text-primary md:text-4xl">{stat.value}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Features */}
       <section id="features" className="py-20">
