@@ -51,7 +51,7 @@ const FeeVouchers = () => {
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const printRef = useRef<HTMLDivElement>(null);
+  
 
   const [form, setForm] = useState({
     student_id: "", amount: "", fee_type: "Monthly", month: months[new Date().getMonth()],
