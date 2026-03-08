@@ -119,7 +119,7 @@ const AdmissionQuery = () => {
                       <Input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="03XX-XXXXXXX" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Mother's Phone</Label>
+                      <Label>Mobile Number</Label>
                       <Input value={form.mother_phone} onChange={(e) => handleChange("mother_phone", e.target.value)} placeholder="03XX-XXXXXXX" />
                     </div>
                     <div className="space-y-2">
