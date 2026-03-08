@@ -95,7 +95,8 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
             <TableRow>
               <TableHead>Class</TableHead>
               <TableHead className="text-center">Students</TableHead>
-              {!compact && <TableHead className="text-right">Total</TableHead>}
+              <TableHead className="text-right">Expected Fee</TableHead>
+              {!compact && <TableHead className="text-right">Voucher Total</TableHead>}
               <TableHead className="text-right">Paid</TableHead>
               <TableHead className="text-right">Pending</TableHead>
               <TableHead className="text-right">Overdue</TableHead>
@@ -107,6 +108,7 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
               <TableRow key={m.className}>
                 <TableCell className="font-medium">Class {m.className}</TableCell>
                 <TableCell className="text-center">{m.totalStudents}</TableCell>
+                <TableCell className="text-right font-medium">₨ {m.expectedMonthly.toLocaleString("en-PK")}</TableCell>
                 {!compact && (
                   <TableCell className="text-right font-medium">₨ {m.totalAmount.toLocaleString("en-PK")}</TableCell>
                 )}
@@ -142,6 +144,7 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
             <TableRow className="bg-muted/50 font-semibold">
               <TableCell>Total</TableCell>
               <TableCell className="text-center">{students.length}</TableCell>
+              <TableCell className="text-right">₨ {metrics.reduce((s, m) => s + m.expectedMonthly, 0).toLocaleString("en-PK")}</TableCell>
               {!compact && (
                 <TableCell className="text-right">₨ {totals.totalAmount.toLocaleString("en-PK")}</TableCell>
               )}
