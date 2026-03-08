@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,11 +9,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
 interface Student { id: string; name: string; class: string; section: string | null; }
+interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const Dashboard = () => {
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
+  const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0 });
@@ -22,14 +24,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }, { data: studentData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }, { data: studentData }, { data: expenseData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
         supabase.from("students").select("id, name, class, section, monthly_fee"),
+        supabase.from("expenses").select("id, expense_head, amount, month, year"),
       ]);
       setAllVouchers(feeData || []);
+      setAllExpenses(expenseData || []);
       setStudents(studentData || []);
       setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0 });
       setLoading(false);
@@ -54,6 +58,23 @@ const Dashboard = () => {
   const feeCollected = filteredVouchers.filter(v => v.status === "Paid").reduce((s, v) => s + Number(v.amount), 0);
   const feePending = filteredVouchers.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
   const feeOverdue = filteredVouchers.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
+
+  const filteredExpenses = useMemo(() => {
+    return allExpenses.filter(e => {
+      if (selectedMonth !== "all" && e.month !== selectedMonth) return false;
+      if (selectedYear !== "all" && e.year !== Number(selectedYear)) return false;
+      return true;
+    });
+  }, [allExpenses, selectedMonth, selectedYear]);
+
+  const totalExpenses = filteredExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  const netBalance = feeCollected - totalExpenses;
+
+  const expenseByHead = useMemo(() => {
+    const map: Record<string, number> = {};
+    filteredExpenses.forEach(e => { map[e.expense_head] = (map[e.expense_head] || 0) + Number(e.amount); });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [filteredExpenses]);
 
   const chartData = useMemo(() => {
     const monthMap: Record<string, { paid: number; pending: number; overdue: number }> = {};
@@ -188,6 +209,50 @@ const Dashboard = () => {
           )}
 
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
+
+          {/* Balance Sheet */}
+          <Card className="mt-4 shadow-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Wallet className="h-5 w-5" /> Balance Sheet
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4 mb-4">
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Total Income (Paid)</p>
+                  <p className="font-display text-lg font-bold text-success">₨ {feeCollected.toLocaleString("en-PK")}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Total Expenses</p>
+                  <p className="font-display text-lg font-bold text-destructive">₨ {totalExpenses.toLocaleString("en-PK")}</p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Net Balance</p>
+                  <p className={`font-display text-lg font-bold ${netBalance >= 0 ? "text-success" : "text-destructive"}`}>
+                    ₨ {netBalance.toLocaleString("en-PK")}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-muted/30 p-3 text-center">
+                  <p className="text-xs text-muted-foreground">Pending Receivables</p>
+                  <p className="font-display text-lg font-bold text-warning">₨ {(feePending + feeOverdue).toLocaleString("en-PK")}</p>
+                </div>
+              </div>
+              {expenseByHead.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Top Expense Heads</p>
+                  <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                    {expenseByHead.slice(0, 8).map(([head, total]) => (
+                      <div key={head} className="flex items-center justify-between rounded-md border border-border bg-muted/20 p-2">
+                        <span className="text-xs text-muted-foreground truncate mr-2">{head}</span>
+                        <span className="text-xs font-semibold text-foreground whitespace-nowrap">₨ {total.toLocaleString("en-PK")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
     </DashboardLayout>

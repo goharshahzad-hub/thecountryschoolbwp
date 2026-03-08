@@ -23,6 +23,7 @@ import ResetPassword from "./pages/ResetPassword";
 import AdmissionQuery from "./pages/AdmissionQuery";
 import AdmissionQueries from "./pages/AdmissionQueries";
 import AdminRequests from "./pages/AdminRequests";
+import ExpensesPage from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/timetable" element={<Timetable />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
+            <Route path="/dashboard/expenses" element={<ExpensesPage />} />
             <Route path="/dashboard/admin-requests" element={<AdminRequests />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
