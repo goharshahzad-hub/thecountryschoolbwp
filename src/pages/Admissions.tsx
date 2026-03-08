@@ -130,6 +130,13 @@ const Admissions = () => {
     setDialogOpen(true);
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this admission application?")) return;
+    const { error } = await supabase.from("admissions").delete().eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted" }); fetchAdmissions(); }
+  };
+
   const statusColor = (s: string) => s === "Approved" ? "border-success/30 text-success" : s === "Rejected" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   return (
