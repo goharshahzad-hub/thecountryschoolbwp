@@ -1255,7 +1255,7 @@ const Results = () => {
                 <div className="header"><h1>The Country School — Fahad Campus</h1><h2>REPORT CARD / RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
                 <div className="info">
                   <div>Student ID: <span>{student.student_id}</span></div><div>Name: <span>{student.name}</span></div>
-                  <div>Father's Name: <span>{student.father_name}</span></div><div>Class: <span>{student.class}-{student.section}</span></div>
+                  <div>Guardian/Father's Name: <span>{student.father_name}</span></div><div>Class: <span>{student.class}-{student.section}</span></div>
                   <div>Term: <span>{reportTerm}</span></div>
                 </div>
                 <table><thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
