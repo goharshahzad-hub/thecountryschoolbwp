@@ -4,7 +4,7 @@ import logo from "@/assets/logo.jpg";
 import { 
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
-  FileText, Receipt, BarChart3, UserPlus
+  FileText, Receipt, BarChart3, UserPlus, ShieldCheck
 } from "lucide-react";
 
 const navItems = [
