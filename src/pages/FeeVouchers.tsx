@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Search, Printer, Pencil, Trash2, Users } from "lucide-react";
+import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -94,6 +94,9 @@ const FeeVouchers = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyFeeForm);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null);
+  const [inlineForm, setInlineForm] = useState<Record<string, string>>({});
+  const [inlineSaving, setInlineSaving] = useState(false);
 
   const [bulkForm, setBulkForm] = useState({
     class_name: "",
@@ -311,6 +314,69 @@ const FeeVouchers = () => {
     const { error } = await supabase.from("fee_vouchers").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: "Deleted" }); fetchData(); }
+  };
+
+  const FEE_FIELDS = [
+    { key: "registration_fee", label: "Reg. Fee" },
+    { key: "admission_fee", label: "Adm. Fee" },
+    { key: "security_deposit", label: "Security" },
+    { key: "tuition_fee", label: "Tuition" },
+    { key: "annual_charges", label: "Annual" },
+    { key: "trip_charges", label: "Trip" },
+    { key: "books_charges", label: "Books" },
+    { key: "arrears", label: "Arrears" },
+    { key: "late_fee", label: "Late Fee" },
+    { key: "discount", label: "Discount" },
+  ];
+
+  const startInlineEdit = (v: FeeVoucher) => {
+    setInlineEditId(v.id);
+    setInlineForm({
+      registration_fee: String(v.registration_fee || 0),
+      admission_fee: String(v.admission_fee || 0),
+      security_deposit: String(v.security_deposit || 0),
+      tuition_fee: String(v.tuition_fee || 0),
+      annual_charges: String(v.annual_charges || 0),
+      trip_charges: String(v.trip_charges || 0),
+      books_charges: String(v.books_charges || 0),
+      arrears: String(v.arrears || 0),
+      late_fee: String(v.late_fee || 0),
+      discount: String((v as any).discount || 0),
+      status: v.status,
+      remarks: v.remarks || "",
+    });
+  };
+
+  const calcInlineTotal = () => {
+    const sum = ["registration_fee", "admission_fee", "security_deposit", "tuition_fee", "annual_charges", "trip_charges", "books_charges", "arrears", "late_fee"]
+      .reduce((s, k) => s + (parseFloat(inlineForm[k]) || 0), 0);
+    return sum - (parseFloat(inlineForm.discount) || 0);
+  };
+
+  const saveInlineEdit = async () => {
+    if (!inlineEditId) return;
+    setInlineSaving(true);
+    const total = calcInlineTotal();
+    const payload = {
+      registration_fee: parseFloat(inlineForm.registration_fee) || 0,
+      admission_fee: parseFloat(inlineForm.admission_fee) || 0,
+      security_deposit: parseFloat(inlineForm.security_deposit) || 0,
+      tuition_fee: parseFloat(inlineForm.tuition_fee) || 0,
+      annual_charges: parseFloat(inlineForm.annual_charges) || 0,
+      trip_charges: parseFloat(inlineForm.trip_charges) || 0,
+      books_charges: parseFloat(inlineForm.books_charges) || 0,
+      arrears: parseFloat(inlineForm.arrears) || 0,
+      late_fee: parseFloat(inlineForm.late_fee) || 0,
+      discount: parseFloat(inlineForm.discount) || 0,
+      status: inlineForm.status,
+      remarks: inlineForm.remarks.trim(),
+      amount: total,
+      paid_date: inlineForm.status === "Paid" ? new Date().toISOString().split("T")[0] : null,
+    };
+    const { error } = await supabase.from("fee_vouchers").update(payload).eq("id", inlineEditId);
+    setInlineSaving(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Voucher Updated" }); setInlineEditId(null); fetchData(); }
   };
 
   const handlePrint = (v: FeeVoucher) => {
@@ -691,24 +757,77 @@ const FeeVouchers = () => {
                 {filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No challans</TableCell></TableRow> :
                 filtered.map(v => {
                   const student = getStudent(v.student_id);
+                  const isInlineEditing = inlineEditId === v.id;
                   return (
-                    <TableRow key={v.id} data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined}>
-                      <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
-                      <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
-                      <TableCell className="font-medium">{student?.name || "—"}</TableCell>
-                      <TableCell>{student?.class}-{student?.section}</TableCell>
-                      <TableCell>{v.month} {v.year}</TableCell>
-                      <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
-                      <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
-                      <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
-                      <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
-                      <TableCell className="text-right space-x-1">
-                        {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(v)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </TableCell>
-                    </TableRow>
+                    <React.Fragment key={v.id}>
+                      <TableRow data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined} className={isInlineEditing ? "bg-accent/30" : ""}>
+                        <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
+                        <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
+                        <TableCell className="font-medium">{student?.name || "—"}</TableCell>
+                        <TableCell>{student?.class}-{student?.section}</TableCell>
+                        <TableCell>{v.month} {v.year}</TableCell>
+                        <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
+                        <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
+                        <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
+                        <TableCell className="text-right space-x-1">
+                          {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
+                          <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
+                            <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </TableCell>
+                      </TableRow>
+                      {isInlineEditing && (
+                        <TableRow className="bg-accent/10 hover:bg-accent/10">
+                          <TableCell colSpan={10} className="p-3">
+                            <div className="grid grid-cols-5 gap-2 mb-2">
+                              {FEE_FIELDS.map(f => (
+                                <div key={f.key} className="space-y-1">
+                                  <Label className="text-xs text-muted-foreground">{f.label}</Label>
+                                  <Input
+                                    type="number"
+                                    className="h-8 text-sm"
+                                    value={inlineForm[f.key] || "0"}
+                                    onChange={e => setInlineForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-3 mt-2">
+                              <div className="space-y-1">
+                                <Label className="text-xs text-muted-foreground">Status</Label>
+                                <Select value={inlineForm.status} onValueChange={val => setInlineForm(prev => ({ ...prev, status: val }))}>
+                                  <SelectTrigger className="h-8 w-32 text-sm"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Pending">Pending</SelectItem>
+                                    <SelectItem value="Paid">Paid</SelectItem>
+                                    <SelectItem value="Overdue">Overdue</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1 flex-1">
+                                <Label className="text-xs text-muted-foreground">Remarks</Label>
+                                <Input className="h-8 text-sm" value={inlineForm.remarks} onChange={e => setInlineForm(prev => ({ ...prev, remarks: e.target.value }))} />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs text-muted-foreground">New Total</Label>
+                                <p className="h-8 flex items-center font-bold text-sm">₨ {calcInlineTotal().toLocaleString("en-PK")}</p>
+                              </div>
+                              <div className="flex gap-1 pt-4">
+                                <Button size="sm" onClick={saveInlineEdit} disabled={inlineSaving} className="gradient-primary text-primary-foreground">
+                                  <Check className="mr-1 h-4 w-4" />{inlineSaving ? "Saving..." : "Save"}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setInlineEditId(null)}>
+                                  <X className="mr-1 h-4 w-4" />Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
