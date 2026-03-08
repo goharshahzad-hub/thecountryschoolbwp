@@ -11,9 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Send, GraduationCap } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 
-const classOptions = [
-  "Play Group", "Nursery", "Prep", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-];
+import { classOptions } from "@/lib/constants";
 
 const AdmissionQuery = () => {
   const [submitting, setSubmitting] = useState(false);

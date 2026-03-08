@@ -199,7 +199,17 @@ const Admissions = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label>Previous School</Label><Input value={form.previous_school} onChange={e => setForm({ ...form, previous_school: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Previous Class</Label><Input value={form.previous_class} onChange={e => setForm({ ...form, previous_class: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Applying for Class *</Label><Input placeholder="5" value={form.applying_for_class} onChange={e => setForm({ ...form, applying_for_class: e.target.value })} required /></div>
+                  <div className="space-y-2">
+                    <Label>Applying for Class *</Label>
+                    <Select value={form.applying_for_class} onValueChange={v => setForm({ ...form, applying_for_class: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
+                      <SelectContent>
+                        {classOptions.map(c => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-2">
                     <Label>Section</Label>
                     <Select value={form.applying_for_section} onValueChange={v => setForm({ ...form, applying_for_section: v })}>
