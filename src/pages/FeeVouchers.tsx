@@ -103,6 +103,23 @@ const FeeVouchers = () => {
     toast({ title: "Marked as Paid" });
   };
 
+  const handleEdit = (v: FeeVoucher) => {
+    setForm({
+      student_id: v.student_id, amount: v.amount.toString(), fee_type: v.fee_type,
+      month: v.month, year: v.year.toString(), due_date: v.due_date,
+      status: v.status, remarks: v.remarks || ""
+    });
+    setEditingId(v.id);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this voucher?")) return;
+    const { error } = await supabase.from("fee_vouchers").delete().eq("id", id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted" }); fetchData(); }
+  };
+
   const handlePrint = (v: FeeVoucher) => {
     setPrintVoucher(v);
     setTimeout(() => {

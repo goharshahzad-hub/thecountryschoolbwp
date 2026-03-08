@@ -113,6 +113,9 @@ const AdmissionQueries = () => {
                               <Check className="h-3 w-3" />
                             </Button>
                           )}
+                          <Button size="sm" variant="outline" onClick={() => handleDelete(q.id)} title="Delete">
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
