@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import logo from "@/assets/logo.jpg";
-import { LogOut, User, GraduationCap, ClipboardCheck, BookOpen, Receipt, Calendar, FileText } from "lucide-react";
+import { LogOut, User, GraduationCap, ClipboardCheck, BookOpen, Receipt, Calendar, FileText, BookMarked, Bell } from "lucide-react";
 
 interface Student {
   id: string;
