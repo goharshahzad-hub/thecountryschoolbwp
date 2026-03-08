@@ -266,6 +266,7 @@ const FeeVouchers = () => {
       { label: "Books/Summer Pack", amount: v.books_charges || 0 },
       { label: "Arrears", amount: v.arrears || 0 },
       { label: "Late Fee", amount: v.late_fee || 0 },
+      { label: "Discount", amount: -((v as any).discount || 0) },
     ];
 
     const slipContent = (title: string) => `
