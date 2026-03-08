@@ -19,6 +19,7 @@ const Index = () => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
