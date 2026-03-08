@@ -209,7 +209,7 @@ const Results = () => {
   const monthlyClassStudents = monthlyClass ? students.filter(s => s.class === monthlyClass).sort((a, b) => a.name.localeCompare(b.name)) : [];
   const monthlyResults = results.filter(r =>
     monthlyClassStudents.some(s => s.id === r.student_id) &&
-    (monthlySubject ? r.subject_id === monthlySubject : true) &&
+    (monthlySubject && monthlySubject !== "all" ? r.subject_id === monthlySubject : true) &&
     r.term === monthlyTerm &&
     r.exam_type === monthlyExamType
   );
