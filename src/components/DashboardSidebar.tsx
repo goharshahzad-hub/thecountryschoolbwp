@@ -12,7 +12,7 @@ import {
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Overview" },
   { to: "/dashboard/students", icon: Users, label: "Students" },
-  { to: "/dashboard/teachers", icon: GraduationCap, label: "Teachers" },
+  { to: "/dashboard/employees", icon: GraduationCap, label: "Employees" },
   { to: "/dashboard/classes", icon: BookOpen, label: "Classes" },
   { to: "/dashboard/attendance", icon: ClipboardCheck, label: "Attendance" },
   { to: "/dashboard/fees", icon: DollarSign, label: "Fees" },
