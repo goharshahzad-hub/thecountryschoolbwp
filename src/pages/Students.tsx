@@ -231,7 +231,7 @@ const Students = () => {
                    <Input placeholder="Guardian/Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Father's Phone</Label>
+                  <Label>Guardian/Father's Phone</Label>
                   <Input placeholder="0322-XXXXXXX" value={form.phone} onChange={e => {
                     const val = e.target.value;
                     setForm(f => ({
