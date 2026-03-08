@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { printA4 } from "@/lib/printUtils";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface TestResult {
   id: string;
