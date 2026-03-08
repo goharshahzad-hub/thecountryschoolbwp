@@ -319,6 +319,7 @@ export type Database = {
           joining_date: string | null
           name: string
           phone: string | null
+          photo_url: string | null
           qualification: string | null
           salary: number | null
           staff_id: string
@@ -335,6 +336,7 @@ export type Database = {
           joining_date?: string | null
           name: string
           phone?: string | null
+          photo_url?: string | null
           qualification?: string | null
           salary?: number | null
           staff_id: string
@@ -351,6 +353,7 @@ export type Database = {
           joining_date?: string | null
           name?: string
           phone?: string | null
+          photo_url?: string | null
           qualification?: string | null
           salary?: number | null
           staff_id?: string
@@ -437,6 +440,7 @@ export type Database = {
           name: string
           parent_user_id: string | null
           phone: string | null
+          photo_url: string | null
           section: string | null
           status: string
           student_id: string
@@ -454,6 +458,7 @@ export type Database = {
           name: string
           parent_user_id?: string | null
           phone?: string | null
+          photo_url?: string | null
           section?: string | null
           status?: string
           student_id: string
@@ -471,6 +476,7 @@ export type Database = {
           name?: string
           parent_user_id?: string | null
           phone?: string | null
+          photo_url?: string | null
           section?: string | null
           status?: string
           student_id?: string
@@ -510,6 +516,7 @@ export type Database = {
           joining_date: string | null
           name: string
           phone: string | null
+          photo_url: string | null
           qualification: string | null
           salary: number | null
           status: string
@@ -526,6 +533,7 @@ export type Database = {
           joining_date?: string | null
           name: string
           phone?: string | null
+          photo_url?: string | null
           qualification?: string | null
           salary?: number | null
           status?: string
@@ -542,6 +550,7 @@ export type Database = {
           joining_date?: string | null
           name?: string
           phone?: string | null
+          photo_url?: string | null
           qualification?: string | null
           salary?: number | null
           status?: string
