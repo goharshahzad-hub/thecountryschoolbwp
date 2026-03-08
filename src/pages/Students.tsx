@@ -206,7 +206,7 @@ const Students = () => {
             printA4(`<div class="print-page">
               ${schoolHeader("STUDENT LIST")}
               <p class="list-subtitle">Total Students: ${filtered.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
-              <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
+              <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Guardian/Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
               <tbody>${rows}</tbody></table>
               ${schoolFooter()}
             </div>`, "Student List");
