@@ -52,6 +52,22 @@ const Results = () => {
   const annualPrintRef = useRef<HTMLDivElement>(null);
   const classReportRef = useRef<HTMLDivElement>(null);
 
+  // Bulk monthly test entry state
+  const [bulkClass, setBulkClass] = useState("");
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [bulkTerm, setBulkTerm] = useState("Term 1");
+  const [bulkExamType, setBulkExamType] = useState("Monthly Test");
+  const [bulkTotalMarks, setBulkTotalMarks] = useState("100");
+  const [bulkExamDate, setBulkExamDate] = useState("");
+  const [bulkMarks, setBulkMarks] = useState<Record<string, string>>({});
+  const [bulkSaving, setBulkSaving] = useState(false);
+
+  // Monthly test card state
+  const [monthlyClass, setMonthlyClass] = useState("");
+  const [monthlySubject, setMonthlySubject] = useState("");
+  const [monthlyTerm, setMonthlyTerm] = useState("Term 1");
+  const [monthlyExamType, setMonthlyExamType] = useState("Monthly Test");
+
   const [form, setForm] = useState({
     student_id: "", subject_id: "", exam_type: "Monthly Test", term: "Term 1",
     total_marks: "100", obtained_marks: "", remarks: "", exam_date: ""
