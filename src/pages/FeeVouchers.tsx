@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
-import { printA4 } from "@/lib/printUtils";
+
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,8 +51,7 @@ const FeeVouchers = () => {
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [printVoucher, setPrintVoucher] = useState<FeeVoucher | null>(null);
-  const printRef = useRef<HTMLDivElement>(null);
+  
 
   const [form, setForm] = useState({
     student_id: "", amount: "", fee_type: "Monthly", month: months[new Date().getMonth()],
@@ -175,12 +174,140 @@ const FeeVouchers = () => {
   };
 
   const handlePrint = (v: FeeVoucher) => {
-    setPrintVoucher(v);
-    setTimeout(() => {
-      const content = printRef.current;
-      if (!content) return;
-      printA4(content.innerHTML, `Fee Voucher - ${v.voucher_no}`);
-    }, 100);
+    const student = getStudent(v.student_id);
+    const slipContent = (title: string) => `
+      <div class="slip">
+        <div class="slip-title">${title}</div>
+        <div class="slip-school">${settings.school_name}</div>
+        <div class="slip-campus">${settings.campus}, ${settings.city}</div>
+        <div class="slip-heading">FEE VOUCHER</div>
+        <table class="slip-table">
+          <tr><td class="lbl">Voucher No</td><td>${v.voucher_no}</td></tr>
+          <tr><td class="lbl">Student ID</td><td>${student?.student_id || "—"}</td></tr>
+          <tr><td class="lbl">Student Name</td><td>${student?.name || "—"}</td></tr>
+          <tr><td class="lbl">Father Name</td><td>${student?.father_name || "—"}</td></tr>
+          <tr><td class="lbl">Class</td><td>${student?.class}-${student?.section}</td></tr>
+          <tr><td class="lbl">Fee Type</td><td>${v.fee_type}</td></tr>
+          <tr><td class="lbl">Month / Year</td><td>${v.month} ${v.year}</td></tr>
+          <tr><td class="lbl">Due Date</td><td>${v.due_date}</td></tr>
+          <tr><td class="lbl">Status</td><td>${v.status}</td></tr>
+          ${v.remarks ? `<tr><td class="lbl">Remarks</td><td>${v.remarks}</td></tr>` : ""}
+        </table>
+        <div class="slip-total">₨ ${Number(v.amount).toLocaleString("en-PK")}</div>
+        <div class="slip-sign">
+          <div>Accountant Sign</div>
+          <div>Stamp</div>
+        </div>
+      </div>`;
+
+    const voucherStyles = `
+      @page { size: A4 landscape; margin: 10mm; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
+      .voucher-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        gap: 0;
+      }
+      .slip {
+        flex: 1;
+        border: 1px solid #333;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .slip + .slip { border-left: 2px dashed #999; }
+      .slip-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        background: #c0392b;
+        color: #fff;
+        padding: 4px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+      }
+      .slip-school {
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        color: #c0392b;
+      }
+      .slip-campus {
+        text-align: center;
+        font-size: 9px;
+        color: #666;
+        margin-bottom: 6px;
+      }
+      .slip-heading {
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        padding: 4px 0;
+        margin-bottom: 8px;
+      }
+      .slip-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+        margin-bottom: 8px;
+      }
+      .slip-table td {
+        padding: 3px 6px;
+        border: 1px solid #ddd;
+      }
+      .slip-table .lbl {
+        font-weight: bold;
+        width: 40%;
+        background: #f5f5f5;
+      }
+      .slip-total {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        border: 2px solid #c0392b;
+        padding: 6px;
+        margin: 8px 0;
+        color: #c0392b;
+      }
+      .slip-sign {
+        display: flex;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 30px;
+        font-size: 9px;
+      }
+      .slip-sign div {
+        border-top: 1px solid #333;
+        padding-top: 3px;
+        width: 80px;
+        text-align: center;
+      }
+      .slip-footer {
+        text-align: center;
+        font-size: 7px;
+        color: #999;
+        margin-top: 6px;
+      }
+      @media print { body { padding: 0; } }
+    `;
+
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><title>Fee Voucher - ${v.voucher_no}</title><style>${voucherStyles}</style></head><body>
+      <div class="voucher-container">
+        ${slipContent("School Copy")}
+        ${slipContent("Bank Copy")}
+        ${slipContent("Student Copy")}
+      </div>
+      <script>window.print();window.close()<\/script>
+    </body></html>`);
+    win.document.close();
   };
 
   const filtered = vouchers.filter(v => {
@@ -357,38 +484,8 @@ const FeeVouchers = () => {
         </CardContent>
       </Card>
 
-      {/* Hidden print template */}
-      <div className="hidden">
-        <div ref={printRef}>
-          {printVoucher && (() => {
-            const student = getStudent(printVoucher.student_id);
-            return (
-              <div className="voucher">
-                <div className="header">
-                  <h1>{settings.school_name} — {settings.campus}</h1>
-                  <p>{settings.city}, Pakistan</p>
-                  <p style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}>FEE VOUCHER</p>
-                </div>
-                <div className="row"><span className="label">Voucher No:</span><span>{printVoucher.voucher_no}</span></div>
-                <div className="row"><span className="label">Student ID:</span><span>{student?.student_id}</span></div>
-                <div className="row"><span className="label">Student Name:</span><span>{student?.name}</span></div>
-                <div className="row"><span className="label">Father's Name:</span><span>{student?.father_name}</span></div>
-                <div className="row"><span className="label">Class:</span><span>{student?.class}-{student?.section}</span></div>
-                <div className="row"><span className="label">Fee Type:</span><span>{printVoucher.fee_type}</span></div>
-                <div className="row"><span className="label">Month / Year:</span><span>{printVoucher.month} {printVoucher.year}</span></div>
-                <div className="row"><span className="label">Due Date:</span><span>{printVoucher.due_date}</span></div>
-                <div className="row"><span className="label">Status:</span><span>{printVoucher.status}</span></div>
-                {printVoucher.remarks && <div className="row"><span className="label">Remarks:</span><span>{printVoucher.remarks}</span></div>}
-                <div className="row total"><span>Total Amount:</span><span>₨ {Number(printVoucher.amount).toLocaleString("en-PK")}</span></div>
-                <div className="footer">
-                  <p>This is a computer-generated voucher. Please pay at the school office before the due date.</p>
-                  <p>📞 {settings.phone} | 📧 {settings.email}</p>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      </div>
+
+
     </DashboardLayout>
   );
 };
