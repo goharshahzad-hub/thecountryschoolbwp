@@ -346,7 +346,48 @@ const Results = () => {
     setTimeout(() => { if (classReportRef.current) printA4(classReportRef.current.innerHTML, "Class Reports"); }, 100);
   };
 
-  const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9+]/g, "");
+    if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+    if (cleaned.startsWith("+")) cleaned = cleaned.slice(1);
+    return cleaned;
+  };
+
+  const sendMonthlyTestAlerts = () => {
+    if (!mtViewClass || !mtViewMonth || mtViewResults.length === 0) return;
+    const allSubIds = [...new Set(mtViewResults.map(r => r.subject_id))];
+    let opened = 0;
+    mtViewStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const studentResultsList = allSubIds.map(sid => {
+        const r = mtViewResults.find(r => r.student_id === s.id && r.subject_id === sid);
+        if (!r) return null;
+        const subName = getSubject(sid)?.name || "Subject";
+        const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(0);
+        const isAbsent = r.remarks?.toLowerCase().includes("absent");
+        return `• ${subName}: ${isAbsent ? "Absent" : `${r.obtained_marks}/${r.total_marks} (${pct}%)`}`;
+      }).filter(Boolean);
+      if (studentResultsList.length === 0) return;
+      const totalObt = allSubIds.reduce((sum, sid) => { const r = mtViewResults.find(r => r.student_id === s.id && r.subject_id === sid); return sum + (r && !r.remarks?.toLowerCase().includes("absent") ? Number(r.obtained_marks) : 0); }, 0);
+      const totalMax = allSubIds.reduce((sum, sid) => { const r = mtViewResults.find(r => r.student_id === s.id && r.subject_id === sid); return sum + (r ? Number(r.total_marks) : 0); }, 0);
+      const overallPct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(0) : "0";
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\nMonthly Test Result for *${mtViewMonth} ${new Date().getFullYear()}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${studentResultsList.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nPlease encourage your child to maintain/improve their performance.\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => {
+        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+      }, i * 800);
+      opened++;
+    });
+    if (opened === 0) {
+      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found for students.", variant: "destructive" });
+    } else {
+      toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
+    }
+  };
+
   const student = getStudent(reportStudent);
 
   const filtered = results.filter(r => {
