@@ -227,8 +227,8 @@ const Students = () => {
                   <Input placeholder="Student name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Father's Name *</Label>
-                  <Input placeholder="Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
+                  <Label>Guardian/Father's Name *</Label>
+                   <Input placeholder="Guardian/Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
                   <Label>Father's Phone</Label>
