@@ -179,21 +179,7 @@ const FeeVouchers = () => {
     setTimeout(() => {
       const content = printRef.current;
       if (!content) return;
-      const win = window.open("", "_blank");
-      if (!win) return;
-      win.document.write(`<html><head><title>Fee Voucher - ${v.voucher_no}</title><style>
-        body{font-family:Arial,sans-serif;padding:20px;color:#222}
-        .voucher{border:2px solid #333;padding:24px;max-width:600px;margin:auto}
-        .header{text-align:center;border-bottom:2px solid #333;padding-bottom:16px;margin-bottom:16px}
-        .header h1{font-size:20px;margin:0}
-        .header p{font-size:12px;color:#666;margin:4px 0}
-        .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ddd;font-size:14px}
-        .row .label{color:#666}
-        .total{font-size:18px;font-weight:bold;border-top:2px solid #333;padding-top:12px;margin-top:12px}
-        .footer{text-align:center;margin-top:20px;font-size:11px;color:#999}
-        @media print{body{padding:0}}
-      </style></head><body>${content.innerHTML}<script>window.print();window.close()</script></body></html>`);
-      win.document.close();
+      printA4(content.innerHTML, `Fee Voucher - ${v.voucher_no}`);
     }, 100);
   };
 
