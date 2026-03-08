@@ -213,6 +213,9 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
+        {/* Gallery */}
+        <GalleryManager gallery={gallery} setGallery={setGallery} />
+
         <Button onClick={handleSaveContent} disabled={savingContent} className="w-full gradient-primary text-primary-foreground">
           {savingContent ? "Saving..." : "Save Website Content"}
         </Button>
