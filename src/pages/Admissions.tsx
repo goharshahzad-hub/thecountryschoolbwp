@@ -161,7 +161,7 @@ const Admissions = () => {
   const handleBulkPrint = () => {
     const selected = filtered.filter(a => bulk.selectedIds.has(a.id));
     const rows = selected.map(a => `<tr><td>${a.application_no}</td><td style="text-align:left">${a.student_name}</td><td>${a.father_name}</td><td>${a.applying_for_class}-${a.applying_for_section}</td><td>${a.gender}</td><td>${a.status}</td></tr>`).join("");
-    printA4(`<div class="print-page">${schoolHeader("ADMISSION APPLICATIONS")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>App No</th><th>Student</th><th>Father</th><th>Class</th><th>Gender</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Admissions List");
+    printA4(`<div class="print-page">${schoolHeader("ADMISSION APPLICATIONS")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>App No</th><th>Student</th><th>Guardian/Father</th><th>Class</th><th>Gender</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Admissions List");
   };
 
   const statusColor = (s: string) => s === "Approved" ? "border-success/30 text-success" : s === "Rejected" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
