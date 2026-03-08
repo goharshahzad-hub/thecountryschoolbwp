@@ -2,6 +2,7 @@ import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 
 const features = [
   { icon: GraduationCap, title: "Academic Excellence", desc: "Comprehensive curriculum designed for holistic student development" },
@@ -13,16 +14,18 @@ const features = [
 ];
 
 const Index = () => {
+  const { settings } = useSchoolSettings();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="The Country School Logo" className="h-10 w-10 rounded-full object-cover" />
+            <img src={logo} alt={`${settings.school_name} Logo`} className="h-10 w-10 rounded-full object-cover" />
             <div>
-              <h1 className="font-display text-lg font-bold leading-tight text-foreground">The Country School</h1>
-              <p className="text-xs text-muted-foreground">Model Town Fahad Campus</p>
+              <h1 className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</h1>
+              <p className="text-xs text-muted-foreground">{settings.campus}</p>
             </div>
           </div>
           <nav className="hidden items-center gap-6 md:flex">
@@ -33,14 +36,10 @@ const Index = () => {
           </nav>
           <div className="flex items-center gap-2">
             <Link to="/parent-login">
-              <Button variant="outline" size="sm">
-                Parent Login
-              </Button>
+              <Button variant="outline" size="sm">Parent Login</Button>
             </Link>
             <Link to="/dashboard">
-              <Button size="sm" className="gradient-primary border-0 text-primary-foreground">
-                Admin Portal
-              </Button>
+              <Button size="sm" className="gradient-primary border-0 text-primary-foreground">Admin Portal</Button>
             </Link>
           </div>
         </div>
@@ -50,26 +49,22 @@ const Index = () => {
       <section className="gradient-hero relative overflow-hidden py-24 md:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(356_72%_48%/0.12),transparent_60%)]" />
         <div className="container relative z-10 text-center">
-          <img src={logo} alt="The Country School" className="mx-auto mb-8 h-28 w-28 rounded-full border-4 border-primary/30 object-cover shadow-elevated" />
+          <img src={logo} alt={settings.school_name} className="mx-auto mb-8 h-28 w-28 rounded-full border-4 border-primary/30 object-cover shadow-elevated" />
           <h2 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
-            The Country School
+            {settings.school_name}
           </h2>
           <p className="mb-2 text-lg font-medium text-primary-foreground/80 md:text-xl">
-            Model Town Fahad Campus, Bahawalpur
+            {settings.campus}, {settings.city}
           </p>
           <p className="mx-auto mb-8 max-w-2xl text-base text-primary-foreground/60">
-            Towards Academic Excellence — Empowering young minds with quality education, strong values, and a nurturing environment since day one.
+            {settings.motto} — Empowering young minds with quality education, strong values, and a nurturing environment since day one.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/dashboard">
-              <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">
-                Access Dashboard
-              </Button>
+              <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Access Dashboard</Button>
             </Link>
             <a href="#contact">
-              <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
-                Contact Us
-              </Button>
+              <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">Contact Us</Button>
             </a>
           </div>
         </div>
@@ -122,9 +117,9 @@ const Index = () => {
           </div>
           <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-3">
             {[
-              { icon: Phone, label: "Phone", value: "+92 322 6107000", href: "tel:+923226107000" },
-              { icon: Mail, label: "Email", value: "thecountryschoolbwp@gmail.com", href: "mailto:thecountryschoolbwp@gmail.com" },
-              { icon: MapPin, label: "Address", value: "Model Town Fahad Campus, Bahawalpur", href: "#" },
+              { icon: Phone, label: "Phone", value: settings.phone, href: `tel:${settings.phone.replace(/\s/g, "")}` },
+              { icon: Mail, label: "Email", value: settings.email, href: `mailto:${settings.email}` },
+              { icon: MapPin, label: "Address", value: `${settings.campus}, ${settings.city}`, href: "#" },
             ].map((c, i) => (
               <a key={i} href={c.href} className="flex flex-col items-center rounded-lg border border-border p-6 text-center shadow-card transition-all hover:shadow-elevated">
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
@@ -143,9 +138,9 @@ const Index = () => {
         <div className="container flex flex-col items-center gap-4 md:flex-row md:justify-between">
           <div className="flex items-center gap-2">
             <img src={logo} alt="Logo" className="h-8 w-8 rounded-full object-cover" />
-            <span className="font-display text-sm font-semibold text-primary-foreground">The Country School</span>
+            <span className="font-display text-sm font-semibold text-primary-foreground">{settings.school_name}</span>
           </div>
-          <p className="text-xs text-primary-foreground/50">© {new Date().getFullYear()} The Country School. All rights reserved.</p>
+          <p className="text-xs text-primary-foreground/50">© {new Date().getFullYear()} {settings.school_name}. All rights reserved.</p>
         </div>
       </footer>
     </div>
