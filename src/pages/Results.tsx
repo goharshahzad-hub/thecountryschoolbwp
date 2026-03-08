@@ -498,6 +498,116 @@ const Results = () => {
           })()}
         </div>
       </div>
+
+      {/* Hidden print template for annual report card */}
+      <div className="hidden">
+        <div ref={annualPrintRef}>
+          {(() => {
+            const s = getStudent(annualStudent);
+            if (!s) return null;
+            const terms = ["Term 1", "Term 2", "Term 3"];
+            const allSubjectIds = [...new Set(results.filter(r => r.student_id === annualStudent).map(r => r.subject_id))];
+            if (allSubjectIds.length === 0) return null;
+            const allTermResults = terms.map(t => results.filter(r => r.student_id === annualStudent && r.term === t));
+            let grandTotal = 0, grandObt = 0;
+
+            return (
+              <div className="report">
+                <div className="header">
+                  <h1>The Country School — Fahad Campus</h1>
+                  <h2>ANNUAL COMBINED RESULT CARD</h2>
+                  <p>Academic Year {new Date().getFullYear()}</p>
+                </div>
+                <div className="info">
+                  <div>Student ID: <span>{s.student_id}</span></div>
+                  <div>Name: <span>{s.name}</span></div>
+                  <div>Father's Name: <span>{s.father_name}</span></div>
+                  <div>Class: <span>{s.class}-{s.section}</span></div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th rowSpan={2} style={{ verticalAlign: "bottom" }}>Subject</th>
+                      {terms.map(t => <th key={t} colSpan={3} style={{ borderLeft: "2px solid #333" }}>{t}</th>)}
+                      <th colSpan={3} style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}>Annual</th>
+                    </tr>
+                    <tr>
+                      {terms.map(t => (
+                        <>
+                          <th key={`${t}-t`} style={{ borderLeft: "2px solid #333", fontSize: "10px" }}>Total</th>
+                          <th key={`${t}-o`} style={{ fontSize: "10px" }}>Obt</th>
+                          <th key={`${t}-g`} style={{ fontSize: "10px" }}>Grade</th>
+                        </>
+                      ))}
+                      <th style={{ borderLeft: "2px solid #333", fontSize: "10px", background: "#e8e8e8" }}>Total</th>
+                      <th style={{ fontSize: "10px", background: "#e8e8e8" }}>Obt</th>
+                      <th style={{ fontSize: "10px", background: "#e8e8e8" }}>Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allSubjectIds.map(subId => {
+                      let subTotal = 0, subObt = 0;
+                      return (
+                        <tr key={subId}>
+                          <td style={{ textAlign: "left" }}>{getSubject(subId)?.name}</td>
+                          {terms.map((t, ti) => {
+                            const r = allTermResults[ti].find(r => r.subject_id === subId);
+                            if (r) { subTotal += Number(r.total_marks); subObt += Number(r.obtained_marks); }
+                            return (
+                              <>
+                                <td key={`${t}-${subId}-t`} style={{ borderLeft: "2px solid #333" }}>{r ? r.total_marks : "—"}</td>
+                                <td key={`${t}-${subId}-o`}>{r ? r.obtained_marks : "—"}</td>
+                                <td key={`${t}-${subId}-g`}><strong>{r ? r.grade : "—"}</strong></td>
+                              </>
+                            );
+                          })}
+                          <td style={{ borderLeft: "2px solid #333", background: "#f5f5f5" }}><strong>{subTotal || "—"}</strong></td>
+                          <td style={{ background: "#f5f5f5" }}><strong>{subObt || "—"}</strong></td>
+                          <td style={{ background: "#f5f5f5" }}><strong>{subTotal > 0 ? gradeFromPercent((subObt / subTotal) * 100) : "—"}</strong></td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="total-row">
+                      <td style={{ textAlign: "left" }}><strong>Grand Total</strong></td>
+                      {terms.map((t, ti) => {
+                        const tr = allTermResults[ti];
+                        const tt = tr.reduce((s, r) => s + Number(r.total_marks), 0);
+                        const to = tr.reduce((s, r) => s + Number(r.obtained_marks), 0);
+                        grandTotal += tt; grandObt += to;
+                        return (
+                          <>
+                            <td key={`gt-${ti}-t`} style={{ borderLeft: "2px solid #333" }}><strong>{tt || "—"}</strong></td>
+                            <td key={`gt-${ti}-o`}><strong>{to || "—"}</strong></td>
+                            <td key={`gt-${ti}-g`}><strong>{tt > 0 ? gradeFromPercent((to / tt) * 100) : "—"}</strong></td>
+                          </>
+                        );
+                      })}
+                      <td style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}><strong>{grandTotal}</strong></td>
+                      <td style={{ background: "#e8e8e8" }}><strong>{grandObt}</strong></td>
+                      <td style={{ background: "#e8e8e8" }}><strong>{grandTotal > 0 ? gradeFromPercent((grandObt / grandTotal) * 100) : "—"}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div className="grade-summary">
+                  Overall Annual Grade: <strong>{grandTotal > 0 ? gradeFromPercent((grandObt / grandTotal) * 100) : "N/A"}</strong> |
+                  Overall Percentage: <strong>{grandTotal > 0 ? ((grandObt / grandTotal) * 100).toFixed(1) : "0"}%</strong> |
+                  Position: _____ |
+                  Attendance: _____%
+                </div>
+                <div className="signatures">
+                  <div>Class Teacher</div>
+                  <div>Principal</div>
+                  <div>Parent's Signature</div>
+                </div>
+                <div className="footer">
+                  <p>📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
+                  <p>This is a computer-generated annual result card.</p>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
     </DashboardLayout>
   );
 };
