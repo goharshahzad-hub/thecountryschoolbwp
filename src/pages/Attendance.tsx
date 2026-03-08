@@ -30,6 +30,7 @@ interface ClassOption {
 
 const Attendance = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [students, setStudents] = useState<Student[]>([]);
   const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -37,6 +38,7 @@ const Attendance = () => {
   const [existingRecords, setExistingRecords] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
