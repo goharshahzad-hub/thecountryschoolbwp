@@ -52,6 +52,8 @@ interface Student {
   section: string | null;
   father_name: string;
   monthly_fee: number | null;
+  phone: string | null;
+  whatsapp: string | null;
 }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
