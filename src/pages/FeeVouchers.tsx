@@ -316,7 +316,70 @@ const FeeVouchers = () => {
     else { toast({ title: "Deleted" }); fetchData(); }
   };
 
-  const handlePrint = (v: FeeVoucher) => {
+  const FEE_FIELDS = [
+    { key: "registration_fee", label: "Reg. Fee" },
+    { key: "admission_fee", label: "Adm. Fee" },
+    { key: "security_deposit", label: "Security" },
+    { key: "tuition_fee", label: "Tuition" },
+    { key: "annual_charges", label: "Annual" },
+    { key: "trip_charges", label: "Trip" },
+    { key: "books_charges", label: "Books" },
+    { key: "arrears", label: "Arrears" },
+    { key: "late_fee", label: "Late Fee" },
+    { key: "discount", label: "Discount" },
+  ];
+
+  const startInlineEdit = (v: FeeVoucher) => {
+    setInlineEditId(v.id);
+    setInlineForm({
+      registration_fee: String(v.registration_fee || 0),
+      admission_fee: String(v.admission_fee || 0),
+      security_deposit: String(v.security_deposit || 0),
+      tuition_fee: String(v.tuition_fee || 0),
+      annual_charges: String(v.annual_charges || 0),
+      trip_charges: String(v.trip_charges || 0),
+      books_charges: String(v.books_charges || 0),
+      arrears: String(v.arrears || 0),
+      late_fee: String(v.late_fee || 0),
+      discount: String((v as any).discount || 0),
+      status: v.status,
+      remarks: v.remarks || "",
+    });
+  };
+
+  const calcInlineTotal = () => {
+    const sum = ["registration_fee", "admission_fee", "security_deposit", "tuition_fee", "annual_charges", "trip_charges", "books_charges", "arrears", "late_fee"]
+      .reduce((s, k) => s + (parseFloat(inlineForm[k]) || 0), 0);
+    return sum - (parseFloat(inlineForm.discount) || 0);
+  };
+
+  const saveInlineEdit = async () => {
+    if (!inlineEditId) return;
+    setInlineSaving(true);
+    const total = calcInlineTotal();
+    const payload = {
+      registration_fee: parseFloat(inlineForm.registration_fee) || 0,
+      admission_fee: parseFloat(inlineForm.admission_fee) || 0,
+      security_deposit: parseFloat(inlineForm.security_deposit) || 0,
+      tuition_fee: parseFloat(inlineForm.tuition_fee) || 0,
+      annual_charges: parseFloat(inlineForm.annual_charges) || 0,
+      trip_charges: parseFloat(inlineForm.trip_charges) || 0,
+      books_charges: parseFloat(inlineForm.books_charges) || 0,
+      arrears: parseFloat(inlineForm.arrears) || 0,
+      late_fee: parseFloat(inlineForm.late_fee) || 0,
+      discount: parseFloat(inlineForm.discount) || 0,
+      status: inlineForm.status,
+      remarks: inlineForm.remarks.trim(),
+      amount: total,
+      paid_date: inlineForm.status === "Paid" ? new Date().toISOString().split("T")[0] : null,
+    };
+    const { error } = await supabase.from("fee_vouchers").update(payload).eq("id", inlineEditId);
+    setInlineSaving(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Voucher Updated" }); setInlineEditId(null); fetchData(); }
+  };
+
+
     const student = getStudent(v.student_id);
     const payableByDue = Number(v.amount) - Number(v.late_fee || 0);
     const lateFeeCharges = v.late_fee_amount || LATE_FEE;
