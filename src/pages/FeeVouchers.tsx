@@ -51,7 +51,6 @@ const FeeVouchers = () => {
   const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [printVoucher, setPrintVoucher] = useState<FeeVoucher | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
