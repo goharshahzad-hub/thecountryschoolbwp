@@ -1288,7 +1288,7 @@ const Results = () => {
                 <div className="header"><h1>The Country School — Fahad Campus</h1><h2>ANNUAL COMBINED RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
                 <div className="info">
                   <div>Student ID: <span>{s.student_id}</span></div><div>Name: <span>{s.name}</span></div>
-                  <div>Father's Name: <span>{s.father_name}</span></div><div>Class: <span>{s.class}-{s.section}</span></div>
+                  <div>Guardian/Father's Name: <span>{s.father_name}</span></div><div>Class: <span>{s.class}-{s.section}</span></div>
                 </div>
                 <table>
                   <thead>
