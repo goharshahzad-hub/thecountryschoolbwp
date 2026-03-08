@@ -1031,7 +1031,7 @@ const FeeVouchers = () => {
           )}
         </TabsContent>
 
-
+        <TabsContent value="defaulters">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-destructive" />
