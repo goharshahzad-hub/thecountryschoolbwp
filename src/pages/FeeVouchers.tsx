@@ -82,8 +82,7 @@ const FeeVouchers = () => {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("fee_vouchers").insert({
-      voucher_no: generateVoucherNo(),
+    const payload = {
       student_id: form.student_id,
       amount: parseFloat(form.amount),
       fee_type: form.fee_type,
@@ -92,10 +91,15 @@ const FeeVouchers = () => {
       due_date: form.due_date,
       status: form.status,
       remarks: form.remarks.trim(),
-    });
+    };
+
+    const { error } = editingId
+      ? await supabase.from("fee_vouchers").update(payload).eq("id", editingId)
+      : await supabase.from("fee_vouchers").insert({ ...payload, voucher_no: generateVoucherNo() });
+
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Voucher Generated" }); setDialogOpen(false); fetchData(); }
+    else { toast({ title: editingId ? "Updated" : "Voucher Generated" }); setDialogOpen(false); setEditingId(null); fetchData(); }
   };
 
   const markPaid = async (id: string) => {
