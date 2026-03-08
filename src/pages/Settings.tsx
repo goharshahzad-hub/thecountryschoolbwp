@@ -223,6 +223,33 @@ const SettingsPage = () => {
         {/* Gallery */}
         <GalleryManager gallery={gallery} setGallery={setGallery} />
 
+        {/* Social Media Links */}
+        <Card className="shadow-card">
+          <CardHeader><CardTitle className="font-display">Social Media Links</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            {(["facebook", "instagram", "youtube"] as const).map((platform) => (
+              <div key={platform} className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs capitalize">{platform} URL</Label>
+                  <Input
+                    value={socialLinks[platform].url}
+                    onChange={e => setSocialLinks(prev => ({ ...prev, [platform]: { ...prev[platform], url: e.target.value } }))}
+                    placeholder={`https://${platform}.com/...`}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs capitalize">{platform} Handle</Label>
+                  <Input
+                    value={socialLinks[platform].handle}
+                    onChange={e => setSocialLinks(prev => ({ ...prev, [platform]: { ...prev[platform], handle: e.target.value } }))}
+                    placeholder="@yourhandle"
+                  />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
         <Button onClick={handleSaveContent} disabled={savingContent} className="w-full gradient-primary text-primary-foreground">
           {savingContent ? "Saving..." : "Save Website Content"}
         </Button>

@@ -50,6 +50,11 @@ const defaults: WebsiteContent = {
   ],
   about: { heading: "Why Choose Us", subheading: "Building tomorrow's leaders with today's best education" },
   gallery: [],
+  social_links: {
+    facebook: { url: "https://www.facebook.com/tcsmtfcbwp/", handle: "@tcsmtfcbwp" },
+    instagram: { url: "https://www.instagram.com/thecountryschoolbwp/", handle: "@thecountryschoolbwp" },
+    youtube: { url: "https://www.youtube.com/@thecountryschoolbwp", handle: "@thecountryschoolbwp" },
+  },
 };
 
 export const useWebsiteContent = () => {
