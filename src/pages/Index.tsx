@@ -133,6 +133,34 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Announcements */}
+      {announcements.length > 0 && (
+        <section className="border-t border-border bg-card py-16">
+          <div className="container">
+            <div className="mb-10 text-center">
+              <h3 className="font-display text-3xl font-bold text-foreground md:text-4xl">Notices & Announcements</h3>
+              <p className="mt-3 text-muted-foreground">Stay updated with the latest from our school</p>
+            </div>
+            <div className="mx-auto max-w-3xl space-y-4">
+              {announcements.map((a, i) => (
+                <div key={a.id} className="flex gap-4 rounded-lg border border-border p-5 shadow-card animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <Bell className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-display font-semibold text-foreground">{a.title}</h4>
+                    <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{a.content}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {new Date(a.created_at).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Photo Gallery */}
       {content.gallery && content.gallery.length > 0 && (
         <section id="gallery" className="border-t border-border bg-muted/30 py-20">
