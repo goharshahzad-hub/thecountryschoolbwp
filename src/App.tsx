@@ -22,6 +22,7 @@ import ParentPortal from "./pages/ParentPortal";
 import ResetPassword from "./pages/ResetPassword";
 import AdmissionQuery from "./pages/AdmissionQuery";
 import AdmissionQueries from "./pages/AdmissionQueries";
+import AdminRequests from "./pages/AdminRequests";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
