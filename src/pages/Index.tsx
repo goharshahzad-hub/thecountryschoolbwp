@@ -1,9 +1,12 @@
 import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useWebsiteContent } from "@/hooks/useWebsiteContent";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
@@ -12,6 +15,14 @@ const iconMap: Record<string, LucideIcon> = {
 const Index = () => {
   const { settings } = useSchoolSettings();
   const { content } = useWebsiteContent();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,9 +46,11 @@ const Index = () => {
             <Link to="/parent-login">
               <Button variant="outline" size="sm">Parent Login</Button>
             </Link>
-            <Link to="/dashboard">
-              <Button size="sm" className="gradient-primary border-0 text-primary-foreground">Admin Portal</Button>
-            </Link>
+            {isAdmin && (
+              <Link to="/dashboard">
+                <Button size="sm" className="gradient-primary border-0 text-primary-foreground">Admin Portal</Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -57,9 +70,11 @@ const Index = () => {
             {settings.motto} — {content.hero.tagline}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/dashboard">
-              <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Access Dashboard</Button>
-            </Link>
+            {isAdmin && (
+              <Link to="/dashboard">
+                <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Access Dashboard</Button>
+              </Link>
+            )}
             <a href="#contact">
               <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">Contact Us</Button>
             </a>
