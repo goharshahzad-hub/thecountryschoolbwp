@@ -255,6 +255,12 @@ const Students = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <PhotoUpload
+                  currentUrl={form.photo_url}
+                  onUpload={url => setForm({ ...form, photo_url: url })}
+                  folder="students"
+                  id={form.student_id}
+                />
                 <div className="col-span-2">
                   <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>
                     {saving ? "Saving..." : editingId ? "Update Student" : "Add Student"}
