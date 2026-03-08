@@ -221,7 +221,7 @@ const Results = () => {
     
     // If subject selected, show single subject marks table; else show all subjects
     let tableHtml = "";
-    if (monthlySubject) {
+    if (monthlySubject && monthlySubject !== "all") {
       const subResults = monthlyResults.filter(r => r.subject_id === monthlySubject);
       const rows = classStudentsFiltered.map((s, i) => {
         const r = subResults.find(r => r.student_id === s.id);
