@@ -297,7 +297,7 @@ const ParentPortal = () => {
                           <TableRow>
                             <TableHead>Student ID</TableHead>
                             <TableHead>Name</TableHead>
-                            <TableHead>Father</TableHead>
+                            <TableHead>Guardian/Father</TableHead>
                             <TableHead>Class</TableHead>
                             <TableHead>Gender</TableHead>
                             <TableHead>Monthly Fee</TableHead>

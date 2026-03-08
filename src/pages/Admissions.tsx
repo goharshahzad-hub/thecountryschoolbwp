@@ -296,10 +296,10 @@ const Admissions = () => {
                             <div class="form-row"><span class="label">B-Form/CNIC:</span><span class="value">${a.cnic_bform || "—"}</span></div>
                           </div>
                           <div class="form-section"><h3>Parent / Guardian Information</h3>
-                            <div class="form-row"><span class="label">Father's Name:</span><span class="value">${a.father_name}</span></div>
-                            <div class="form-row"><span class="label">Father's CNIC:</span><span class="value">${a.father_cnic || "—"}</span></div>
-                            <div class="form-row"><span class="label">Father's Occupation:</span><span class="value">${a.father_occupation || "—"}</span></div>
-                            <div class="form-row"><span class="label">Father's Phone:</span><span class="value">${a.father_phone || "—"}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's Name:</span><span class="value">${a.father_name}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's CNIC:</span><span class="value">${a.father_cnic || "—"}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's Occupation:</span><span class="value">${a.father_occupation || "—"}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's Phone:</span><span class="value">${a.father_phone || "—"}</span></div>
                             <div class="form-row"><span class="label">Mother's Name:</span><span class="value">${a.mother_name || "—"}</span></div>
                             <div class="form-row"><span class="label">Mother's Phone:</span><span class="value">${a.mother_phone || "—"}</span></div>
                             <div class="form-row"><span class="label">Address:</span><span class="value">${a.address || "—"}</span></div>

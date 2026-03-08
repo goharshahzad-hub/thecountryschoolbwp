@@ -115,7 +115,7 @@ const AdmissionQuery = () => {
                       <Input value={form.father_name} onChange={(e) => handleChange("father_name", e.target.value)} placeholder="Guardian/Father's full name" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Father's Phone <span className="text-destructive">*</span></Label>
+                      <Label>Guardian/Father's Phone <span className="text-destructive">*</span></Label>
                       <Input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="03XX-XXXXXXX" />
                     </div>
                     <div className="space-y-2">

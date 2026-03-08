@@ -1352,7 +1352,7 @@ const Results = () => {
                 return (
                   <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
                     <div className="header"><h1>The Country School — Fahad Campus</h1><h2>ANNUAL COMBINED RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
-                    <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div></div>
+                    <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Guardian/Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div></div>
                     <table>
                       <thead>
                         <tr><th rowSpan={2} style={{ verticalAlign: "bottom" }}>Subject</th>{terms.map(t => <th key={t} colSpan={3} style={{ borderLeft: "2px solid #333" }}>{t}</th>)}<th colSpan={3} style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}>Annual</th></tr>

@@ -985,7 +985,7 @@ const FeeVouchers = () => {
                         <TableHead>#</TableHead>
                         <TableHead>Reg. No</TableHead>
                         <TableHead>Student Name</TableHead>
-                        <TableHead>Father's Name</TableHead>
+                        <TableHead>Guardian/Father's Name</TableHead>
                         <TableHead>Month</TableHead>
                         <TableHead>Due Date</TableHead>
                         <TableHead className="text-right">Amount</TableHead>

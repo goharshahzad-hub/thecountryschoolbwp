@@ -386,7 +386,7 @@ const Students = () => {
                   <TableHead>ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Class</TableHead>
-                  <TableHead>Father's Name</TableHead>
+                  <TableHead>Guardian/Father's Name</TableHead>
                   <TableHead>Gender</TableHead>
                   <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
