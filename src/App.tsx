@@ -23,6 +23,7 @@ import ResetPassword from "./pages/ResetPassword";
 import AdmissionQuery from "./pages/AdmissionQuery";
 import AdmissionQueries from "./pages/AdmissionQueries";
 import AdminRequests from "./pages/AdminRequests";
+import ExpensesPage from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
