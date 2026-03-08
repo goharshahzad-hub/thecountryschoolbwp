@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
-  FileText, Receipt, BarChart3, UserPlus, ShieldCheck
+  FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet
 } from "lucide-react";
 
 const navItems = [
