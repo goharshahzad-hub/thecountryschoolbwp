@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users, CalendarDays } from "lucide-react";
+import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users, CalendarDays, MessageCircle } from "lucide-react";
+import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
@@ -27,7 +28,7 @@ interface TestResult {
   exam_date: string | null;
 }
 
-interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; }
+interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; whatsapp: string | null; phone: string | null; }
 interface Subject { id: string; name: string; code: string; }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -37,6 +38,7 @@ const gradeColor = (g: string) => g === "A+" || g === "A" ? "border-success/30 t
 
 const Results = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [results, setResults] = useState<TestResult[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -93,7 +95,7 @@ const Results = () => {
   const fetchData = async () => {
     const [{ data: r }, { data: st }, { data: sub }] = await Promise.all([
       supabase.from("test_results").select("*").order("created_at", { ascending: false }),
-      supabase.from("students").select("id, student_id, name, class, section, father_name"),
+      supabase.from("students").select("id, student_id, name, class, section, father_name, whatsapp, phone"),
       supabase.from("subjects").select("*").order("name"),
     ]);
     if (r) setResults(r);
@@ -344,6 +346,48 @@ const Results = () => {
     setTimeout(() => { if (classReportRef.current) printA4(classReportRef.current.innerHTML, "Class Reports"); }, 100);
   };
 
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9+]/g, "");
+    if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+    if (cleaned.startsWith("+")) cleaned = cleaned.slice(1);
+    return cleaned;
+  };
+
+  const sendMonthlyTestAlerts = () => {
+    if (!mtViewClass || !mtViewMonth || mtViewResults.length === 0) return;
+    const allSubIds = [...new Set(mtViewResults.map(r => r.subject_id))];
+    let opened = 0;
+    mtViewStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const studentResultsList = allSubIds.map(sid => {
+        const r = mtViewResults.find(r => r.student_id === s.id && r.subject_id === sid);
+        if (!r) return null;
+        const subName = getSubject(sid)?.name || "Subject";
+        const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(0);
+        const isAbsent = r.remarks?.toLowerCase().includes("absent");
+        return `• ${subName}: ${isAbsent ? "Absent" : `${r.obtained_marks}/${r.total_marks} (${pct}%)`}`;
+      }).filter(Boolean);
+      if (studentResultsList.length === 0) return;
+      const totalObt = allSubIds.reduce((sum, sid) => { const r = mtViewResults.find(r => r.student_id === s.id && r.subject_id === sid); return sum + (r && !r.remarks?.toLowerCase().includes("absent") ? Number(r.obtained_marks) : 0); }, 0);
+      const totalMax = allSubIds.reduce((sum, sid) => { const r = mtViewResults.find(r => r.student_id === s.id && r.subject_id === sid); return sum + (r ? Number(r.total_marks) : 0); }, 0);
+      const overallPct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(0) : "0";
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\nMonthly Test Result for *${mtViewMonth} ${new Date().getFullYear()}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${studentResultsList.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nPlease encourage your child to maintain/improve their performance.\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => {
+        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+      }, i * 800);
+      opened++;
+    });
+    if (opened === 0) {
+      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found for students.", variant: "destructive" });
+    } else {
+      toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
+    }
+  };
+
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
@@ -541,6 +585,11 @@ const Results = () => {
                 <Button onClick={handlePrintMonthlyTest} variant="outline" disabled={!mtViewClass || !mtViewMonth}>
                   <Printer className="mr-2 h-4 w-4" />Print Result
                 </Button>
+                {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
+                  <Button onClick={sendMonthlyTestAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
+                  </Button>
+                )}
               </div>
               {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
                 <Table>
