@@ -228,6 +228,7 @@ const Employees = () => {
                         <TableCell className="text-xs">{t.qualification}</TableCell>
                         <TableCell><Badge variant={t.status === "Active" ? "default" : "secondary"} className={t.status === "Active" ? "bg-success text-success-foreground" : ""}>{t.status}</Badge></TableCell>
                         <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setTCardItem(t)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleTeacherEdit(t)}><Pencil className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleTeacherDelete(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </TableCell>
