@@ -42,6 +42,7 @@ const SettingsPage = () => {
       setStats([...content.stats]);
       setFeatures([...content.features]);
       setGallery([...content.gallery]);
+      setSocialLinks({ ...content.social_links });
     }
   }, [contentLoading, content]);
 
