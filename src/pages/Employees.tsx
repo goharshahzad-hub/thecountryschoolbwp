@@ -273,6 +273,7 @@ const Employees = () => {
                     </Select>
                   </div>
                   <div className="col-span-2 space-y-2"><Label>Address</Label><Input placeholder="Complete address" value={sForm.address} onChange={e => setSForm({ ...sForm, address: e.target.value })} /></div>
+                  <PhotoUpload currentUrl={sForm.photo_url} onUpload={url => setSForm({ ...sForm, photo_url: url })} folder="staff" id={sForm.staff_id} />
                   <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={sSaving}>{sSaving ? "Saving..." : sEditId ? "Update" : "Add Staff"}</Button></div>
                 </form>
               </DialogContent>
