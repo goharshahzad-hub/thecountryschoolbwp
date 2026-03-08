@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Search, Printer, Pencil, Trash2, Users, Check, X, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeVoucher {
   id: string;
