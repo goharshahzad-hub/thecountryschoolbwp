@@ -176,6 +176,36 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_public: boolean
+          title: string
+          type: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_public?: boolean
+          title: string
+          type?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_public?: boolean
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       attendance_records: {
         Row: {
           created_at: string
@@ -251,6 +281,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      diary_entries: {
+        Row: {
+          class_name: string
+          created_at: string
+          date: string
+          homework_text: string
+          id: string
+          section: string
+          subject: string
+        }
+        Insert: {
+          class_name: string
+          created_at?: string
+          date?: string
+          homework_text?: string
+          id?: string
+          section?: string
+          subject?: string
+        }
+        Update: {
+          class_name?: string
+          created_at?: string
+          date?: string
+          homework_text?: string
+          id?: string
+          section?: string
+          subject?: string
+        }
+        Relationships: []
       }
       expenses: {
         Row: {
