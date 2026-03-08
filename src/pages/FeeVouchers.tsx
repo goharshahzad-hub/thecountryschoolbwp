@@ -161,6 +161,7 @@ const FeeVouchers = () => {
       books_charges: parseFloat(form.books_charges) || 0,
       arrears: parseFloat(form.arrears) || 0,
       late_fee: parseFloat(form.late_fee) || 0,
+      discount: parseFloat(form.discount) || 0,
       late_fee_amount: LATE_FEE,
     };
 
