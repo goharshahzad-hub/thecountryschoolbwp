@@ -76,6 +76,7 @@ const emptyFeeForm = {
   books_charges: "0",
   arrears: "0",
   late_fee: "0",
+  discount: "0",
 };
 
 const FeeVouchers = () => {
@@ -118,8 +119,9 @@ const FeeVouchers = () => {
   };
 
   const calcTotal = (f: typeof emptyFeeForm) => {
-    return [f.registration_fee, f.admission_fee, f.security_deposit, f.tuition_fee, f.annual_charges, f.trip_charges, f.books_charges, f.arrears, f.late_fee]
+    const sum = [f.registration_fee, f.admission_fee, f.security_deposit, f.tuition_fee, f.annual_charges, f.trip_charges, f.books_charges, f.arrears, f.late_fee]
       .reduce((s, v) => s + (parseFloat(v) || 0), 0);
+    return sum - (parseFloat(f.discount) || 0);
   };
 
   const handleStudentSelect = (studentId: string) => {
@@ -159,6 +161,7 @@ const FeeVouchers = () => {
       books_charges: parseFloat(form.books_charges) || 0,
       arrears: parseFloat(form.arrears) || 0,
       late_fee: parseFloat(form.late_fee) || 0,
+      discount: parseFloat(form.discount) || 0,
       late_fee_amount: LATE_FEE,
     };
 
@@ -234,6 +237,7 @@ const FeeVouchers = () => {
       books_charges: String(v.books_charges || 0),
       arrears: String(v.arrears || 0),
       late_fee: String(v.late_fee || 0),
+      discount: String((v as any).discount || 0),
     });
     setEditingId(v.id);
     setDialogOpen(true);
@@ -262,6 +266,7 @@ const FeeVouchers = () => {
       { label: "Books/Summer Pack", amount: v.books_charges || 0 },
       { label: "Arrears", amount: v.arrears || 0 },
       { label: "Late Fee", amount: v.late_fee || 0 },
+      { label: "Discount", amount: -((v as any).discount || 0) },
     ];
 
     const slipContent = (title: string) => `
@@ -359,6 +364,7 @@ const FeeVouchers = () => {
     { key: "books_charges", label: "Books/Summer Pack" },
     { key: "arrears", label: "Arrears" },
     { key: "late_fee", label: "Late Fee" },
+    { key: "discount", label: "Discount" },
   ];
 
   return (
