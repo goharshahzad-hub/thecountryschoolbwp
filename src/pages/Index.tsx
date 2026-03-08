@@ -1,7 +1,7 @@
 import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon, ZoomIn } from "lucide-react";
+import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon, ZoomIn, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useWebsiteContent } from "@/hooks/useWebsiteContent";
