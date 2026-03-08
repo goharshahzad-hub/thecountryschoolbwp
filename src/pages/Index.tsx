@@ -49,11 +49,12 @@ const Index = () => {
             </div>
           </div>
           <nav className="hidden items-center gap-6 md:flex">
-            <a href="#about" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">About</a>
-            <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Features</a>
+            <Link to="/about" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">About</Link>
+            <Link to="/curriculum" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Curriculum</Link>
             <a href="#gallery" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Gallery</a>
             <Link to="/admission-query" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Admission Inquiry</Link>
             <Link to="/blog" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Blog</Link>
+            <Link to="/faq" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">FAQ</Link>
             <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contact</a>
           </nav>
           <div className="flex items-center gap-2">
