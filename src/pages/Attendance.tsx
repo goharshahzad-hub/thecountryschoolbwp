@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Save, Printer } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 
 type Status = "present" | "absent" | "late";
 
@@ -17,6 +18,8 @@ interface Student {
   name: string;
   class: string;
   section: string | null;
+  whatsapp: string | null;
+  phone: string | null;
 }
 
 interface ClassOption {
@@ -27,6 +30,7 @@ interface ClassOption {
 
 const Attendance = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [students, setStudents] = useState<Student[]>([]);
   const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -34,11 +38,12 @@ const Attendance = () => {
   const [existingRecords, setExistingRecords] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     const fetchStudents = async () => {
-      const { data } = await supabase.from("students").select("id, student_id, name, class, section").eq("status", "Active").order("name");
+      const { data } = await supabase.from("students").select("id, student_id, name, class, section, whatsapp, phone").eq("status", "Active").order("name");
       if (data) {
         setStudents(data);
         const uniqueClasses = [...new Set(data.map(s => `${s.class}-${s.section || "A"}`))].sort();
@@ -93,7 +98,39 @@ const Attendance = () => {
     });
     await Promise.all(updates);
     setSaving(false);
+    setSaved(true);
     toast({ title: "Saved", description: "Attendance saved successfully." });
+  };
+
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9+]/g, "");
+    if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+    if (cleaned.startsWith("+")) cleaned = cleaned.slice(1);
+    return cleaned;
+  };
+
+  const absentStudents = filteredStudents.filter(s => attendance[s.id] === "absent");
+
+  const sendWhatsAppAlerts = () => {
+    const dateStr = new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    let opened = 0;
+    absentStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\nThis is to inform you that your child *${s.name}* (${s.student_id}) was marked *absent* on ${dateStr} at *${settings.school_name} — ${settings.campus}*.\n\nPlease contact the school for any queries.\nPhone: ${settings.phone}\n\nRegards,\n${settings.school_name}`
+      );
+      setTimeout(() => {
+        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+      }, i * 800);
+      opened++;
+    });
+    if (opened === 0) {
+      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found for absent students.", variant: "destructive" });
+    } else {
+      toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
+    }
   };
 
   const handleDelete = async (studentId: string) => {
@@ -147,6 +184,11 @@ const Attendance = () => {
           <Button onClick={handleSave} disabled={saving || filteredStudents.length === 0} className="gradient-primary text-primary-foreground">
             <Save className="mr-2 h-4 w-4" />{saving ? "Saving..." : "Save Attendance"}
           </Button>
+          {saved && absentStudents.length > 0 && (
+            <Button variant="outline" size="sm" onClick={sendWhatsAppAlerts} className="border-success/30 text-success hover:bg-success/10">
+              <MessageCircle className="mr-2 h-4 w-4" />Alert Absent ({absentStudents.length})
+            </Button>
+          )}
         </div>
       </div>
 
