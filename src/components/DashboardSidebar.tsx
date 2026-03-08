@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.jpg";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
@@ -27,6 +29,18 @@ const DashboardSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      const { count } = await supabase
+        .from("admin_requests")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+      setPendingRequests(count || 0);
+    };
+    fetchPending();
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -48,6 +62,7 @@ const DashboardSidebar = () => {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to;
+          const showBadge = item.to === "/dashboard/admin-requests" && pendingRequests > 0;
           return (
             <Link
               key={item.to}
@@ -59,7 +74,12 @@ const DashboardSidebar = () => {
               }`}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                  {pendingRequests}
+                </span>
+              )}
             </Link>
           );
         })}
