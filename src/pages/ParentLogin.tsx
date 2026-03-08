@@ -16,6 +16,8 @@ const ParentLogin = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
 
   // Login state
   const [loginEmail, setLoginEmail] = useState("");
@@ -73,6 +75,67 @@ const ParentLogin = () => {
       toast({ title: "Account Created!", description: "Please check your email to verify your account." });
     }
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      toast({ title: "Error", description: "Please enter your email", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Email Sent", description: "Check your inbox for the password reset link." });
+      setShowForgot(false);
+    }
+  };
+
+  if (showForgot) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="absolute inset-0 gradient-hero opacity-5" />
+        <div className="relative z-10 w-full max-w-md">
+          <button
+            onClick={() => setShowForgot(false)}
+            className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to login
+          </button>
+          <Card className="shadow-elevated border-border">
+            <CardHeader className="text-center pb-2">
+              <img src={logo} alt="The Country School" className="mx-auto mb-3 h-16 w-16 rounded-full object-cover shadow-card" />
+              <CardTitle className="font-display text-xl">Reset Password</CardTitle>
+              <p className="text-sm text-muted-foreground">Enter your email to receive a reset link</p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <Input
+                    id="forgot-email"
+                    type="email"
+                    placeholder="parent@example.com"
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -132,6 +195,15 @@ const ParentLogin = () => {
                   <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                     {loading ? "Logging in..." : "Login"}
                   </Button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                      onClick={() => setShowForgot(true)}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
