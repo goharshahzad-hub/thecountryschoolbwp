@@ -229,11 +229,12 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="gradient-hero py-8">
-        <div className="container flex flex-col items-center gap-4 md:flex-row md:justify-between">
+        <div className="container flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
             <img src={logo} alt="Logo" className="h-8 w-8 rounded-full object-cover" />
             <span className="font-display text-sm font-semibold text-primary-foreground">{settings.school_name}</span>
           </div>
+          <p className="text-sm text-primary-foreground/80 text-center">41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur. Contact# 0322-6107000, 0305-7457171.</p>
           <p className="text-xs text-primary-foreground/50">© {new Date().getFullYear()} {settings.school_name}. All rights reserved.</p>
         </div>
       </footer>
