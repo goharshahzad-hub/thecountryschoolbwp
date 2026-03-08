@@ -15,6 +15,7 @@ const MONTHS = ["January","February","March","April","May","June","July","August
 
 const Dashboard = () => {
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
+  const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0 });
