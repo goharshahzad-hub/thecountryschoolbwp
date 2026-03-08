@@ -196,6 +196,7 @@ const Employees = () => {
                       <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="On Leave">On Leave</SelectItem><SelectItem value="Resigned">Resigned</SelectItem></SelectContent>
                     </Select>
                   </div>
+                  <PhotoUpload currentUrl={tForm.photo_url} onUpload={url => setTForm({ ...tForm, photo_url: url })} folder="teachers" id={tForm.teacher_id} />
                   <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={tSaving}>{tSaving ? "Saving..." : tEditId ? "Update" : "Add Teacher"}</Button></div>
                 </form>
               </DialogContent>
