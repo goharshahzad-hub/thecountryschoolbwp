@@ -119,7 +119,7 @@ const Attendance = () => {
       if (!contact) return;
       const phone = formatPhone(contact);
       const message = encodeURIComponent(
-        `Dear Parent,\n\nThis is to inform you that your child *${s.name}* (${s.student_id}) was marked *absent* on ${dateStr} at *${settings.school_name} — ${settings.campus}*.\n\nPlease contact the school for any queries.\nPhone: ${settings.phone}\n\nRegards,\n${settings.school_name}`
+        `Dear Parent,\n\nThis is to inform you that your child, *${s.name}* (${s.student_id}), was marked *absent* on ${dateStr}, at *${settings.school_name}*, *${settings.campus}*, *${settings.city}*.\n\nPlease contact the school for any queries. Phone: ${settings.phone}\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.`
       );
       setTimeout(() => {
         window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
