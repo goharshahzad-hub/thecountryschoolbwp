@@ -126,6 +126,26 @@ const FeeVouchers = () => {
 
   const getStudent = (id: string) => students.find(s => s.id === id);
 
+  // Calculate arrears from student's last month unpaid vouchers + late fee
+  const calcStudentArrears = (studentId: string, currentMonth: string, currentYear: number) => {
+    const currentMonthIdx = MONTHS.indexOf(currentMonth);
+    let prevMonth: string;
+    let prevYear: number;
+    if (currentMonthIdx === 0) {
+      prevMonth = MONTHS[11];
+      prevYear = currentYear - 1;
+    } else {
+      prevMonth = MONTHS[currentMonthIdx - 1];
+      prevYear = currentYear;
+    }
+    const unpaid = vouchers.filter(
+      v => v.student_id === studentId && v.month === prevMonth && v.year === prevYear && v.status !== "Paid"
+    );
+    if (unpaid.length === 0) return 0;
+    const unpaidTotal = unpaid.reduce((sum, v) => sum + Number(v.amount), 0);
+    return unpaidTotal + LATE_FEE;
+  };
+
   const generateVoucherNo = (offset = 0) => {
     const now = new Date();
     return `VCH-${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${(vouchers.length + 1 + offset).toString().padStart(5, "0")}`;
