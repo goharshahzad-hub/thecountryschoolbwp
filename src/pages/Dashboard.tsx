@@ -164,6 +164,29 @@ const Dashboard = () => {
               </Card>
             ))}
           </div>
+
+          {chartData.length > 0 && (
+            <Card className="mb-4 shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg">Monthly Fee Collection Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis tickFormatter={(v) => `₨${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <Tooltip formatter={(value: number) => `₨ ${value.toLocaleString("en-PK")}`} contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
+                    <Legend />
+                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
         </>
       )}
