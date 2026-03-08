@@ -329,6 +329,184 @@ const Results = () => {
         </Dialog>
       </div>
 
+      {/* Bulk Monthly Test Data Entry */}
+      <Card className="mb-6 shadow-card">
+        <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><Users className="h-5 w-5" /> Class-wise Bulk Marks Entry</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end mb-4">
+            <div className="space-y-2 min-w-[150px]">
+              <Label>Class *</Label>
+              <Select value={bulkClass} onValueChange={v => { setBulkClass(v); setBulkMarks({}); }}>
+                <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
+                <SelectContent>{uniqueClasses.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[150px]">
+              <Label>Subject *</Label>
+              <Select value={bulkSubject} onValueChange={setBulkSubject}>
+                <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
+                <SelectContent>{subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[130px]">
+              <Label>Exam Type</Label>
+              <Select value={bulkExamType} onValueChange={setBulkExamType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Monthly Test">Monthly Test</SelectItem>
+                  <SelectItem value="Mid Term">Mid Term</SelectItem>
+                  <SelectItem value="Final Term">Final Term</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[120px]">
+              <Label>Term</Label>
+              <Select value={bulkTerm} onValueChange={setBulkTerm}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="Term 1">Term 1</SelectItem><SelectItem value="Term 2">Term 2</SelectItem><SelectItem value="Term 3">Term 3</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[100px]">
+              <Label>Total Marks</Label>
+              <Input type="number" value={bulkTotalMarks} onChange={e => setBulkTotalMarks(e.target.value)} className="w-24" />
+            </div>
+            <div className="space-y-2 min-w-[140px]">
+              <Label>Exam Date</Label>
+              <Input type="date" value={bulkExamDate} onChange={e => setBulkExamDate(e.target.value)} />
+            </div>
+          </div>
+          {bulkClass && bulkSubject && bulkClassStudents.length > 0 && (
+            <>
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>Student ID</TableHead>
+                  <TableHead>Student Name</TableHead>
+                  <TableHead>Class</TableHead>
+                  <TableHead className="w-32">Obtained Marks</TableHead>
+                  <TableHead className="w-20">Grade</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {bulkClassStudents.map((s, i) => {
+                    const val = bulkMarks[s.id] || "";
+                    const pct = val ? (parseFloat(val) / parseFloat(bulkTotalMarks)) * 100 : 0;
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell>{i + 1}</TableCell>
+                        <TableCell className="font-mono text-xs">{s.student_id}</TableCell>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell>{s.class}-{s.section}</TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            placeholder={`/ ${bulkTotalMarks}`}
+                            value={val}
+                            onChange={e => setBulkMarks(prev => ({ ...prev, [s.id]: e.target.value }))}
+                            className="w-28 h-8"
+                            max={parseFloat(bulkTotalMarks)}
+                            min={0}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {val ? <Badge variant="outline" className={gradeColor(gradeFromPercent(pct))}>{gradeFromPercent(pct)}</Badge> : "—"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleBulkSubmit} disabled={bulkSaving} className="gradient-primary text-primary-foreground">
+                  {bulkSaving ? "Saving..." : `Save ${Object.values(bulkMarks).filter(v => v.trim()).length} Results`}
+                </Button>
+              </div>
+            </>
+          )}
+          {bulkClass && bulkSubject && bulkClassStudents.length === 0 && (
+            <p className="text-sm text-muted-foreground">No students found in Class {bulkClass}.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Monthly Test Result Card */}
+      <Card className="mb-6 shadow-card">
+        <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Monthly Test Result Card</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end mb-4">
+            <div className="space-y-2 min-w-[150px]">
+              <Label>Class *</Label>
+              <Select value={monthlyClass} onValueChange={setMonthlyClass}>
+                <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
+                <SelectContent>{uniqueClasses.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[150px]">
+              <Label>Subject (optional)</Label>
+              <Select value={monthlySubject} onValueChange={setMonthlySubject}>
+                <SelectTrigger><SelectValue placeholder="All subjects" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subjects</SelectItem>
+                  {subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[130px]">
+              <Label>Exam Type</Label>
+              <Select value={monthlyExamType} onValueChange={setMonthlyExamType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Monthly Test">Monthly Test</SelectItem>
+                  <SelectItem value="Mid Term">Mid Term</SelectItem>
+                  <SelectItem value="Final Term">Final Term</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 min-w-[120px]">
+              <Label>Term</Label>
+              <Select value={monthlyTerm} onValueChange={setMonthlyTerm}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="Term 1">Term 1</SelectItem><SelectItem value="Term 2">Term 2</SelectItem><SelectItem value="Term 3">Term 3</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handlePrintMonthlyCard} variant="outline" disabled={!monthlyClass}>
+              <Printer className="mr-2 h-4 w-4" />Print Result Card
+            </Button>
+          </div>
+          {monthlyClass && monthlyResults.length > 0 && (
+            <Table>
+              <TableHeader><TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Student</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead>Obtained</TableHead>
+                <TableHead>%</TableHead>
+                <TableHead>Grade</TableHead>
+              </TableRow></TableHeader>
+              <TableBody>
+                {monthlyResults.map((r, i) => {
+                  const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
+                  return (
+                    <TableRow key={r.id}>
+                      <TableCell>{i + 1}</TableCell>
+                      <TableCell className="font-medium">{getStudent(r.student_id)?.name}</TableCell>
+                      <TableCell>{getSubject(r.subject_id)?.name}</TableCell>
+                      <TableCell>{r.total_marks}</TableCell>
+                      <TableCell>{r.obtained_marks}</TableCell>
+                      <TableCell>{pct}%</TableCell>
+                      <TableCell><Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge></TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+          {monthlyClass && monthlyResults.length === 0 && (
+            <p className="text-sm text-muted-foreground mt-2">No results found for the selected filters.</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Report Card Generator */}
       <Card className="mb-6 shadow-card">
         <CardHeader><CardTitle className="font-display text-lg flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Generate Report Card</CardTitle></CardHeader>
