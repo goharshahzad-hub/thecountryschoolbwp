@@ -33,6 +33,11 @@ interface ParentProfile {
 
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending" };
 
+const generateStudentId = (count: number) => {
+  const year = new Date().getFullYear();
+  return `TCS-${year}-${(count + 1).toString().padStart(4, "0")}`;
+};
+
 const Students = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
@@ -152,14 +157,14 @@ const Students = () => {
           <Button variant="outline" size="sm"><Download className="mr-2 h-4 w-4" />Export</Button>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Add Student</Button>
+              <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, student_id: generateStudentId(students.length) })}><Plus className="mr-2 h-4 w-4" />Add Student</Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Student" : "Add New Student"}</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Student ID *</Label>
-                  <Input placeholder="TCS-001" value={form.student_id} onChange={e => setForm({ ...form, student_id: e.target.value })} required />
+                  <Input value={form.student_id} onChange={e => setForm({ ...form, student_id: e.target.value })} readOnly={!editingId} className={!editingId ? "bg-muted" : ""} required />
                 </div>
                 <div className="space-y-2">
                   <Label>Name *</Label>

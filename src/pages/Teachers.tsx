@@ -28,6 +28,10 @@ interface Teacher {
 
 const emptyForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "" };
 
+const generateTeacherId = (count: number) => {
+  return `TCH-${(count + 1).toString().padStart(4, "0")}`;
+};
+
 const Teachers = () => {
   const { toast } = useToast();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -108,12 +112,12 @@ const Teachers = () => {
           <Button variant="outline" size="sm"><Download className="mr-2 h-4 w-4" />Export</Button>
           <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Add Teacher</Button>
+              <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, teacher_id: generateTeacherId(teachers.length) })}><Plus className="mr-2 h-4 w-4" />Add Teacher</Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Teacher" : "Add New Teacher"}</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Teacher ID *</Label><Input placeholder="TCH-001" value={form.teacher_id} onChange={e => setForm({ ...form, teacher_id: e.target.value })} required /></div>
+                <div className="space-y-2"><Label>Teacher ID *</Label><Input value={form.teacher_id} onChange={e => setForm({ ...form, teacher_id: e.target.value })} readOnly={!editingId} className={!editingId ? "bg-muted" : ""} required /></div>
                 <div className="space-y-2"><Label>Name *</Label><Input placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></div>
                 <div className="space-y-2"><Label>Subject</Label><Input placeholder="Mathematics" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Classes</Label><Input placeholder="9-A, 10-A" value={form.classes} onChange={e => setForm({ ...form, classes: e.target.value })} /></div>
