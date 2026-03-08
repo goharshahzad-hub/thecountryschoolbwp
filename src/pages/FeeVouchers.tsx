@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { printA4 } from "@/lib/printUtils";
 import DashboardLayout from "@/components/DashboardLayout";
