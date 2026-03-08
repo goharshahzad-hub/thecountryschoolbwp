@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
 interface Student { id: string; name: string; class: string; section: string | null; }
+interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
