@@ -308,6 +308,57 @@ export type Database = {
           },
         ]
       }
+      non_teaching_staff: {
+        Row: {
+          address: string | null
+          cnic: string | null
+          created_at: string
+          department: string
+          designation: string
+          id: string
+          joining_date: string | null
+          name: string
+          phone: string | null
+          qualification: string | null
+          salary: number | null
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cnic?: string | null
+          created_at?: string
+          department?: string
+          designation?: string
+          id?: string
+          joining_date?: string | null
+          name: string
+          phone?: string | null
+          qualification?: string | null
+          salary?: number | null
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cnic?: string | null
+          created_at?: string
+          department?: string
+          designation?: string
+          id?: string
+          joining_date?: string | null
+          name?: string
+          phone?: string | null
+          qualification?: string | null
+          salary?: number | null
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

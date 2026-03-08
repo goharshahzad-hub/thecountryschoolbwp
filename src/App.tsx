@@ -7,7 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Students from "./pages/Students";
-import Teachers from "./pages/Teachers";
+import Employees from "./pages/Employees";
 import Classes from "./pages/Classes";
 import Attendance from "./pages/Attendance";
 import Fees from "./pages/Fees";
@@ -40,7 +40,8 @@ const App = () => (
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/students" element={<Students />} />
-            <Route path="/dashboard/teachers" element={<Teachers />} />
+            <Route path="/dashboard/employees" element={<Employees />} />
+            <Route path="/dashboard/teachers" element={<Employees />} />
             <Route path="/dashboard/classes" element={<Classes />} />
             <Route path="/dashboard/attendance" element={<Attendance />} />
             <Route path="/dashboard/fees" element={<Fees />} />
