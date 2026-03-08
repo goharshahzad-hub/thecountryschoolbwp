@@ -42,6 +42,7 @@ const defaults: WebsiteContent = {
     { title: "Structured Schedule", desc: "Well-organized timetables maximizing learning outcomes", icon: "Clock" },
   ],
   about: { heading: "Why Choose Us", subheading: "Building tomorrow's leaders with today's best education" },
+  gallery: [],
 };
 
 export const useWebsiteContent = () => {
