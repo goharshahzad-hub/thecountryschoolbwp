@@ -175,7 +175,7 @@ const Index = () => {
             <h3 className="font-display text-3xl font-bold text-foreground">Follow Us</h3>
             <p className="mt-3 text-muted-foreground">Stay connected on social media</p>
           </div>
-          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Facebook */}
             {content.social_links?.facebook?.url && (
               <a href={content.social_links.facebook.url} target="_blank" rel="noopener noreferrer" className="group flex flex-col items-center rounded-lg border border-border bg-card p-6 shadow-card transition-all hover:shadow-elevated hover:-translate-y-1">
