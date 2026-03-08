@@ -82,7 +82,7 @@ const DashboardSidebar = () => {
               <span className="flex-1">{item.label}</span>
               {showBadge && (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                  {pendingRequests}
+                  {badgeCount}
                 </span>
               )}
             </Link>
