@@ -295,18 +295,46 @@ const FeeVouchers = () => {
         color: #999;
         margin-top: 6px;
       }
-      @media print { body { padding: 0; } }
+      @media print {
+        .print-preview-bar { display: none !important; }
+        body { padding: 0; }
+      }
     `;
 
     const win = window.open("", "_blank");
     if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>Fee Voucher - ${v.voucher_no}</title><style>${voucherStyles}</style></head><body>
+    win.document.write(`<!DOCTYPE html><html><head><title>Fee Voucher - ${v.voucher_no} — Preview</title><style>${voucherStyles}
+      .print-preview-bar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+        background: #c0392b; color: #fff; display: flex; align-items: center;
+        justify-content: space-between; padding: 8px 20px; font-family: Arial, sans-serif;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      }
+      .print-preview-bar span { font-size: 14px; font-weight: bold; }
+      .print-preview-bar button {
+        background: #fff; color: #c0392b; border: none; padding: 8px 24px;
+        border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer;
+      }
+      .print-preview-bar button:hover { background: #f0f0f0; }
+      .print-preview-bar .close-btn {
+        background: transparent; color: #fff; font-size: 13px; border: 1px solid rgba(255,255,255,0.4);
+        padding: 6px 16px; border-radius: 4px; margin-left: 8px;
+      }
+      .print-preview-bar .close-btn:hover { background: rgba(255,255,255,0.15); }
+      body { padding-top: 50px; }
+    </style></head><body>
+      <div class="print-preview-bar">
+        <span>📄 Fee Voucher ${v.voucher_no} — Print Preview</span>
+        <div>
+          <button onclick="window.print()">🖨️ Print</button>
+          <button class="close-btn" onclick="window.close()">✕ Close</button>
+        </div>
+      </div>
       <div class="voucher-container">
         ${slipContent("School Copy")}
         ${slipContent("Bank Copy")}
         ${slipContent("Student Copy")}
       </div>
-      <script>window.print();window.close()<\/script>
     </body></html>`);
     win.document.close();
   };
