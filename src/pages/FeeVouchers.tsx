@@ -47,6 +47,7 @@ const FeeVouchers = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [printVoucher, setPrintVoucher] = useState<FeeVoucher | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
