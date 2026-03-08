@@ -81,6 +81,8 @@ const ParentPortal = () => {
   const [feeVouchers, setFeeVouchers] = useState<FeeVoucher[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [profileName, setProfileName] = useState("");
 
   useEffect(() => {
