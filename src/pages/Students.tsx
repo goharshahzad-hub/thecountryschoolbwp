@@ -58,7 +58,7 @@ const Students = () => {
   const [cardStudent, setCardStudent] = useState<any>(null);
   const fetchData = async () => {
     const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
-      supabase.from("students").select("*").order("created_at", { ascending: false }),
+      supabase.from("students").select("*").order("student_id", { ascending: true }),
       supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
     ]);
     if (studentsData) setStudents(studentsData);
