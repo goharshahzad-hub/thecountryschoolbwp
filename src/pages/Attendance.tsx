@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Save } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Save, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 type Status = "present" | "absent" | "late";
 
@@ -128,6 +129,21 @@ const Attendance = () => {
               </SelectContent>
             </Select>
           )}
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = filteredStudents.map((s, i) => `
+              <tr>
+                <td>${i + 1}</td><td>${s.student_id}</td><td style="text-align:left">${s.name}</td>
+                <td>${(attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)}</td>
+              </tr>`).join("");
+            printA4(`<div class="print-page">
+              ${schoolHeader("DAILY ATTENDANCE SHEET")}
+              <div class="print-info"><div>Class: <span>${selectedClass}</span></div><div>Date: <span>${new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span></div>
+              <div>Present: <span>${counts.present}</span></div><div>Absent: <span>${counts.absent}</span> | Late: <span>${counts.late}</span></div></div>
+              <table><thead><tr><th>#</th><th>ID</th><th>Name</th><th>Status</th></tr></thead>
+              <tbody>${rows}</tbody></table>
+              ${schoolFooter()}
+            </div>`, "Attendance Sheet");
+          }}><Printer className="mr-2 h-4 w-4" />Print</Button>
           <Button onClick={handleSave} disabled={saving || filteredStudents.length === 0} className="gradient-primary text-primary-foreground">
             <Save className="mr-2 h-4 w-4" />{saving ? "Saving..." : "Save Attendance"}
           </Button>

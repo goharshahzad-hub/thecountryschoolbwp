@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Trash2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeRecord {
   id: string;
@@ -76,7 +77,27 @@ const Fees = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Management</h1>
           <p className="mt-1 text-sm text-muted-foreground">Track and manage student fee payments</p>
         </div>
-        <Button variant="outline" size="sm"><Download className="mr-2 h-4 w-4" />Export Report</Button>
+        <Button variant="outline" size="sm" onClick={() => {
+          const rows = fees.map(f => {
+            const student = students.find(s => s.id === f.student_id);
+            return `<tr>
+              <td>${f.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td>
+              <td>${student ? `${student.class}-${student.section}` : "—"}</td>
+              <td>₨ ${Number(f.amount).toLocaleString("en-PK")}</td><td>${f.due_date}</td>
+              <td>${f.paid_date || "—"}</td><td>${f.status}</td>
+            </tr>`;
+          }).join("");
+          const totalPaid = fees.filter(f => f.status === "Paid").reduce((s, f) => s + Number(f.amount), 0);
+          const totalPending = fees.filter(f => f.status !== "Paid").reduce((s, f) => s + Number(f.amount), 0);
+          printA4(`<div class="print-page">
+            ${schoolHeader("FEE COLLECTION REPORT")}
+            <div class="print-info"><div>Generated: <span>${new Date().toLocaleDateString("en-PK")}</span></div><div>Total Records: <span>${fees.length}</span></div>
+            <div>Total Collected: <span>₨ ${totalPaid.toLocaleString("en-PK")}</span></div><div>Total Pending: <span>₨ ${totalPending.toLocaleString("en-PK")}</span></div></div>
+            <table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead>
+            <tbody>${rows}</tbody></table>
+            ${schoolFooter()}
+          </div>`, "Fee Report");
+        }}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
       </div>
 
       <div className="mb-6 grid grid-cols-3 gap-4">

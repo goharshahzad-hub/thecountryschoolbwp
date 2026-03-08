@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface Admission {
   id: string;
@@ -246,6 +247,39 @@ const Admissions = () => {
                     <TableCell>{a.gender}</TableCell>
                     <TableCell><Badge variant="outline" className={statusColor(a.status)}>{a.status}</Badge></TableCell>
                     <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" title="Print Form" onClick={() => {
+                        const formHtml = `<div class="print-page">
+                          ${schoolHeader("ADMISSION APPLICATION FORM")}
+                          <div class="form-section"><h3>Student Information</h3>
+                            <div class="form-row"><span class="label">Application No:</span><span class="value">${a.application_no}</span></div>
+                            <div class="form-row"><span class="label">Student Name:</span><span class="value">${a.student_name}</span></div>
+                            <div class="form-row"><span class="label">Date of Birth:</span><span class="value">${a.date_of_birth}</span></div>
+                            <div class="form-row"><span class="label">Gender:</span><span class="value">${a.gender}</span></div>
+                            <div class="form-row"><span class="label">Religion:</span><span class="value">${a.religion || "—"}</span></div>
+                            <div class="form-row"><span class="label">Nationality:</span><span class="value">${a.nationality || "—"}</span></div>
+                            <div class="form-row"><span class="label">B-Form/CNIC:</span><span class="value">${a.cnic_bform || "—"}</span></div>
+                          </div>
+                          <div class="form-section"><h3>Parent / Guardian Information</h3>
+                            <div class="form-row"><span class="label">Father's Name:</span><span class="value">${a.father_name}</span></div>
+                            <div class="form-row"><span class="label">Father's CNIC:</span><span class="value">${a.father_cnic || "—"}</span></div>
+                            <div class="form-row"><span class="label">Father's Occupation:</span><span class="value">${a.father_occupation || "—"}</span></div>
+                            <div class="form-row"><span class="label">Father's Phone:</span><span class="value">${a.father_phone || "—"}</span></div>
+                            <div class="form-row"><span class="label">Mother's Name:</span><span class="value">${a.mother_name || "—"}</span></div>
+                            <div class="form-row"><span class="label">Mother's Phone:</span><span class="value">${a.mother_phone || "—"}</span></div>
+                            <div class="form-row"><span class="label">Address:</span><span class="value">${a.address || "—"}</span></div>
+                          </div>
+                          <div class="form-section"><h3>Academic Information</h3>
+                            <div class="form-row"><span class="label">Previous School:</span><span class="value">${a.previous_school || "—"}</span></div>
+                            <div class="form-row"><span class="label">Previous Class:</span><span class="value">${a.previous_class || "—"}</span></div>
+                            <div class="form-row"><span class="label">Applying for Class:</span><span class="value">${a.applying_for_class}-${a.applying_for_section}</span></div>
+                            <div class="form-row"><span class="label">Status:</span><span class="value">${a.status}</span></div>
+                            <div class="form-row"><span class="label">Remarks:</span><span class="value">${a.remarks || "—"}</span></div>
+                          </div>
+                          <div class="signatures"><div>Applicant</div><div>Office Use</div><div>Principal</div></div>
+                          ${schoolFooter()}
+                        </div>`;
+                        printA4(formHtml, `Admission - ${a.application_no}`);
+                      }}><Printer className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => handleEdit(a)}><Pencil className="h-4 w-4" /></Button>
                       <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </TableCell>

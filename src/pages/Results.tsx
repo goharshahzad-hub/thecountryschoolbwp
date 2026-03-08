@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { printA4 } from "@/lib/printUtils";
 
 interface TestResult {
   id: string;
@@ -137,28 +138,7 @@ const Results = () => {
     setTimeout(() => {
       const content = ref.current;
       if (!content) return;
-      const win = window.open("", "_blank");
-      if (!win) return;
-      win.document.write(`<html><head><title>Report Card</title><style>
-        body{font-family:Arial,sans-serif;padding:20px;color:#222}
-        .report{border:2px solid #333;padding:24px;max-width:800px;margin:auto}
-        .header{text-align:center;border-bottom:2px solid #333;padding-bottom:16px;margin-bottom:16px}
-        .header h1{font-size:22px;margin:0;color:#c0392b}
-        .header h2{font-size:16px;margin:4px 0}
-        .info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:13px}
-        .info div span{font-weight:bold}
-        table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
-        th,td{border:1px solid #333;padding:6px 8px;text-align:center}
-        th{background:#f0f0f0}
-        .total-row{font-weight:bold;background:#f9f9f9}
-        .term-header{background:#c0392b;color:#fff;font-weight:bold;font-size:13px}
-        .grade-summary{margin-top:16px;text-align:center;font-size:16px}
-        .footer{text-align:center;margin-top:24px;font-size:11px;color:#999;border-top:1px solid #ddd;padding-top:12px}
-        .signatures{display:flex;justify-content:space-between;margin-top:40px;font-size:12px}
-        .signatures div{text-align:center;border-top:1px solid #333;padding-top:4px;width:150px}
-        @media print{body{padding:0}}
-      </style></head><body>${content.innerHTML}<script>window.print();window.close()</script></body></html>`);
-      win.document.close();
+      printA4(content.innerHTML, "Report Card");
     }, 100);
   };
 
