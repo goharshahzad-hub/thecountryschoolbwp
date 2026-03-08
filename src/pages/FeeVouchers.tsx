@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -321,6 +322,10 @@ const FeeVouchers = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="mb-6">
+        <ClasswiseFeeMetrics vouchers={vouchers} students={students} />
       </div>
 
       <Card className="shadow-card">

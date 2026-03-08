@@ -1,23 +1,35 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
+
+interface FeeVoucher { student_id: string; amount: number; status: string; }
+interface Student { id: string; name: string; class: string; section: string | null; }
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({ students: 0, teachers: 0, classes: 0, feeCollected: 0 });
+  const [stats, setStats] = useState({ students: 0, teachers: 0, classes: 0, feeCollected: 0, feePending: 0, feeOverdue: 0 });
+  const [vouchers, setVouchers] = useState<FeeVoucher[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }, { data: studentData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
-        supabase.from("fee_vouchers").select("amount").eq("status", "Paid"),
+        supabase.from("fee_vouchers").select("student_id, amount, status"),
+        supabase.from("students").select("id, name, class, section"),
       ]);
-      const feeCollected = feeData?.reduce((s, v) => s + Number(v.amount), 0) || 0;
-      setStats({ students: sc || 0, teachers: tc || 0, classes: cc || 0, feeCollected });
+      const vouchersData = feeData || [];
+      const feeCollected = vouchersData.filter(v => v.status === "Paid").reduce((s, v) => s + Number(v.amount), 0);
+      const feePending = vouchersData.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
+      const feeOverdue = vouchersData.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
+      setVouchers(vouchersData);
+      setStudents(studentData || []);
+      setStats({ students: sc || 0, teachers: tc || 0, classes: cc || 0, feeCollected, feePending, feeOverdue });
       setLoading(false);
     };
     fetchStats();
@@ -27,7 +39,9 @@ const Dashboard = () => {
     { label: "Total Students", value: stats.students.toString(), icon: Users, color: "bg-primary/10 text-primary" },
     { label: "Total Teachers", value: stats.teachers.toString(), icon: GraduationCap, color: "bg-secondary/10 text-secondary" },
     { label: "Active Classes", value: stats.classes.toString(), icon: BookOpen, color: "bg-accent/10 text-accent-foreground" },
-    { label: "Fee Collected", value: `₨ ${stats.feeCollected.toLocaleString("en-PK")}`, icon: DollarSign, color: "bg-success/10 text-success" },
+    { label: "Fee Collected", value: `₨ ${stats.feeCollected.toLocaleString("en-PK")}`, icon: CheckCircle, color: "bg-success/10 text-success" },
+    { label: "Fee Pending", value: `₨ ${stats.feePending.toLocaleString("en-PK")}`, icon: DollarSign, color: "bg-warning/10 text-warning" },
+    { label: "Fee Overdue", value: `₨ ${stats.feeOverdue.toLocaleString("en-PK")}`, icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
   ];
 
   return (
@@ -37,7 +51,7 @@ const Dashboard = () => {
         <p className="mt-1 text-sm text-muted-foreground">Welcome back — here's what's happening at The Country School</p>
       </div>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {statCards.map((stat, i) => (
           <Card key={i} className="shadow-card animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
             <CardContent className="p-5">
@@ -56,20 +70,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="font-display text-lg">Quick Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {loading ? "Loading dashboard data..." : 
-              stats.students === 0 && stats.teachers === 0 
-                ? "No data yet. Start by adding students, teachers, and classes from the sidebar." 
-                : `You have ${stats.students} active students, ${stats.teachers} teachers, and ${stats.classes} classes configured.`
-            }
-          </p>
-        </CardContent>
-      </Card>
+      {!loading && <ClasswiseFeeMetrics vouchers={vouchers} students={students} />}
     </DashboardLayout>
   );
 };
