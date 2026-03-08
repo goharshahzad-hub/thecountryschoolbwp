@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Download, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, Download, Pencil, Trash2, Link2, Unlink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,6 +22,13 @@ interface Student {
   phone: string | null;
   status: string;
   fee_status: string;
+  parent_user_id: string | null;
+}
+
+interface ParentProfile {
+  user_id: string;
+  full_name: string;
+  phone: string | null;
 }
 
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending" };
@@ -29,20 +36,33 @@ const emptyForm = { student_id: "", name: "", class: "", section: "A", father_na
 const Students = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
+  const [parents, setParents] = useState<ParentProfile[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkingStudent, setLinkingStudent] = useState<Student | null>(null);
+  const [selectedParentId, setSelectedParentId] = useState("");
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const fetchStudents = async () => {
-    const { data } = await supabase.from("students").select("*").order("created_at", { ascending: false });
-    if (data) setStudents(data);
+  const fetchData = async () => {
+    const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
+      supabase.from("students").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
+    ]);
+    if (studentsData) setStudents(studentsData);
+    if (parentsData) setParents(parentsData);
     setLoading(false);
   };
 
-  useEffect(() => { fetchStudents(); }, []);
+  useEffect(() => { fetchData(); }, []);
+
+  const getParentName = (userId: string | null) => {
+    if (!userId) return null;
+    return parents.find(p => p.user_id === userId);
+  };
 
   const filtered = students.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -59,27 +79,17 @@ const Students = () => {
     setSaving(true);
     if (editingId) {
       const { error } = await supabase.from("students").update({
-        student_id: form.student_id.trim(),
-        name: form.name.trim(),
-        class: form.class.trim(),
-        section: form.section,
-        father_name: form.father_name.trim(),
-        phone: form.phone.trim(),
-        status: form.status,
-        fee_status: form.fee_status,
+        student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
+        section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
+        status: form.status, fee_status: form.fee_status,
       }).eq("id", editingId);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Updated", description: "Student updated successfully." });
     } else {
       const { error } = await supabase.from("students").insert({
-        student_id: form.student_id.trim(),
-        name: form.name.trim(),
-        class: form.class.trim(),
-        section: form.section,
-        father_name: form.father_name.trim(),
-        phone: form.phone.trim(),
-        status: form.status,
-        fee_status: form.fee_status,
+        student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
+        section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
+        status: form.status, fee_status: form.fee_status,
       });
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Added", description: "Student added successfully." });
@@ -88,7 +98,7 @@ const Students = () => {
     setDialogOpen(false);
     setForm(emptyForm);
     setEditingId(null);
-    fetchStudents();
+    fetchData();
   };
 
   const handleEdit = (s: Student) => {
@@ -101,7 +111,34 @@ const Students = () => {
     if (!confirm("Are you sure you want to delete this student?")) return;
     const { error } = await supabase.from("students").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Deleted", description: "Student removed." }); fetchStudents(); }
+    else { toast({ title: "Deleted", description: "Student removed." }); fetchData(); }
+  };
+
+  const openLinkDialog = (student: Student) => {
+    setLinkingStudent(student);
+    setSelectedParentId(student.parent_user_id || "");
+    setLinkDialogOpen(true);
+  };
+
+  const handleLinkParent = async () => {
+    if (!linkingStudent) return;
+    const { error } = await supabase.from("students")
+      .update({ parent_user_id: selectedParentId || null })
+      .eq("id", linkingStudent.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: selectedParentId ? "Linked" : "Unlinked", description: selectedParentId ? "Student linked to parent account." : "Parent link removed." });
+      fetchData();
+    }
+    setLinkDialogOpen(false);
+    setLinkingStudent(null);
+  };
+
+  const handleUnlink = async (studentId: string) => {
+    const { error } = await supabase.from("students").update({ parent_user_id: null }).eq("id", studentId);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Unlinked", description: "Parent link removed." }); fetchData(); }
   };
 
   return (
@@ -183,6 +220,49 @@ const Students = () => {
         </div>
       </div>
 
+      {/* Link Parent Dialog */}
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">Link Parent Account</DialogTitle>
+          </DialogHeader>
+          {linkingStudent && (
+            <div className="space-y-4">
+              <div className="rounded-md border border-border bg-muted/30 p-3">
+                <p className="text-sm font-medium text-foreground">{linkingStudent.name}</p>
+                <p className="text-xs text-muted-foreground">{linkingStudent.student_id} — Class {linkingStudent.class}-{linkingStudent.section}</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Select Parent Account</Label>
+                <Select value={selectedParentId} onValueChange={setSelectedParentId}>
+                  <SelectTrigger><SelectValue placeholder="Choose a parent account..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— No parent linked —</SelectItem>
+                    {parents.map(p => (
+                      <SelectItem key={p.user_id} value={p.user_id}>
+                        {p.full_name || "Unnamed"} {p.phone ? `(${p.phone})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {parents.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No parent accounts found. Parents need to sign up first.</p>
+                )}
+              </div>
+              <Button
+                className="w-full gradient-primary text-primary-foreground"
+                onClick={() => {
+                  if (selectedParentId === "none") setSelectedParentId("");
+                  handleLinkParent();
+                }}
+              >
+                {selectedParentId && selectedParentId !== "none" ? "Link Parent" : "Remove Link"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Card className="shadow-card">
         <CardHeader className="pb-3">
           <div className="relative">
@@ -202,6 +282,7 @@ const Students = () => {
                   <TableHead>Class</TableHead>
                   <TableHead>Father's Name</TableHead>
                   <TableHead>Phone</TableHead>
+                  <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Fee</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -209,26 +290,44 @@ const Students = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
-                ) : filtered.map(s => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-mono text-xs">{s.student_id}</TableCell>
-                    <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell>{s.class}-{s.section}</TableCell>
-                    <TableCell>{s.father_name}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.phone}</TableCell>
-                    <TableCell>
-                      <Badge variant={s.status === "Active" ? "default" : "secondary"} className={s.status === "Active" ? "bg-success text-success-foreground" : ""}>{s.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={s.fee_status === "Paid" ? "border-success/30 text-success" : s.fee_status === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive"}>{s.fee_status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}><Pencil className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                  <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
+                ) : filtered.map(s => {
+                  const parent = getParentName(s.parent_user_id);
+                  return (
+                    <TableRow key={s.id}>
+                      <TableCell className="font-mono text-xs">{s.student_id}</TableCell>
+                      <TableCell className="font-medium">{s.name}</TableCell>
+                      <TableCell>{s.class}-{s.section}</TableCell>
+                      <TableCell>{s.father_name}</TableCell>
+                      <TableCell className="text-muted-foreground">{s.phone}</TableCell>
+                      <TableCell>
+                        {parent ? (
+                          <div className="flex items-center gap-1">
+                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{parent.full_name || "Linked"}</Badge>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleUnlink(s.id)} title="Unlink parent">
+                              <Unlink className="h-3 w-3 text-muted-foreground" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => openLinkDialog(s)}>
+                            <Link2 className="mr-1 h-3 w-3" />Link
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={s.status === "Active" ? "default" : "secondary"} className={s.status === "Active" ? "bg-success text-success-foreground" : ""}>{s.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={s.fee_status === "Paid" ? "border-success/30 text-success" : s.fee_status === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive"}>{s.fee_status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => openLinkDialog(s)} title="Link parent"><Link2 className="h-4 w-4 text-primary" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
