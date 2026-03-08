@@ -363,7 +363,7 @@ const FeeVouchers = () => {
     { key: "trip_charges", label: "Trip Charges" },
     { key: "books_charges", label: "Books/Summer Pack" },
     { key: "arrears", label: "Arrears" },
-    { key: "late_fee", label: "Late Fee" },
+    { key: "late_fee", label: "Last Month Late Fee" },
     { key: "discount", label: "Discount" },
   ];
 
