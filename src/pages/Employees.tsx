@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, Pencil, Trash2, Printer } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Printer, CreditCard } from "lucide-react";
+import PhotoUpload from "@/components/PhotoUpload";
+import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
@@ -28,8 +30,8 @@ interface NonTeachingStaff {
 }
 
 // ─── Constants ───
-const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "" };
-const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "" };
+const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "", photo_url: "" };
+const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "", photo_url: "" };
 
 const genTeacherId = (n: number) => `TCH-${(n + 1).toString().padStart(4, "0")}`;
 const genStaffId = (n: number) => `STF-${(n + 1).toString().padStart(4, "0")}`;
@@ -45,6 +47,7 @@ const Employees = () => {
   const [tForm, setTForm] = useState(emptyTeacherForm);
   const [tEditId, setTEditId] = useState<string | null>(null);
   const [tSaving, setTSaving] = useState(false);
+  const [tCardItem, setTCardItem] = useState<any>(null);
 
   // ─── Non-Teaching Staff state ───
   const [staff, setStaff] = useState<NonTeachingStaff[]>([]);
@@ -54,6 +57,7 @@ const Employees = () => {
   const [sForm, setSForm] = useState(emptyStaffForm);
   const [sEditId, setSEditId] = useState<string | null>(null);
   const [sSaving, setSSaving] = useState(false);
+  const [sCardItem, setSCardItem] = useState<any>(null);
 
   // ─── Fetch ───
   const fetchTeachers = async () => {
@@ -87,7 +91,7 @@ const Employees = () => {
       teacher_id: tForm.teacher_id.trim(), name: tForm.name.trim(), subject: tForm.subject.trim(),
       classes: tForm.classes.trim(), phone: tForm.phone.trim(), qualification: tForm.qualification.trim(),
       cnic: tForm.cnic.trim(), salary: tForm.salary ? parseFloat(tForm.salary) : 0,
-      status: tForm.status, joining_date: tForm.joining_date || null,
+      status: tForm.status, joining_date: tForm.joining_date || null, photo_url: tForm.photo_url,
     };
     const { error } = tEditId
       ? await supabase.from("teachers").update(payload).eq("id", tEditId)
@@ -98,7 +102,7 @@ const Employees = () => {
   };
 
   const handleTeacherEdit = (t: Teacher) => {
-    setTForm({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", cnic: t.cnic || "", salary: t.salary?.toString() || "", status: t.status, joining_date: t.joining_date || "" });
+    setTForm({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", cnic: t.cnic || "", salary: t.salary?.toString() || "", status: t.status, joining_date: t.joining_date || "", photo_url: (t as any).photo_url || "" });
     setTEditId(t.id); setTDialogOpen(true);
   };
 
@@ -126,7 +130,7 @@ const Employees = () => {
       staff_id: sForm.staff_id.trim(), name: sForm.name.trim(), designation: sForm.designation.trim(),
       department: sForm.department.trim(), phone: sForm.phone.trim(), cnic: sForm.cnic.trim(),
       salary: sForm.salary ? parseFloat(sForm.salary) : 0, qualification: sForm.qualification.trim(),
-      address: sForm.address.trim(), status: sForm.status, joining_date: sForm.joining_date || null,
+      address: sForm.address.trim(), status: sForm.status, joining_date: sForm.joining_date || null, photo_url: sForm.photo_url,
     };
     const { error } = sEditId
       ? await supabase.from("non_teaching_staff" as any).update(payload as any).eq("id", sEditId)
@@ -137,7 +141,7 @@ const Employees = () => {
   };
 
   const handleStaffEdit = (s: NonTeachingStaff) => {
-    setSForm({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", cnic: s.cnic || "", salary: s.salary?.toString() || "", qualification: s.qualification || "", address: s.address || "", status: s.status, joining_date: s.joining_date || "" });
+    setSForm({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", cnic: s.cnic || "", salary: s.salary?.toString() || "", qualification: s.qualification || "", address: s.address || "", status: s.status, joining_date: s.joining_date || "", photo_url: (s as any).photo_url || "" });
     setSEditId(s.id); setSDialogOpen(true);
   };
 
@@ -192,6 +196,7 @@ const Employees = () => {
                       <SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="On Leave">On Leave</SelectItem><SelectItem value="Resigned">Resigned</SelectItem></SelectContent>
                     </Select>
                   </div>
+                  <PhotoUpload currentUrl={tForm.photo_url} onUpload={url => setTForm({ ...tForm, photo_url: url })} folder="teachers" id={tForm.teacher_id} />
                   <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={tSaving}>{tSaving ? "Saving..." : tEditId ? "Update" : "Add Teacher"}</Button></div>
                 </form>
               </DialogContent>
@@ -223,6 +228,7 @@ const Employees = () => {
                         <TableCell className="text-xs">{t.qualification}</TableCell>
                         <TableCell><Badge variant={t.status === "Active" ? "default" : "secondary"} className={t.status === "Active" ? "bg-success text-success-foreground" : ""}>{t.status}</Badge></TableCell>
                         <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setTCardItem(t)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleTeacherEdit(t)}><Pencil className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleTeacherDelete(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </TableCell>
@@ -267,6 +273,7 @@ const Employees = () => {
                     </Select>
                   </div>
                   <div className="col-span-2 space-y-2"><Label>Address</Label><Input placeholder="Complete address" value={sForm.address} onChange={e => setSForm({ ...sForm, address: e.target.value })} /></div>
+                  <PhotoUpload currentUrl={sForm.photo_url} onUpload={url => setSForm({ ...sForm, photo_url: url })} folder="staff" id={sForm.staff_id} />
                   <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={sSaving}>{sSaving ? "Saving..." : sEditId ? "Update" : "Add Staff"}</Button></div>
                 </form>
               </DialogContent>
@@ -298,6 +305,7 @@ const Employees = () => {
                         <TableCell className="text-xs">{s.salary ? `₨ ${Number(s.salary).toLocaleString("en-PK")}` : "—"}</TableCell>
                         <TableCell><Badge variant={s.status === "Active" ? "default" : "secondary"} className={s.status === "Active" ? "bg-success text-success-foreground" : ""}>{s.status}</Badge></TableCell>
                         <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setSCardItem(s)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleStaffEdit(s)}><Pencil className="h-4 w-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleStaffDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </TableCell>
@@ -310,6 +318,47 @@ const Employees = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      {/* Teacher ID Card Dialog */}
+      <Dialog open={!!tCardItem} onOpenChange={o => { if (!o) setTCardItem(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">Teacher ID Card</DialogTitle></DialogHeader>
+          {tCardItem && (
+            <IDCard data={{
+              photo_url: (tCardItem as any).photo_url,
+              id_number: tCardItem.teacher_id,
+              name: tCardItem.name,
+              subtitle: tCardItem.subject || "Teacher",
+              extra_lines: [
+                `<strong>ID:</strong> ${tCardItem.teacher_id}`,
+                tCardItem.classes ? `<strong>Classes:</strong> ${tCardItem.classes}` : "",
+                tCardItem.phone ? `<strong>Phone:</strong> ${tCardItem.phone}` : "",
+              ].filter(Boolean),
+              type: "teacher",
+            }} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Staff ID Card Dialog */}
+      <Dialog open={!!sCardItem} onOpenChange={o => { if (!o) setSCardItem(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">Staff ID Card</DialogTitle></DialogHeader>
+          {sCardItem && (
+            <IDCard data={{
+              photo_url: (sCardItem as any).photo_url,
+              id_number: sCardItem.staff_id,
+              name: sCardItem.name,
+              subtitle: sCardItem.designation || "Staff",
+              extra_lines: [
+                `<strong>ID:</strong> ${sCardItem.staff_id}`,
+                sCardItem.department ? `<strong>Dept:</strong> ${sCardItem.department}` : "",
+                sCardItem.phone ? `<strong>Phone:</strong> ${sCardItem.phone}` : "",
+              ].filter(Boolean),
+              type: "staff",
+            }} />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

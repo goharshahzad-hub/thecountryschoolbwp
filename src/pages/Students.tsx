@@ -9,7 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Download, Pencil, Trash2, Link2, Unlink, Printer } from "lucide-react";
+import { Search, Plus, Download, Pencil, Trash2, Link2, Unlink, Printer, CreditCard } from "lucide-react";
+import PhotoUpload from "@/components/PhotoUpload";
+import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
@@ -33,7 +35,7 @@ interface ParentProfile {
   phone: string | null;
 }
 
-const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", status: "Active", fee_status: "Pending", monthly_fee: "" };
+const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "" };
 
 const generateStudentId = (count: number) => {
   const year = new Date().getFullYear();
@@ -53,7 +55,7 @@ const Students = () => {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-
+  const [cardStudent, setCardStudent] = useState<any>(null);
   const fetchData = async () => {
     const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
       supabase.from("students").select("*").order("created_at", { ascending: false }),
@@ -90,6 +92,7 @@ const Students = () => {
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
         mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+        photo_url: form.photo_url,
       } as any).eq("id", editingId);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Updated", description: "Student updated successfully." });
@@ -99,6 +102,7 @@ const Students = () => {
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
         mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(),
         status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+        photo_url: form.photo_url,
       } as any);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Added", description: "Student added successfully." });
@@ -111,7 +115,7 @@ const Students = () => {
   };
 
   const handleEdit = (s: Student) => {
-    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || "") });
+    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || ""), photo_url: (s as any).photo_url || "" });
     setEditingId(s.id);
     setDialogOpen(true);
   };
@@ -251,6 +255,12 @@ const Students = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <PhotoUpload
+                  currentUrl={form.photo_url}
+                  onUpload={url => setForm({ ...form, photo_url: url })}
+                  folder="students"
+                  id={form.student_id}
+                />
                 <div className="col-span-2">
                   <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>
                     {saving ? "Saving..." : editingId ? "Update Student" : "Add Student"}
@@ -363,6 +373,7 @@ const Students = () => {
                         <Badge variant="outline" className={s.fee_status === "Paid" ? "border-success/30 text-success" : s.fee_status === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive"}>{s.fee_status}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => setCardStudent(s)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => openLinkDialog(s)} title="Link parent"><Link2 className="h-4 w-4 text-primary" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}><Pencil className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -375,6 +386,27 @@ const Students = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* ID Card Dialog */}
+      <Dialog open={!!cardStudent} onOpenChange={o => { if (!o) setCardStudent(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">Student ID Card</DialogTitle></DialogHeader>
+          {cardStudent && (
+            <IDCard data={{
+              photo_url: (cardStudent as any).photo_url,
+              id_number: cardStudent.student_id,
+              name: cardStudent.name,
+              subtitle: `Class ${cardStudent.class}-${cardStudent.section}`,
+              extra_lines: [
+                `<strong>Father:</strong> ${cardStudent.father_name}`,
+                `<strong>ID:</strong> ${cardStudent.student_id}`,
+                cardStudent.phone ? `<strong>Phone:</strong> ${cardStudent.phone}` : "",
+              ].filter(Boolean),
+              type: "student",
+            }} />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
