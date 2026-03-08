@@ -27,6 +27,11 @@ const SettingsPage = () => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>({
+    facebook: { url: "", handle: "" },
+    instagram: { url: "", handle: "" },
+    youtube: { url: "", handle: "" },
+  });
   const [savingContent, setSavingContent] = useState(false);
 
   useEffect(() => {
