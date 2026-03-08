@@ -199,22 +199,45 @@ const FeeVouchers = () => {
     }
     setSaving(true);
     const dueDate = getDueDate(bulkForm.month, parseInt(bulkForm.year));
-    const rows = classStudents.map((s, i) => ({
-      voucher_no: generateVoucherNo(i),
-      student_id: s.id,
-      amount: s.monthly_fee || 0,
-      tuition_fee: s.monthly_fee || 0,
-      fee_type: "Monthly",
-      month: bulkForm.month,
-      year: parseInt(bulkForm.year),
-      due_date: dueDate,
-      issue_date: new Date().toISOString().split("T")[0],
-      status: "Pending" as string,
-      remarks: bulkForm.remarks.trim(),
-      registration_fee: 0, admission_fee: 0, security_deposit: 0,
-      annual_charges: 0, trip_charges: 0, books_charges: 0,
-      arrears: 0, late_fee: 0, late_fee_amount: LATE_FEE,
-    }));
+    const bulkRegFee = parseFloat(bulkForm.registration_fee) || 0;
+    const bulkAdmFee = parseFloat(bulkForm.admission_fee) || 0;
+    const bulkSecDep = parseFloat(bulkForm.security_deposit) || 0;
+    const bulkAnnual = parseFloat(bulkForm.annual_charges) || 0;
+    const bulkTrip = parseFloat(bulkForm.trip_charges) || 0;
+    const bulkBooks = parseFloat(bulkForm.books_charges) || 0;
+    const bulkArrears = parseFloat(bulkForm.arrears) || 0;
+    const bulkLateFee = parseFloat(bulkForm.late_fee) || 0;
+    const bulkDiscount = parseFloat(bulkForm.discount) || 0;
+    const useBulkTuition = bulkForm.tuition_fee.trim() !== "";
+    const bulkTuition = parseFloat(bulkForm.tuition_fee) || 0;
+
+    const rows = classStudents.map((s, i) => {
+      const tuition = useBulkTuition ? bulkTuition : (s.monthly_fee || 0);
+      const total = bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + bulkArrears + bulkLateFee - bulkDiscount;
+      return {
+        voucher_no: generateVoucherNo(i),
+        student_id: s.id,
+        amount: total,
+        tuition_fee: tuition,
+        fee_type: "Monthly",
+        month: bulkForm.month,
+        year: parseInt(bulkForm.year),
+        due_date: dueDate,
+        issue_date: new Date().toISOString().split("T")[0],
+        status: "Pending" as string,
+        remarks: bulkForm.remarks.trim(),
+        registration_fee: bulkRegFee,
+        admission_fee: bulkAdmFee,
+        security_deposit: bulkSecDep,
+        annual_charges: bulkAnnual,
+        trip_charges: bulkTrip,
+        books_charges: bulkBooks,
+        arrears: bulkArrears,
+        late_fee: bulkLateFee,
+        discount: bulkDiscount,
+        late_fee_amount: LATE_FEE,
+      };
+    });
     const { error } = await supabase.from("fee_vouchers").insert(rows as any);
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
