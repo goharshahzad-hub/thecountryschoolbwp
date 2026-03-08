@@ -38,6 +38,7 @@ const gradeColor = (g: string) => g === "A+" || g === "A" ? "border-success/30 t
 
 const Results = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [results, setResults] = useState<TestResult[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
