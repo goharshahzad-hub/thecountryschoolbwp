@@ -24,14 +24,16 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }, { data: studentData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { data: feeData }, { data: studentData }, { data: expenseData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
         supabase.from("students").select("id, name, class, section, monthly_fee"),
+        supabase.from("expenses").select("id, expense_head, amount, month, year"),
       ]);
       setAllVouchers(feeData || []);
+      setAllExpenses(expenseData || []);
       setStudents(studentData || []);
       setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0 });
       setLoading(false);
