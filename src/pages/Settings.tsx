@@ -1,11 +1,74 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import logo from "@/assets/logo.jpg";
 
 const SettingsPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    school_name: "",
+    campus: "",
+    city: "",
+    phone: "",
+    email: "",
+    address: "",
+    motto: "",
+  });
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from("school_settings").select("*").limit(1).single();
+      if (data) {
+        setSettingsId(data.id);
+        setForm({
+          school_name: data.school_name,
+          campus: data.campus,
+          city: data.city,
+          phone: data.phone,
+          email: data.email,
+          address: data.address,
+          motto: data.motto,
+        });
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  const handleSave = async () => {
+    if (!settingsId) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("school_settings")
+      .update({ ...form, updated_at: new Date().toISOString() })
+      .eq("id", settingsId);
+    setSaving(false);
+    if (error) {
+      toast.error("Failed to save: " + error.message);
+    } else {
+      toast.success("Settings saved successfully!");
+    }
+  };
+
+  const handleChange = (field: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <p className="text-muted-foreground">Loading settings...</p>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="mb-6">
@@ -22,33 +85,43 @@ const SettingsPage = () => {
             <div className="flex items-center gap-4">
               <img src={logo} alt="School logo" className="h-16 w-16 rounded-full object-cover shadow-card" />
               <div>
-                <p className="font-medium text-foreground">The Country School</p>
-                <p className="text-sm text-muted-foreground">Model Town Fahad Campus, Bahawalpur</p>
+                <p className="font-medium text-foreground">{form.school_name}</p>
+                <p className="text-sm text-muted-foreground">{form.campus}, {form.city}</p>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>School Name</Label>
-                <Input defaultValue="The Country School" />
+                <Input value={form.school_name} onChange={(e) => handleChange("school_name", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Campus</Label>
-                <Input defaultValue="Model Town Fahad Campus" />
+                <Input value={form.campus} onChange={(e) => handleChange("campus", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>City</Label>
-                <Input defaultValue="Bahawalpur" />
+                <Input value={form.city} onChange={(e) => handleChange("city", e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input defaultValue="+92 322 6107000" />
+                <Input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} />
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label>Email</Label>
-                <Input defaultValue="thecountryschoolbwp@gmail.com" />
+                <Input value={form.email} onChange={(e) => handleChange("email", e.target.value)} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Address</Label>
+                <Input value={form.address} onChange={(e) => handleChange("address", e.target.value)} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Motto / Tagline</Label>
+                <Input value={form.motto} onChange={(e) => handleChange("motto", e.target.value)} />
               </div>
             </div>
-            <Button className="gradient-primary text-primary-foreground">Save Changes</Button>
+            <Button onClick={handleSave} disabled={saving} className="gradient-primary text-primary-foreground">
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
           </CardContent>
         </Card>
       </div>
