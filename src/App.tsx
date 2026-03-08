@@ -50,6 +50,7 @@ const App = () => (
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/timetable" element={<Timetable />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
+            <Route path="/dashboard/admin-requests" element={<AdminRequests />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
             <Route path="/reset-password" element={<ResetPassword />} />
