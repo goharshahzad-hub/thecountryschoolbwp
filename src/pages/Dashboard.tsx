@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
 interface Student { id: string; name: string; class: string; section: string | null; }
@@ -53,6 +54,28 @@ const Dashboard = () => {
   const feeCollected = filteredVouchers.filter(v => v.status === "Paid").reduce((s, v) => s + Number(v.amount), 0);
   const feePending = filteredVouchers.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
   const feeOverdue = filteredVouchers.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
+
+  const chartData = useMemo(() => {
+    const monthMap: Record<string, { paid: number; pending: number; overdue: number }> = {};
+    allVouchers.forEach(v => {
+      const key = `${v.month.slice(0, 3)} ${v.year}`;
+      if (!monthMap[key]) monthMap[key] = { paid: 0, pending: 0, overdue: 0 };
+      const amt = Number(v.amount);
+      if (v.status === "Paid") monthMap[key].paid += amt;
+      else if (v.status === "Pending") monthMap[key].pending += amt;
+      else if (v.status === "Overdue") monthMap[key].overdue += amt;
+    });
+    // Sort by year and month order
+    return Object.entries(monthMap)
+      .map(([name, vals]) => ({ name, ...vals }))
+      .sort((a, b) => {
+        const parse = (n: string) => {
+          const [m, y] = n.split(" ");
+          return Number(y) * 100 + MONTHS.findIndex(mo => mo.startsWith(m));
+        };
+        return parse(a.name) - parse(b.name);
+      });
+  }, [allVouchers]);
 
   const statCards = [
     { label: "Total Students", value: counts.students.toString(), icon: Users, color: "bg-primary/10 text-primary" },
@@ -141,6 +164,29 @@ const Dashboard = () => {
               </Card>
             ))}
           </div>
+
+          {chartData.length > 0 && (
+            <Card className="mb-4 shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg">Monthly Fee Collection Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis tickFormatter={(v) => `₨${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <Tooltip formatter={(value: number) => `₨ ${value.toLocaleString("en-PK")}`} contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
+                    <Legend />
+                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
         </>
       )}
