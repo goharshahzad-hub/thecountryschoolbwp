@@ -25,6 +25,7 @@ interface ClasswiseFeeMetricsProps {
 interface ClassMetric {
   className: string;
   totalStudents: number;
+  expectedMonthly: number;
   totalAmount: number;
   paidAmount: number;
   pendingAmount: number;
