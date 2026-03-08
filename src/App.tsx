@@ -27,6 +27,8 @@ import ExpensesPage from "./pages/Expenses";
 import Diary from "./pages/Diary";
 import AnnouncementsPage from "./pages/Announcements";
 import WhatsAppBroadcast from "./pages/WhatsAppBroadcast";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +65,8 @@ const App = () => (
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

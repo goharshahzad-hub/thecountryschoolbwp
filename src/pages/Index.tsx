@@ -53,6 +53,7 @@ const Index = () => {
             <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Features</a>
             <a href="#gallery" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Gallery</a>
             <Link to="/admission-query" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Admission Inquiry</Link>
+            <Link to="/blog" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Blog</Link>
             <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contact</a>
           </nav>
           <div className="flex items-center gap-2">
