@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { classOptions } from "@/lib/constants";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -205,7 +206,14 @@ const Students = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Class *</Label>
-                  <Input placeholder="10" value={form.class} onChange={e => setForm({ ...form, class: e.target.value })} required />
+                  <Select value={form.class} onValueChange={v => setForm({ ...form, class: v })}>
+                    <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
+                    <SelectContent>
+                      {classOptions.map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Monthly Fee (PKR)</Label>
