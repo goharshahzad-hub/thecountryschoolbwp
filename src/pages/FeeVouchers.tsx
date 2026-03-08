@@ -413,9 +413,9 @@ const FeeVouchers = () => {
             <DialogTrigger asChild>
               <Button size="sm" variant="outline"><Users className="mr-2 h-4 w-4" />Class-wise Generate</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Generate Class-wise Challans</DialogTitle></DialogHeader>
-              <form onSubmit={handleBulkGenerate} className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleBulkGenerate} className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-2">
                   <Label>Class *</Label>
                   <Select value={bulkForm.class_name} onValueChange={v => setBulkForm({ ...bulkForm, class_name: v })}>
@@ -435,11 +435,38 @@ const FeeVouchers = () => {
                   </Select>
                 </div>
                 <div className="space-y-2"><Label>Year</Label><Input type="number" value={bulkForm.year} onChange={e => setBulkForm({ ...bulkForm, year: e.target.value })} /></div>
+
+                <div className="col-span-2 border-t border-border pt-3">
+                  <p className="mb-2 text-sm font-semibold text-foreground">Fee Breakdown (applied to all students)</p>
+                </div>
+                {[
+                  { key: "registration_fee", label: "Registration Fee" },
+                  { key: "admission_fee", label: "Admission Fee" },
+                  { key: "security_deposit", label: "Security Deposit" },
+                  { key: "tuition_fee", label: "Tuition Fee" },
+                  { key: "annual_charges", label: "Annual Charges" },
+                  { key: "trip_charges", label: "Trip Charges" },
+                  { key: "books_charges", label: "Books/Summer Pack" },
+                  { key: "arrears", label: "Arrears" },
+                  { key: "late_fee", label: "Last Month Late Fee" },
+                  { key: "discount", label: "Discount" },
+                ].map(f => (
+                  <div key={f.key} className="space-y-1">
+                    <Label className="text-xs">{f.label}</Label>
+                    <Input
+                      type="number"
+                      placeholder={f.key === "tuition_fee" ? "Auto from student" : "0"}
+                      value={(bulkForm as any)[f.key]}
+                      onChange={e => setBulkForm({ ...bulkForm, [f.key]: e.target.value })}
+                    />
+                  </div>
+                ))}
+
                 <div className="col-span-2 space-y-2"><Label>Remarks</Label><Input value={bulkForm.remarks} onChange={e => setBulkForm({ ...bulkForm, remarks: e.target.value })} /></div>
                 <div className="col-span-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                  <p>• Tuition fee auto-filled from each student's monthly fee</p>
+                  <p>• Leave Tuition Fee blank to auto-fill from each student's monthly fee</p>
                   <p>• Due date: 7th {bulkForm.month} {bulkForm.year} (8th if Sunday)</p>
-                  <p>• Late fee: ₨{LATE_FEE} after due date</p>
+                  <p>• Late fee after due date: ₨{LATE_FEE}</p>
                 </div>
                 <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Generating..." : "Generate Challans"}</Button></div>
               </form>
