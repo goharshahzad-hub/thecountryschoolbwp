@@ -175,12 +175,140 @@ const FeeVouchers = () => {
   };
 
   const handlePrint = (v: FeeVoucher) => {
-    setPrintVoucher(v);
-    setTimeout(() => {
-      const content = printRef.current;
-      if (!content) return;
-      printA4(content.innerHTML, `Fee Voucher - ${v.voucher_no}`);
-    }, 100);
+    const student = getStudent(v.student_id);
+    const slipContent = (title: string) => `
+      <div class="slip">
+        <div class="slip-title">${title}</div>
+        <div class="slip-school">${settings.school_name}</div>
+        <div class="slip-campus">${settings.campus}, ${settings.city}</div>
+        <div class="slip-heading">FEE VOUCHER</div>
+        <table class="slip-table">
+          <tr><td class="lbl">Voucher No</td><td>${v.voucher_no}</td></tr>
+          <tr><td class="lbl">Student ID</td><td>${student?.student_id || "—"}</td></tr>
+          <tr><td class="lbl">Student Name</td><td>${student?.name || "—"}</td></tr>
+          <tr><td class="lbl">Father Name</td><td>${student?.father_name || "—"}</td></tr>
+          <tr><td class="lbl">Class</td><td>${student?.class}-${student?.section}</td></tr>
+          <tr><td class="lbl">Fee Type</td><td>${v.fee_type}</td></tr>
+          <tr><td class="lbl">Month / Year</td><td>${v.month} ${v.year}</td></tr>
+          <tr><td class="lbl">Due Date</td><td>${v.due_date}</td></tr>
+          <tr><td class="lbl">Status</td><td>${v.status}</td></tr>
+          ${v.remarks ? `<tr><td class="lbl">Remarks</td><td>${v.remarks}</td></tr>` : ""}
+        </table>
+        <div class="slip-total">₨ ${Number(v.amount).toLocaleString("en-PK")}</div>
+        <div class="slip-sign">
+          <div>Accountant Sign</div>
+          <div>Stamp</div>
+        </div>
+      </div>`;
+
+    const voucherStyles = `
+      @page { size: A4 landscape; margin: 10mm; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
+      .voucher-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        gap: 0;
+      }
+      .slip {
+        flex: 1;
+        border: 1px solid #333;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .slip + .slip { border-left: 2px dashed #999; }
+      .slip-title {
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+        text-transform: uppercase;
+        background: #c0392b;
+        color: #fff;
+        padding: 4px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+      }
+      .slip-school {
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        color: #c0392b;
+      }
+      .slip-campus {
+        text-align: center;
+        font-size: 9px;
+        color: #666;
+        margin-bottom: 6px;
+      }
+      .slip-heading {
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        padding: 4px 0;
+        margin-bottom: 8px;
+      }
+      .slip-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+        margin-bottom: 8px;
+      }
+      .slip-table td {
+        padding: 3px 6px;
+        border: 1px solid #ddd;
+      }
+      .slip-table .lbl {
+        font-weight: bold;
+        width: 40%;
+        background: #f5f5f5;
+      }
+      .slip-total {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        border: 2px solid #c0392b;
+        padding: 6px;
+        margin: 8px 0;
+        color: #c0392b;
+      }
+      .slip-sign {
+        display: flex;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 30px;
+        font-size: 9px;
+      }
+      .slip-sign div {
+        border-top: 1px solid #333;
+        padding-top: 3px;
+        width: 80px;
+        text-align: center;
+      }
+      .slip-footer {
+        text-align: center;
+        font-size: 7px;
+        color: #999;
+        margin-top: 6px;
+      }
+      @media print { body { padding: 0; } }
+    `;
+
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><title>Fee Voucher - ${v.voucher_no}</title><style>${voucherStyles}</style></head><body>
+      <div class="voucher-container">
+        ${slipContent("School Copy")}
+        ${slipContent("Bank Copy")}
+        ${slipContent("Student Copy")}
+      </div>
+      <script>window.print();window.close()<\/script>
+    </body></html>`);
+    win.document.close();
   };
 
   const filtered = vouchers.filter(v => {
