@@ -65,9 +65,13 @@ const Fees = () => {
     toast({ title: "Marked as Paid" });
   };
 
-  const paid = fees.filter(f => f.status === "Paid").length;
-  const pending = fees.filter(f => f.status === "Pending").length;
-  const overdue = fees.filter(f => f.status === "Overdue").length;
+  const paidCount = fees.filter(f => f.status === "Paid").length;
+  const pendingCount = fees.filter(f => f.status === "Pending").length;
+  const overdueCount = fees.filter(f => f.status === "Overdue").length;
+  const paidAmount = fees.filter(f => f.status === "Paid").reduce((s, f) => s + Number(f.amount), 0);
+  const pendingAmount = fees.filter(f => f.status === "Pending").reduce((s, f) => s + Number(f.amount), 0);
+  const overdueAmount = fees.filter(f => f.status === "Overdue").reduce((s, f) => s + Number(f.amount), 0);
+  const totalAmount = paidAmount + pendingAmount + overdueAmount;
 
   const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive";
 
@@ -88,12 +92,10 @@ const Fees = () => {
               <td>${f.paid_date || "—"}</td><td>${f.status}</td>
             </tr>`;
           }).join("");
-          const totalPaid = fees.filter(f => f.status === "Paid").reduce((s, f) => s + Number(f.amount), 0);
-          const totalPending = fees.filter(f => f.status !== "Paid").reduce((s, f) => s + Number(f.amount), 0);
           printA4(`<div class="print-page">
             ${schoolHeader("FEE COLLECTION REPORT")}
             <div class="print-info"><div>Generated: <span>${new Date().toLocaleDateString("en-PK")}</span></div><div>Total Records: <span>${fees.length}</span></div>
-            <div>Total Collected: <span>₨ ${totalPaid.toLocaleString("en-PK")}</span></div><div>Total Pending: <span>₨ ${totalPending.toLocaleString("en-PK")}</span></div></div>
+            <div>Total Collected: <span>₨ ${paidAmount.toLocaleString("en-PK")}</span></div><div>Total Pending: <span>₨ ${(pendingAmount + overdueAmount).toLocaleString("en-PK")}</span></div></div>
             <table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead>
             <tbody>${rows}</tbody></table>
             ${schoolFooter()}
@@ -101,16 +103,17 @@ const Fees = () => {
         }}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
+      <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Paid", count: paid, cls: "text-success" },
-          { label: "Pending", count: pending, cls: "text-warning" },
-          { label: "Overdue", count: overdue, cls: "text-destructive" },
+          { label: "Total Amount", amount: totalAmount, count: fees.length, cls: "text-foreground" },
+          { label: "Paid", amount: paidAmount, count: paidCount, cls: "text-success" },
+          { label: "Pending", amount: pendingAmount, count: pendingCount, cls: "text-warning" },
+          { label: "Overdue", amount: overdueAmount, count: overdueCount, cls: "text-destructive" },
         ].map((s, i) => (
           <Card key={i} className="shadow-card">
             <CardContent className="p-4 text-center">
-              <p className={`font-display text-3xl font-bold ${s.cls}`}>{s.count}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <p className={`font-display text-xl font-bold ${s.cls}`}>₨ {s.amount.toLocaleString("en-PK")}</p>
+              <p className="text-xs text-muted-foreground">{s.label} ({s.count} vouchers)</p>
             </CardContent>
           </Card>
         ))}
