@@ -1191,6 +1191,11 @@ const Results = () => {
                     <MessageCircle className="mr-2 h-4 w-4" />WhatsApp {classReportTerm} ({students.filter(s => s.class === classReportClass).length})
                   </Button>
                 )}
+                {classReportClass && classReportType === "monthly" && (
+                  <Button onClick={sendBulkMonthlyAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp {classReportMonth} ({students.filter(s => s.class === classReportClass).length})
+                  </Button>
+                )}
               </div>
               {classReportClass && (
                 <p className="mt-3 text-sm text-muted-foreground">
