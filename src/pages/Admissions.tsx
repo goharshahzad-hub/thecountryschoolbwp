@@ -186,6 +186,7 @@ const Admissions = () => {
                   <div className="space-y-2"><Label>Father's Phone</Label><Input placeholder="0300-XXXXXXX" value={form.father_phone} onChange={e => setForm({ ...form, father_phone: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Name</Label><Input value={form.mother_name} onChange={e => setForm({ ...form, mother_name: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Phone</Label><Input value={form.mother_phone} onChange={e => setForm({ ...form, mother_phone: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>WhatsApp Number</Label><Input placeholder="0300-XXXXXXX" value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value })} /></div>
                   <div className="col-span-2 space-y-2"><Label>Address</Label><Textarea placeholder="Complete address" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></div>
                 </div>
               </div>
