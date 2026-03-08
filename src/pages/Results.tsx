@@ -452,6 +452,7 @@ const Results = () => {
     toast({ title: "WhatsApp Alert", description: "Opening WhatsApp message. Send it manually." });
   };
 
+  const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
   const filtered = results.filter(r => {
