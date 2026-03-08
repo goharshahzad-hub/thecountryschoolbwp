@@ -57,6 +57,7 @@ const Employees = () => {
   const [sForm, setSForm] = useState(emptyStaffForm);
   const [sEditId, setSEditId] = useState<string | null>(null);
   const [sSaving, setSSaving] = useState(false);
+  const [sCardItem, setSCardItem] = useState<any>(null);
 
   // ─── Fetch ───
   const fetchTeachers = async () => {
