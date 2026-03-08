@@ -41,7 +41,7 @@ const Attendance = () => {
 
   useEffect(() => {
     const fetchStudents = async () => {
-      const { data } = await supabase.from("students").select("id, student_id, name, class, section").eq("status", "Active").order("name");
+      const { data } = await supabase.from("students").select("id, student_id, name, class, section, whatsapp, phone").eq("status", "Active").order("name");
       if (data) {
         setStudents(data);
         const uniqueClasses = [...new Set(data.map(s => `${s.class}-${s.section || "A"}`))].sort();
