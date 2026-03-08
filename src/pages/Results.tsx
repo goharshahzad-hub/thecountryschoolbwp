@@ -53,6 +53,7 @@ const Results = () => {
   const [classReportClass, setClassReportClass] = useState<string>("");
   const [classReportType, setClassReportType] = useState<string>("term");
   const [classReportTerm, setClassReportTerm] = useState<string>("Term 1");
+  const [classReportMonth, setClassReportMonth] = useState<string>("January");
   const printRef = useRef<HTMLDivElement>(null);
   const annualPrintRef = useRef<HTMLDivElement>(null);
   const classReportRef = useRef<HTMLDivElement>(null);
@@ -488,7 +489,7 @@ const Results = () => {
     else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass}. Send each one manually.` });
   };
 
-  const sendBulkTermAlerts = () => {
+   const sendBulkTermAlerts = () => {
     if (!classReportClass || !classReportTerm) return;
     const classStudents = students.filter(s => s.class === classReportClass).sort((a, b) => a.name.localeCompare(b.name));
     let opened = 0;
@@ -515,6 +516,35 @@ const Results = () => {
     });
     if (opened === 0) toast({ title: "No contacts", description: "No WhatsApp/phone numbers found.", variant: "destructive" });
     else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass} — ${classReportTerm}. Send each one manually.` });
+  };
+
+  const sendBulkMonthlyAlerts = () => {
+    if (!classReportClass || !classReportMonth) return;
+    const classStudents = students.filter(s => s.class === classReportClass).sort((a, b) => a.name.localeCompare(b.name));
+    let opened = 0;
+    classStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const sResults = results.filter(r => r.student_id === s.id && r.exam_type === "Monthly Test" && r.term === classReportMonth);
+      if (sResults.length === 0) return;
+      const subjectLines = sResults.map(r => {
+        const subName = getSubject(r.subject_id)?.name || "Subject";
+        const isAbsent = r.remarks?.toLowerCase().includes("absent");
+        const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(0);
+        return `• ${subName}: ${isAbsent ? "Absent" : `${r.obtained_marks}/${r.total_marks} (${pct}%)`}`;
+      });
+      const totalObt = sResults.filter(r => !r.remarks?.toLowerCase().includes("absent")).reduce((sum, r) => sum + Number(r.obtained_marks), 0);
+      const totalMax = sResults.reduce((sum, r) => sum + Number(r.total_marks), 0);
+      const overallPct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(0) : "0";
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\nMonthly Test Result for *${classReportMonth} ${new Date().getFullYear()}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${subjectLines.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => { window.open(`https://wa.me/${phone}?text=${message}`, "_blank"); }, i * 800);
+      opened++;
+    });
+    if (opened === 0) toast({ title: "No contacts", description: "No WhatsApp/phone numbers found.", variant: "destructive" });
+    else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass} — ${classReportMonth} Monthly Test. Send each one manually.` });
   };
 
 
@@ -1119,6 +1149,7 @@ const Results = () => {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="term">Term-wise</SelectItem>
+                      <SelectItem value="monthly">Monthly Test</SelectItem>
                       <SelectItem value="annual">Annual Combined</SelectItem>
                     </SelectContent>
                   </Select>
@@ -1136,6 +1167,17 @@ const Results = () => {
                     </Select>
                   </div>
                 )}
+                {classReportType === "monthly" && (
+                  <div className="space-y-2 min-w-[120px]">
+                    <Label>Month</Label>
+                    <Select value={classReportMonth} onValueChange={setClassReportMonth}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {MONTHS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <Button onClick={handlePrintClassReport} variant="outline" disabled={!classReportClass}>
                   <Printer className="mr-2 h-4 w-4" />Print All Report Cards
                 </Button>
@@ -1147,6 +1189,11 @@ const Results = () => {
                 {classReportClass && classReportType === "term" && (
                   <Button onClick={sendBulkTermAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
                     <MessageCircle className="mr-2 h-4 w-4" />WhatsApp {classReportTerm} ({students.filter(s => s.class === classReportClass).length})
+                  </Button>
+                )}
+                {classReportClass && classReportType === "monthly" && (
+                  <Button onClick={sendBulkMonthlyAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp {classReportMonth} ({students.filter(s => s.class === classReportClass).length})
                   </Button>
                 )}
               </div>
