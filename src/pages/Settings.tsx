@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useWebsiteContent, StatItem, FeatureItem, GalleryItem } from "@/hooks/useWebsiteContent";
+import { useWebsiteContent, StatItem, FeatureItem, GalleryItem, SocialLinks } from "@/hooks/useWebsiteContent";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import GalleryManager from "@/components/GalleryManager";
 import logo from "@/assets/logo.jpg";
@@ -27,6 +27,11 @@ const SettingsPage = () => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>({
+    facebook: { url: "", handle: "" },
+    instagram: { url: "", handle: "" },
+    youtube: { url: "", handle: "" },
+  });
   const [savingContent, setSavingContent] = useState(false);
 
   useEffect(() => {
@@ -37,6 +42,7 @@ const SettingsPage = () => {
       setStats([...content.stats]);
       setFeatures([...content.features]);
       setGallery([...content.gallery]);
+      setSocialLinks({ ...content.social_links });
     }
   }, [contentLoading, content]);
 
@@ -74,6 +80,7 @@ const SettingsPage = () => {
       updateSection("stats", stats),
       updateSection("features", features),
       updateSection("gallery", gallery),
+      updateSection("social_links", socialLinks),
     ]);
     setSavingContent(false);
     if (results.some(e => e)) toast.error("Failed to save some content");
@@ -215,6 +222,33 @@ const SettingsPage = () => {
 
         {/* Gallery */}
         <GalleryManager gallery={gallery} setGallery={setGallery} />
+
+        {/* Social Media Links */}
+        <Card className="shadow-card">
+          <CardHeader><CardTitle className="font-display">Social Media Links</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            {(["facebook", "instagram", "youtube"] as const).map((platform) => (
+              <div key={platform} className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs capitalize">{platform} URL</Label>
+                  <Input
+                    value={socialLinks[platform].url}
+                    onChange={e => setSocialLinks(prev => ({ ...prev, [platform]: { ...prev[platform], url: e.target.value } }))}
+                    placeholder={`https://${platform}.com/...`}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs capitalize">{platform} Handle</Label>
+                  <Input
+                    value={socialLinks[platform].handle}
+                    onChange={e => setSocialLinks(prev => ({ ...prev, [platform]: { ...prev[platform], handle: e.target.value } }))}
+                    placeholder="@yourhandle"
+                  />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
         <Button onClick={handleSaveContent} disabled={savingContent} className="w-full gradient-primary text-primary-foreground">
           {savingContent ? "Saving..." : "Save Website Content"}

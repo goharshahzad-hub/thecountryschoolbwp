@@ -17,12 +17,19 @@ export interface GalleryItem {
   caption: string;
 }
 
+export interface SocialLinks {
+  facebook: { url: string; handle: string };
+  instagram: { url: string; handle: string };
+  youtube: { url: string; handle: string };
+}
+
 export interface WebsiteContent {
   hero: { tagline: string };
   stats: StatItem[];
   features: FeatureItem[];
   about: { heading: string; subheading: string };
   gallery: GalleryItem[];
+  social_links: SocialLinks;
 }
 
 const defaults: WebsiteContent = {
@@ -43,6 +50,11 @@ const defaults: WebsiteContent = {
   ],
   about: { heading: "Why Choose Us", subheading: "Building tomorrow's leaders with today's best education" },
   gallery: [],
+  social_links: {
+    facebook: { url: "https://www.facebook.com/tcsmtfcbwp/", handle: "@tcsmtfcbwp" },
+    instagram: { url: "https://www.instagram.com/thecountryschoolbwp/", handle: "@thecountryschoolbwp" },
+    youtube: { url: "https://www.youtube.com/@thecountryschoolbwp", handle: "@thecountryschoolbwp" },
+  },
 };
 
 export const useWebsiteContent = () => {
