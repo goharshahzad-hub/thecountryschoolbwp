@@ -354,7 +354,8 @@ const Students = () => {
                   <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Fee</TableHead>
+                  <TableHead>Monthly Fee</TableHead>
+                  <TableHead>Fee Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
