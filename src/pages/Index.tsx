@@ -1,9 +1,12 @@
 import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useWebsiteContent } from "@/hooks/useWebsiteContent";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
