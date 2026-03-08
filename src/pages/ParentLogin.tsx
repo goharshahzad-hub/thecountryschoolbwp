@@ -132,6 +132,15 @@ const ParentLogin = () => {
                   <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                     {loading ? "Logging in..." : "Login"}
                   </Button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors underline-offset-4 hover:underline"
+                      onClick={() => setShowForgot(true)}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
