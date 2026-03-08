@@ -94,7 +94,7 @@ Join us at The Country School and give your child the advantage of a Bloomfield 
     keywords: ["primary school bahawalpur", "early childhood education bahawalpur", "playgroup school bahawalpur"],
     content: `The early years of education are the most critical in a child's development. At The Country School Fahad Campus, we provide exceptional primary education that builds strong foundations in literacy, numeracy, and social skills.
 
-Our early childhood education program is designed for children from Playgroup onwards. We use activity-based learning methods that make education fun and engaging for young learners. Our classrooms are bright, safe, and equipped with age-appropriate learning materials.
+Our early childhood education program is designed for children from Reception (Playgroup) onwards. We use activity-based learning methods that make education fun and engaging for young learners. Our classrooms are bright, safe, and equipped with age-appropriate learning materials.
 
 Key features of our primary education program include small class sizes for personalized attention, trained and caring teachers specialized in early childhood education, play-based learning approach for younger students, gradual introduction to formal academics, focus on developing social skills and emotional intelligence, and regular parent-teacher communication.
 
