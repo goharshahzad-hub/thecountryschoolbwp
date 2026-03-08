@@ -334,9 +334,79 @@ const ParentPortal = () => {
 
               {/* Attendance Tab */}
               <TabsContent value="attendance">
+                {/* Monthly Summary per Child */}
+                {students.map(student => {
+                  const studentAtt = attendance.filter(a => a.student_id === student.id);
+                  // Group by month
+                  const monthlyMap: Record<string, { present: number; absent: number; late: number; total: number }> = {};
+                  studentAtt.forEach(a => {
+                    const d = new Date(a.date);
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                    if (!monthlyMap[key]) monthlyMap[key] = { present: 0, absent: 0, late: 0, total: 0 };
+                    monthlyMap[key].total++;
+                    if (a.status === "present") monthlyMap[key].present++;
+                    else if (a.status === "absent") monthlyMap[key].absent++;
+                    else if (a.status === "late") monthlyMap[key].late++;
+                  });
+                  const months = Object.keys(monthlyMap).sort().reverse();
+
+                  return (
+                    <Card key={student.id} className="mb-4 shadow-card">
+                      <CardHeader>
+                        <CardTitle className="font-display text-lg">{student.name} — Monthly Attendance</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        {months.length === 0 ? (
+                          <p className="py-8 text-center text-sm text-muted-foreground">No attendance records.</p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Month</TableHead>
+                                  <TableHead>Present</TableHead>
+                                  <TableHead>Absent</TableHead>
+                                  <TableHead>Late</TableHead>
+                                  <TableHead>Total Days</TableHead>
+                                  <TableHead>Attendance %</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {months.map(m => {
+                                  const d = monthlyMap[m];
+                                  const pct = d.total > 0 ? Math.round(((d.present + d.late) / d.total) * 100) : 0;
+                                  const [yr, mo] = m.split("-");
+                                  const label = new Date(Number(yr), Number(mo) - 1).toLocaleDateString("en-PK", { month: "long", year: "numeric" });
+                                  return (
+                                    <TableRow key={m}>
+                                      <TableCell className="font-medium">{label}</TableCell>
+                                      <TableCell className="text-success font-semibold">{d.present}</TableCell>
+                                      <TableCell className="text-destructive font-semibold">{d.absent}</TableCell>
+                                      <TableCell className="text-warning font-semibold">{d.late}</TableCell>
+                                      <TableCell>{d.total}</TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline" className={
+                                          pct >= 90 ? "border-success/30 text-success" :
+                                          pct >= 75 ? "border-warning/30 text-warning" :
+                                          "border-destructive/30 text-destructive"
+                                        }>{pct}%</Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+
+                {/* Detailed Records */}
                 <Card className="shadow-card">
                   <CardHeader>
-                    <CardTitle className="font-display text-lg">Attendance Records</CardTitle>
+                    <CardTitle className="font-display text-lg">Detailed Records</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     {attendance.length === 0 ? (
@@ -352,7 +422,7 @@ const ParentPortal = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {attendance.map(a => (
+                            {attendance.slice(0, 50).map(a => (
                               <TableRow key={a.id}>
                                 <TableCell>{new Date(a.date).toLocaleDateString("en-PK", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}</TableCell>
                                 <TableCell className="font-medium">{getStudentName(a.student_id)}</TableCell>
