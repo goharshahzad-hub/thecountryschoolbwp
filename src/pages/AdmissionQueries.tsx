@@ -81,7 +81,7 @@ const AdmissionQueries = () => {
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Student</TableHead>
-                    <TableHead>Father</TableHead>
+                    <TableHead>Guardian/Father</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Class</TableHead>
                     <TableHead>Message</TableHead>

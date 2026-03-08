@@ -415,7 +415,7 @@ const FeeVouchers = () => {
           <tr><td class="lbl">Due Date</td><td>${v.due_date}</td></tr>
           <tr><td class="lbl">Reg. No</td><td>${student?.student_id || "—"}</td></tr>
           <tr><td class="lbl">Name</td><td>${student?.name || "—"}</td></tr>
-          <tr><td class="lbl">Father's Name</td><td>${student?.father_name || "—"}</td></tr>
+          <tr><td class="lbl">Guardian/Father's Name</td><td>${student?.father_name || "—"}</td></tr>
           <tr><td class="lbl">Class</td><td>${student?.class}-${student?.section}</td></tr>
         </table>
         <div class="desc-title">Description</div>
@@ -633,7 +633,7 @@ const FeeVouchers = () => {
           <table>
             <thead>
               <tr>
-                <th>#</th><th>Reg. No</th><th style="text-align:left">Student Name</th><th style="text-align:left">Father's Name</th><th>Month</th><th>Due Date</th><th style="text-align:right">Amount</th><th>Phone</th>
+                <th>#</th><th>Reg. No</th><th style="text-align:left">Student Name</th><th style="text-align:left">Guardian/Father's Name</th><th>Month</th><th>Due Date</th><th style="text-align:right">Amount</th><th>Phone</th>
               </tr>
             </thead>
             <tbody>
@@ -985,7 +985,7 @@ const FeeVouchers = () => {
                         <TableHead>#</TableHead>
                         <TableHead>Reg. No</TableHead>
                         <TableHead>Student Name</TableHead>
-                        <TableHead>Father's Name</TableHead>
+                        <TableHead>Guardian/Father's Name</TableHead>
                         <TableHead>Month</TableHead>
                         <TableHead>Due Date</TableHead>
                         <TableHead className="text-right">Amount</TableHead>

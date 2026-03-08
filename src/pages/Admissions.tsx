@@ -161,7 +161,7 @@ const Admissions = () => {
   const handleBulkPrint = () => {
     const selected = filtered.filter(a => bulk.selectedIds.has(a.id));
     const rows = selected.map(a => `<tr><td>${a.application_no}</td><td style="text-align:left">${a.student_name}</td><td>${a.father_name}</td><td>${a.applying_for_class}-${a.applying_for_section}</td><td>${a.gender}</td><td>${a.status}</td></tr>`).join("");
-    printA4(`<div class="print-page">${schoolHeader("ADMISSION APPLICATIONS")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>App No</th><th>Student</th><th>Father</th><th>Class</th><th>Gender</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Admissions List");
+    printA4(`<div class="print-page">${schoolHeader("ADMISSION APPLICATIONS")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>App No</th><th>Student</th><th>Guardian/Father</th><th>Class</th><th>Gender</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Admissions List");
   };
 
   const statusColor = (s: string) => s === "Approved" ? "border-success/30 text-success" : s === "Rejected" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
@@ -202,10 +202,10 @@ const Admissions = () => {
               <div>
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Parent / Guardian Information</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label>Father's Name *</Label><Input value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required /></div>
-                  <div className="space-y-2"><Label>Father's CNIC</Label><Input placeholder="XXXXX-XXXXXXX-X" value={form.father_cnic} onChange={e => setForm({ ...form, father_cnic: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Father's Occupation</Label><Input value={form.father_occupation} onChange={e => setForm({ ...form, father_occupation: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Father's Phone</Label><Input placeholder="0300-XXXXXXX" value={form.father_phone} onChange={e => setForm({ ...form, father_phone: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Guardian/Father's Name *</Label><Input value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required /></div>
+                  <div className="space-y-2"><Label>Guardian/Father's CNIC</Label><Input placeholder="XXXXX-XXXXXXX-X" value={form.father_cnic} onChange={e => setForm({ ...form, father_cnic: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Guardian/Father's Occupation</Label><Input value={form.father_occupation} onChange={e => setForm({ ...form, father_occupation: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Guardian/Father's Phone</Label><Input placeholder="0300-XXXXXXX" value={form.father_phone} onChange={e => setForm({ ...form, father_phone: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Name</Label><Input value={form.mother_name} onChange={e => setForm({ ...form, mother_name: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Mother's Phone</Label><Input value={form.mother_phone} onChange={e => setForm({ ...form, mother_phone: e.target.value })} /></div>
                   <div className="space-y-2"><Label>WhatsApp Number</Label><Input placeholder="0300-XXXXXXX" value={form.whatsapp} onChange={e => setForm({ ...form, whatsapp: e.target.value })} /></div>
@@ -269,7 +269,7 @@ const Admissions = () => {
             <Table>
               <TableHeader><TableRow>
                 <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
-                <TableHead>App No</TableHead><TableHead>Student</TableHead><TableHead>Father</TableHead><TableHead>Applying For</TableHead><TableHead>Gender</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                <TableHead>App No</TableHead><TableHead>Student</TableHead><TableHead>Guardian/Father</TableHead><TableHead>Applying For</TableHead><TableHead>Gender</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No admission applications</TableCell></TableRow> :
@@ -296,10 +296,10 @@ const Admissions = () => {
                             <div class="form-row"><span class="label">B-Form/CNIC:</span><span class="value">${a.cnic_bform || "—"}</span></div>
                           </div>
                           <div class="form-section"><h3>Parent / Guardian Information</h3>
-                            <div class="form-row"><span class="label">Father's Name:</span><span class="value">${a.father_name}</span></div>
-                            <div class="form-row"><span class="label">Father's CNIC:</span><span class="value">${a.father_cnic || "—"}</span></div>
-                            <div class="form-row"><span class="label">Father's Occupation:</span><span class="value">${a.father_occupation || "—"}</span></div>
-                            <div class="form-row"><span class="label">Father's Phone:</span><span class="value">${a.father_phone || "—"}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's Name:</span><span class="value">${a.father_name}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's CNIC:</span><span class="value">${a.father_cnic || "—"}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's Occupation:</span><span class="value">${a.father_occupation || "—"}</span></div>
+                            <div class="form-row"><span class="label">Guardian/Father's Phone:</span><span class="value">${a.father_phone || "—"}</span></div>
                             <div class="form-row"><span class="label">Mother's Name:</span><span class="value">${a.mother_name || "—"}</span></div>
                             <div class="form-row"><span class="label">Mother's Phone:</span><span class="value">${a.mother_phone || "—"}</span></div>
                             <div class="form-row"><span class="label">Address:</span><span class="value">${a.address || "—"}</span></div>

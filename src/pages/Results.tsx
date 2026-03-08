@@ -1255,7 +1255,7 @@ const Results = () => {
                 <div className="header"><h1>The Country School — Fahad Campus</h1><h2>REPORT CARD / RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
                 <div className="info">
                   <div>Student ID: <span>{student.student_id}</span></div><div>Name: <span>{student.name}</span></div>
-                  <div>Father's Name: <span>{student.father_name}</span></div><div>Class: <span>{student.class}-{student.section}</span></div>
+                  <div>Guardian/Father's Name: <span>{student.father_name}</span></div><div>Class: <span>{student.class}-{student.section}</span></div>
                   <div>Term: <span>{reportTerm}</span></div>
                 </div>
                 <table><thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
@@ -1288,7 +1288,7 @@ const Results = () => {
                 <div className="header"><h1>The Country School — Fahad Campus</h1><h2>ANNUAL COMBINED RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
                 <div className="info">
                   <div>Student ID: <span>{s.student_id}</span></div><div>Name: <span>{s.name}</span></div>
-                  <div>Father's Name: <span>{s.father_name}</span></div><div>Class: <span>{s.class}-{s.section}</span></div>
+                  <div>Guardian/Father's Name: <span>{s.father_name}</span></div><div>Class: <span>{s.class}-{s.section}</span></div>
                 </div>
                 <table>
                   <thead>
@@ -1330,7 +1330,7 @@ const Results = () => {
                 return (
                   <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
                     <div className="header"><h1>The Country School — Fahad Campus</h1><h2>REPORT CARD / RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
-                    <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div><div>Term: <span>{classReportTerm}</span></div></div>
+                    <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Guardian/Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div><div>Term: <span>{classReportTerm}</span></div></div>
                     <table><thead><tr><th>Subject</th><th>Total Marks</th><th>Obtained Marks</th><th>Percentage</th><th>Grade</th><th>Remarks</th></tr></thead>
                       <tbody>
                         {sResults.map(r => { const isAbsent = r.remarks?.toLowerCase().includes("absent"); return (<tr key={r.id}><td style={{ textAlign: "left" }}>{getSubject(r.subject_id)?.name}</td><td>{r.total_marks}</td><td style={isAbsent ? { color: "red", fontWeight: "bold" } : {}}>{isAbsent ? "Absent" : r.obtained_marks}</td><td>{isAbsent ? "—" : ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1) + "%"}</td><td><strong>{isAbsent ? "Absent" : r.grade}</strong></td><td style={{ fontSize: "11px" }}>{r.remarks || "—"}</td></tr>); })}
@@ -1352,7 +1352,7 @@ const Results = () => {
                 return (
                   <div key={st.id} className="report" style={{ pageBreakAfter: "always", marginBottom: "40px" }}>
                     <div className="header"><h1>The Country School — Fahad Campus</h1><h2>ANNUAL COMBINED RESULT CARD</h2><p>Academic Year {new Date().getFullYear()}</p></div>
-                    <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div></div>
+                    <div className="info"><div>Student ID: <span>{st.student_id}</span></div><div>Name: <span>{st.name}</span></div><div>Guardian/Father's Name: <span>{st.father_name}</span></div><div>Class: <span>{st.class}-{st.section}</span></div></div>
                     <table>
                       <thead>
                         <tr><th rowSpan={2} style={{ verticalAlign: "bottom" }}>Subject</th>{terms.map(t => <th key={t} colSpan={3} style={{ borderLeft: "2px solid #333" }}>{t}</th>)}<th colSpan={3} style={{ borderLeft: "2px solid #333", background: "#e8e8e8" }}>Annual</th></tr>

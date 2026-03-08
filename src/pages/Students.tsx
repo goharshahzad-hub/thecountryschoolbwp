@@ -155,7 +155,7 @@ const Students = () => {
     printA4(`<div class="print-page">
       ${schoolHeader("STUDENT LIST")}
       <p class="list-subtitle">Selected Students: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
-      <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Guardian/Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
       <tbody>${rows}</tbody></table>
       ${schoolFooter()}
     </div>`, "Student List");
@@ -206,7 +206,7 @@ const Students = () => {
             printA4(`<div class="print-page">
               ${schoolHeader("STUDENT LIST")}
               <p class="list-subtitle">Total Students: ${filtered.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
-              <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
+              <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Guardian/Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
               <tbody>${rows}</tbody></table>
               ${schoolFooter()}
             </div>`, "Student List");
@@ -227,11 +227,11 @@ const Students = () => {
                   <Input placeholder="Student name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Father's Name *</Label>
-                  <Input placeholder="Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
+                  <Label>Guardian/Father's Name *</Label>
+                   <Input placeholder="Guardian/Father's name" value={form.father_name} onChange={e => setForm({ ...form, father_name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Father's Phone</Label>
+                  <Label>Guardian/Father's Phone</Label>
                   <Input placeholder="0322-XXXXXXX" value={form.phone} onChange={e => {
                     const val = e.target.value;
                     setForm(f => ({
@@ -386,7 +386,7 @@ const Students = () => {
                   <TableHead>ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Class</TableHead>
-                  <TableHead>Father's Name</TableHead>
+                  <TableHead>Guardian/Father's Name</TableHead>
                   <TableHead>Gender</TableHead>
                   <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
