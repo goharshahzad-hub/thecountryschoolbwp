@@ -243,6 +243,7 @@ const Students = () => {
                       <SelectItem value="Female">Female</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
                 <div className="space-y-2">
                   <Label>Status</Label>
                   <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
