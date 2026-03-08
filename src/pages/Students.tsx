@@ -360,7 +360,7 @@ const Students = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
                 ) : filtered.map(s => {
                   const parent = getParentName(s.parent_user_id);
                   return (
