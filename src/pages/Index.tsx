@@ -30,11 +30,18 @@ const Index = () => {
             <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Features</a>
             <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contact</a>
           </nav>
-          <Link to="/dashboard">
-            <Button size="sm" className="gradient-primary border-0 text-primary-foreground">
-              Admin Portal
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/parent-login">
+              <Button variant="outline" size="sm">
+                Parent Login
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button size="sm" className="gradient-primary border-0 text-primary-foreground">
+                Admin Portal
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
