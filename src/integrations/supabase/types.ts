@@ -260,6 +260,7 @@ export type Database = {
           arrears: number
           books_charges: number
           created_at: string
+          discount: number
           due_date: string
           fee_type: string
           id: string
@@ -286,6 +287,7 @@ export type Database = {
           arrears?: number
           books_charges?: number
           created_at?: string
+          discount?: number
           due_date?: string
           fee_type?: string
           id?: string
@@ -312,6 +314,7 @@ export type Database = {
           arrears?: number
           books_charges?: number
           created_at?: string
+          discount?: number
           due_date?: string
           fee_type?: string
           id?: string
