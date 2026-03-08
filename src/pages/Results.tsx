@@ -518,6 +518,7 @@ const Results = () => {
   };
 
 
+  const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
 
   const filtered = results.filter(r => {
