@@ -41,6 +41,7 @@ const months = ["January","February","March","April","May","June","July","August
 const FeeVouchers = () => {
   const { toast } = useToast();
   const { settings } = useSchoolSettings();
+  const [vouchers, setVouchers] = useState<FeeVoucher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
