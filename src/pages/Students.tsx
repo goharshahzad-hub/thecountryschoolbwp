@@ -354,13 +354,14 @@ const Students = () => {
                   <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Fee</TableHead>
+                  <TableHead>Monthly Fee</TableHead>
+                  <TableHead>Fee Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
                 ) : filtered.map(s => {
                   const parent = getParentName(s.parent_user_id);
                   return (
@@ -388,6 +389,7 @@ const Students = () => {
                       <TableCell>
                         <Badge variant={s.status === "Active" ? "default" : "secondary"} className={s.status === "Active" ? "bg-success text-success-foreground" : ""}>{s.status}</Badge>
                       </TableCell>
+                      <TableCell className="font-medium">₨ {((s as any).monthly_fee || 0).toLocaleString("en-PK")}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={s.fee_status === "Paid" ? "border-success/30 text-success" : s.fee_status === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive"}>{s.fee_status}</Badge>
                       </TableCell>

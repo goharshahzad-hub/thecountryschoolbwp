@@ -27,7 +27,7 @@ const Dashboard = () => {
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
-        supabase.from("students").select("id, name, class, section"),
+        supabase.from("students").select("id, name, class, section, monthly_fee"),
       ]);
       setAllVouchers(feeData || []);
       setStudents(studentData || []);
