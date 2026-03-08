@@ -1149,6 +1149,7 @@ const Results = () => {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="term">Term-wise</SelectItem>
+                      <SelectItem value="monthly">Monthly Test</SelectItem>
                       <SelectItem value="annual">Annual Combined</SelectItem>
                     </SelectContent>
                   </Select>
