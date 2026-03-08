@@ -618,7 +618,7 @@ const FeeVouchers = () => {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
     const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;
     const message = encodeURIComponent(
-      `Assalam o Alaikum,\n\nThis is a reminder from *${settings.school_name}* that the fee for your child *${studentName}* of *₨ ${amount.toLocaleString("en-PK")}* for the month of *${month}* is due on *${dueDate}*.\n\nPlease submit the fee before the due date to avoid a late fee charge of ₨ ${LATE_FEE}.\n\nThank you.\n${settings.school_name}\n${settings.campus}, ${settings.city}`
+      `Assalam o Alaikum,\n\nThis is a reminder from *${settings.school_name}* that the fee for your child *${studentName}* of *₨ ${amount.toLocaleString("en-PK")}* for the month of *${month}* is due on *${dueDate}*.\n\nPlease submit the fee before the due date to avoid a late fee charge of ₨ ${LATE_FEE}.\n\n---\n\nالسلام علیکم،\n\nیہ *${settings.school_name}* کی طرف سے یاددہانی ہے کہ آپ کے بچے *${studentName}* کی فیس *₨ ${amount.toLocaleString("en-PK")}* بابت ماہ *${month}* کی آخری تاریخ *${dueDate}* ہے۔\n\nبراہ کرم مقررہ تاریخ سے پہلے فیس جمع کروائیں تاکہ ₨ ${LATE_FEE} لیٹ فیس سے بچا جا سکے۔\n\nشکریہ\n${settings.school_name}\n${settings.campus}, ${settings.city}`
     );
     return `https://wa.me/${fullPhone}?text=${message}`;
   };
