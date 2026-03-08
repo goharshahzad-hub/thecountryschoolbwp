@@ -7,6 +7,7 @@ import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import Lightbox from "@/components/Lightbox";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
