@@ -254,46 +254,79 @@ export type Database = {
       }
       fee_vouchers: {
         Row: {
+          admission_fee: number
           amount: number
+          annual_charges: number
+          arrears: number
+          books_charges: number
           created_at: string
           due_date: string
           fee_type: string
           id: string
+          issue_date: string
+          late_fee: number
+          late_fee_amount: number
           month: string
           paid_date: string | null
+          registration_fee: number
           remarks: string | null
+          security_deposit: number
           status: string
           student_id: string
+          trip_charges: number
+          tuition_fee: number
           updated_at: string
           voucher_no: string
           year: number
         }
         Insert: {
+          admission_fee?: number
           amount?: number
+          annual_charges?: number
+          arrears?: number
+          books_charges?: number
           created_at?: string
           due_date?: string
           fee_type?: string
           id?: string
+          issue_date?: string
+          late_fee?: number
+          late_fee_amount?: number
           month: string
           paid_date?: string | null
+          registration_fee?: number
           remarks?: string | null
+          security_deposit?: number
           status?: string
           student_id: string
+          trip_charges?: number
+          tuition_fee?: number
           updated_at?: string
           voucher_no: string
           year?: number
         }
         Update: {
+          admission_fee?: number
           amount?: number
+          annual_charges?: number
+          arrears?: number
+          books_charges?: number
           created_at?: string
           due_date?: string
           fee_type?: string
           id?: string
+          issue_date?: string
+          late_fee?: number
+          late_fee_amount?: number
           month?: string
           paid_date?: string | null
+          registration_fee?: number
           remarks?: string | null
+          security_deposit?: number
           status?: string
           student_id?: string
+          trip_charges?: number
+          tuition_fee?: number
           updated_at?: string
           voucher_no?: string
           year?: number

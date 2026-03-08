@@ -1,0 +1,13 @@
+
+ALTER TABLE public.fee_vouchers 
+  ADD COLUMN IF NOT EXISTS registration_fee numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS admission_fee numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS security_deposit numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS tuition_fee numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS annual_charges numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS trip_charges numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS books_charges numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS arrears numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS late_fee numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS late_fee_amount numeric NOT NULL DEFAULT 300,
+  ADD COLUMN IF NOT EXISTS issue_date date NOT NULL DEFAULT CURRENT_DATE;
