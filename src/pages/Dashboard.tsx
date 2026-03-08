@@ -70,7 +70,26 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {!loading && <ClasswiseFeeMetrics vouchers={vouchers} students={students} />}
+      {!loading && (
+        <>
+          <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: "Total Fees", amount: stats.feeCollected + stats.feePending + stats.feeOverdue, cls: "text-foreground" },
+              { label: "Total Paid", amount: stats.feeCollected, cls: "text-success" },
+              { label: "Total Pending", amount: stats.feePending, cls: "text-warning" },
+              { label: "Total Overdue", amount: stats.feeOverdue, cls: "text-destructive" },
+            ].map((s, i) => (
+              <Card key={i} className="shadow-card">
+                <CardContent className="p-4 text-center">
+                  <p className={`font-display text-xl font-bold ${s.cls}`}>₨ {s.amount.toLocaleString("en-PK")}</p>
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <ClasswiseFeeMetrics vouchers={vouchers} students={students} />
+        </>
+      )}
     </DashboardLayout>
   );
 };
