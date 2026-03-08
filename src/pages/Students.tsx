@@ -9,12 +9,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Download, Pencil, Trash2, Link2, Unlink, Printer, CreditCard } from "lucide-react";
 import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
+import BulkActionBar from "@/components/BulkActionBar";
 
 interface Student {
   id: string;
@@ -56,6 +59,8 @@ const Students = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [cardStudent, setCardStudent] = useState<any>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   const fetchData = async () => {
     const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
       supabase.from("students").select("*").order("student_id", { ascending: true }),
@@ -78,6 +83,8 @@ const Students = () => {
     s.student_id.toLowerCase().includes(search.toLowerCase()) ||
     s.class.toLowerCase().includes(search.toLowerCase())
   );
+
+  const bulk = useBulkSelect(filtered);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +132,33 @@ const Students = () => {
     const { error } = await supabase.from("students").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: "Deleted", description: "Student removed." }); fetchData(); }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${bulk.count} selected students?`)) return;
+    setBulkDeleting(true);
+    const ids = Array.from(bulk.selectedIds);
+    const { error } = await supabase.from("students").delete().in("id", ids);
+    setBulkDeleting(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted", description: `${ids.length} students deleted` }); bulk.clear(); fetchData(); }
+  };
+
+  const handleBulkPrint = () => {
+    const selected = filtered.filter(s => bulk.selectedIds.has(s.id));
+    const rows = selected.map(s => `
+      <tr>
+        <td>${s.student_id}</td><td style="text-align:left">${s.name}</td>
+        <td>${s.class}-${s.section}</td><td style="text-align:left">${s.father_name}</td>
+        <td>${s.phone || "—"}</td><td>${s.status}</td><td>${s.fee_status}</td>
+      </tr>`).join("");
+    printA4(`<div class="print-page">
+      ${schoolHeader("STUDENT LIST")}
+      <p class="list-subtitle">Selected Students: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Father's Name</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      ${schoolFooter()}
+    </div>`, "Student List");
   };
 
   const openLinkDialog = (student: Student) => {
@@ -332,6 +366,8 @@ const Students = () => {
         </DialogContent>
       </Dialog>
 
+      <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+
       <Card className="shadow-card">
         <CardHeader className="pb-3">
           <div className="relative">
@@ -346,6 +382,7 @@ const Students = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
                   <TableHead>ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Class</TableHead>
@@ -361,11 +398,12 @@ const Students = () => {
               </TableHeader>
               <TableBody>
                 {filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
                 ) : filtered.map(s => {
                   const parent = getParentName(s.parent_user_id);
                   return (
-                    <TableRow key={s.id}>
+                    <TableRow key={s.id} data-state={bulk.selectedIds.has(s.id) ? "selected" : undefined}>
+                      <TableCell><Checkbox checked={bulk.selectedIds.has(s.id)} onCheckedChange={() => bulk.toggle(s.id)} /></TableCell>
                       <TableCell className="font-mono text-xs">{s.student_id}</TableCell>
                       <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell>{s.class}-{s.section}</TableCell>

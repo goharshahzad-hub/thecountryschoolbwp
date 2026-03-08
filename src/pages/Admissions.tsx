@@ -10,10 +10,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Search, Pencil, Trash2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
+import BulkActionBar from "@/components/BulkActionBar";
 
 interface Admission {
   id: string;
@@ -56,6 +59,7 @@ const Admissions = () => {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchAdmissions = async () => {
     const { data } = await supabase.from("admissions").select("*").order("created_at", { ascending: false });
@@ -70,6 +74,8 @@ const Admissions = () => {
     a.application_no.toLowerCase().includes(search.toLowerCase()) ||
     a.father_name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const bulk = useBulkSelect(filtered);
 
   const generateAppNo = () => {
     const now = new Date();
@@ -142,6 +148,22 @@ const Admissions = () => {
     else { toast({ title: "Deleted" }); fetchAdmissions(); }
   };
 
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${bulk.count} selected applications?`)) return;
+    setBulkDeleting(true);
+    const ids = Array.from(bulk.selectedIds);
+    const { error } = await supabase.from("admissions").delete().in("id", ids);
+    setBulkDeleting(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted", description: `${ids.length} applications deleted` }); bulk.clear(); fetchAdmissions(); }
+  };
+
+  const handleBulkPrint = () => {
+    const selected = filtered.filter(a => bulk.selectedIds.has(a.id));
+    const rows = selected.map(a => `<tr><td>${a.application_no}</td><td style="text-align:left">${a.student_name}</td><td>${a.father_name}</td><td>${a.applying_for_class}-${a.applying_for_section}</td><td>${a.gender}</td><td>${a.status}</td></tr>`).join("");
+    printA4(`<div class="print-page">${schoolHeader("ADMISSION APPLICATIONS")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>App No</th><th>Student</th><th>Father</th><th>Class</th><th>Gender</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Admissions List");
+  };
+
   const statusColor = (s: string) => s === "Approved" ? "border-success/30 text-success" : s === "Rejected" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   return (
@@ -158,7 +180,6 @@ const Admissions = () => {
           <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Application" : "New Admission Form"}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Student Info */}
               <div>
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Student Information</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -178,7 +199,6 @@ const Admissions = () => {
                 </div>
               </div>
 
-              {/* Parent Info */}
               <div>
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Parent / Guardian Information</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -193,7 +213,6 @@ const Admissions = () => {
                 </div>
               </div>
 
-              {/* Academic Info */}
               <div>
                 <h3 className="font-display text-sm font-semibold text-foreground mb-3">Academic Information</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -236,6 +255,8 @@ const Admissions = () => {
         </Dialog>
       </div>
 
+      <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+
       <Card className="shadow-card">
         <CardHeader className="pb-3">
           <div className="relative">
@@ -247,12 +268,14 @@ const Admissions = () => {
           {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
             <Table>
               <TableHeader><TableRow>
+                <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
                 <TableHead>App No</TableHead><TableHead>Student</TableHead><TableHead>Father</TableHead><TableHead>Applying For</TableHead><TableHead>Gender</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No admission applications</TableCell></TableRow> :
+                {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No admission applications</TableCell></TableRow> :
                 filtered.map(a => (
-                  <TableRow key={a.id}>
+                  <TableRow key={a.id} data-state={bulk.selectedIds.has(a.id) ? "selected" : undefined}>
+                    <TableCell><Checkbox checked={bulk.selectedIds.has(a.id)} onCheckedChange={() => bulk.toggle(a.id)} /></TableCell>
                     <TableCell className="font-mono text-xs">{a.application_no}</TableCell>
                     <TableCell className="font-medium">{a.student_name}</TableCell>
                     <TableCell>{a.father_name}</TableCell>

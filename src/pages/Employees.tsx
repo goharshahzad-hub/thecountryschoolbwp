@@ -9,14 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Pencil, Trash2, Printer, CreditCard } from "lucide-react";
 import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
+import BulkActionBar from "@/components/BulkActionBar";
 
-// ─── Types ───
 interface Teacher {
   id: string; teacher_id: string; name: string; subject: string; classes: string;
   phone: string | null; qualification: string | null; cnic: string | null;
@@ -29,7 +31,6 @@ interface NonTeachingStaff {
   qualification: string | null; address: string | null; joining_date: string | null; status: string;
 }
 
-// ─── Constants ───
 const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "", photo_url: "" };
 const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "", photo_url: "" };
 
@@ -39,7 +40,6 @@ const genStaffId = (n: number) => `STF-${(n + 1).toString().padStart(4, "0")}`;
 const Employees = () => {
   const { toast } = useToast();
 
-  // ─── Teaching Staff state ───
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [tSearch, setTSearch] = useState("");
   const [tLoading, setTLoading] = useState(true);
@@ -48,8 +48,8 @@ const Employees = () => {
   const [tEditId, setTEditId] = useState<string | null>(null);
   const [tSaving, setTSaving] = useState(false);
   const [tCardItem, setTCardItem] = useState<any>(null);
+  const [tBulkDeleting, setTBulkDeleting] = useState(false);
 
-  // ─── Non-Teaching Staff state ───
   const [staff, setStaff] = useState<NonTeachingStaff[]>([]);
   const [sSearch, setSSearch] = useState("");
   const [sLoading, setSLoading] = useState(true);
@@ -58,8 +58,8 @@ const Employees = () => {
   const [sEditId, setSEditId] = useState<string | null>(null);
   const [sSaving, setSSaving] = useState(false);
   const [sCardItem, setSCardItem] = useState<any>(null);
+  const [sBulkDeleting, setSBulkDeleting] = useState(false);
 
-  // ─── Fetch ───
   const fetchTeachers = async () => {
     const { data } = await supabase.from("teachers").select("*").order("created_at", { ascending: false });
     if (data) setTeachers(data);
@@ -74,12 +74,13 @@ const Employees = () => {
 
   useEffect(() => { fetchTeachers(); fetchStaff(); }, []);
 
-  // ─── Teaching handlers ───
   const filteredTeachers = teachers.filter(t =>
     t.name.toLowerCase().includes(tSearch.toLowerCase()) ||
     t.teacher_id.toLowerCase().includes(tSearch.toLowerCase()) ||
     t.subject.toLowerCase().includes(tSearch.toLowerCase())
   );
+
+  const tBulk = useBulkSelect(filteredTeachers);
 
   const handleTeacherSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,12 +114,29 @@ const Employees = () => {
     else { toast({ title: "Deleted" }); fetchTeachers(); }
   };
 
-  // ─── Non-Teaching handlers ───
+  const handleTeacherBulkDelete = async () => {
+    if (!confirm(`Delete ${tBulk.count} selected teachers?`)) return;
+    setTBulkDeleting(true);
+    const ids = Array.from(tBulk.selectedIds);
+    const { error } = await supabase.from("teachers").delete().in("id", ids);
+    setTBulkDeleting(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted", description: `${ids.length} teachers deleted` }); tBulk.clear(); fetchTeachers(); }
+  };
+
+  const handleTeacherBulkPrint = () => {
+    const selected = filteredTeachers.filter(t => tBulk.selectedIds.has(t.id));
+    const rows = selected.map(t => `<tr><td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td><td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td><td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td></tr>`).join("");
+    printA4(`<div class="print-page">${schoolHeader("TEACHING STAFF LIST")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Teaching Staff List");
+  };
+
   const filteredStaff = staff.filter(s =>
     s.name.toLowerCase().includes(sSearch.toLowerCase()) ||
     s.staff_id.toLowerCase().includes(sSearch.toLowerCase()) ||
     s.designation.toLowerCase().includes(sSearch.toLowerCase())
   );
+
+  const sBulk = useBulkSelect(filteredStaff);
 
   const handleStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +168,22 @@ const Employees = () => {
     const { error } = await supabase.from("non_teaching_staff" as any).delete().eq("id", id);
     if (error) toast({ title: "Error", description: (error as any).message, variant: "destructive" });
     else { toast({ title: "Deleted" }); fetchStaff(); }
+  };
+
+  const handleStaffBulkDelete = async () => {
+    if (!confirm(`Delete ${sBulk.count} selected staff?`)) return;
+    setSBulkDeleting(true);
+    const ids = Array.from(sBulk.selectedIds);
+    const { error } = await supabase.from("non_teaching_staff" as any).delete().in("id", ids);
+    setSBulkDeleting(false);
+    if (error) toast({ title: "Error", description: (error as any).message, variant: "destructive" });
+    else { toast({ title: "Deleted", description: `${ids.length} staff deleted` }); sBulk.clear(); fetchStaff(); }
+  };
+
+  const handleStaffBulkPrint = () => {
+    const selected = filteredStaff.filter(s => sBulk.selectedIds.has(s.id));
+    const rows = selected.map(s => `<tr><td>${s.staff_id}</td><td style="text-align:left">${s.name}</td><td>${s.designation}</td><td>${s.department}</td><td>${s.phone || "—"}</td><td>${s.salary ? `₨ ${Number(s.salary).toLocaleString("en-PK")}` : "—"}</td><td>${s.status}</td></tr>`).join("");
+    printA4(`<div class="print-page">${schoolHeader("NON-TEACHING STAFF LIST")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Department</th><th>Phone</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Non-Teaching Staff List");
   };
 
   return (
@@ -203,6 +237,8 @@ const Employees = () => {
             </Dialog>
           </div>
 
+          <BulkActionBar count={tBulk.count} onDelete={handleTeacherBulkDelete} onPrint={handleTeacherBulkPrint} onClear={tBulk.clear} deleting={tBulkDeleting} />
+
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <div className="relative">
@@ -214,12 +250,14 @@ const Employees = () => {
               {tLoading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
                 <Table>
                   <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={tBulk.allSelected} onCheckedChange={tBulk.toggleAll} aria-label="Select all" /></TableHead>
                     <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Subject</TableHead><TableHead>Classes</TableHead><TableHead>Phone</TableHead><TableHead>Qualification</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {filteredTeachers.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
+                    {filteredTeachers.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
                     filteredTeachers.map(t => (
-                      <TableRow key={t.id}>
+                      <TableRow key={t.id} data-state={tBulk.selectedIds.has(t.id) ? "selected" : undefined}>
+                        <TableCell><Checkbox checked={tBulk.selectedIds.has(t.id)} onCheckedChange={() => tBulk.toggle(t.id)} /></TableCell>
                         <TableCell className="font-mono text-xs">{t.teacher_id}</TableCell>
                         <TableCell className="font-medium">{t.name}</TableCell>
                         <TableCell>{t.subject}</TableCell>
@@ -280,6 +318,8 @@ const Employees = () => {
             </Dialog>
           </div>
 
+          <BulkActionBar count={sBulk.count} onDelete={handleStaffBulkDelete} onPrint={handleStaffBulkPrint} onClear={sBulk.clear} deleting={sBulkDeleting} />
+
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <div className="relative">
@@ -291,12 +331,14 @@ const Employees = () => {
               {sLoading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
                 <Table>
                   <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={sBulk.allSelected} onCheckedChange={sBulk.toggleAll} aria-label="Select all" /></TableHead>
                     <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Designation</TableHead><TableHead>Department</TableHead><TableHead>Phone</TableHead><TableHead>Salary</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {filteredStaff.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No staff found</TableCell></TableRow> :
+                    {filteredStaff.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No staff found</TableCell></TableRow> :
                     filteredStaff.map(s => (
-                      <TableRow key={s.id}>
+                      <TableRow key={s.id} data-state={sBulk.selectedIds.has(s.id) ? "selected" : undefined}>
+                        <TableCell><Checkbox checked={sBulk.selectedIds.has(s.id)} onCheckedChange={() => sBulk.toggle(s.id)} /></TableCell>
                         <TableCell className="font-mono text-xs">{s.staff_id}</TableCell>
                         <TableCell className="font-medium">{s.name}</TableCell>
                         <TableCell>{s.designation}</TableCell>
@@ -318,7 +360,7 @@ const Employees = () => {
           </Card>
         </TabsContent>
       </Tabs>
-      {/* Teacher ID Card Dialog */}
+
       <Dialog open={!!tCardItem} onOpenChange={o => { if (!o) setTCardItem(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle className="font-display">Teacher ID Card</DialogTitle></DialogHeader>
@@ -339,7 +381,6 @@ const Employees = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Staff ID Card Dialog */}
       <Dialog open={!!sCardItem} onOpenChange={o => { if (!o) setSCardItem(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle className="font-display">Staff ID Card</DialogTitle></DialogHeader>

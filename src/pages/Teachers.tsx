@@ -8,10 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Download, Pencil, Trash2, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
+import BulkActionBar from "@/components/BulkActionBar";
 
 interface Teacher {
   id: string;
@@ -42,6 +45,7 @@ const Teachers = () => {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchTeachers = async () => {
     const { data } = await supabase.from("teachers").select("*").order("created_at", { ascending: false });
@@ -56,6 +60,8 @@ const Teachers = () => {
     t.teacher_id.toLowerCase().includes(search.toLowerCase()) ||
     t.subject.toLowerCase().includes(search.toLowerCase())
   );
+
+  const bulk = useBulkSelect(filtered);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +106,33 @@ const Teachers = () => {
     const { error } = await supabase.from("teachers").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: "Deleted" }); fetchTeachers(); }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${bulk.count} selected teachers?`)) return;
+    setBulkDeleting(true);
+    const ids = Array.from(bulk.selectedIds);
+    const { error } = await supabase.from("teachers").delete().in("id", ids);
+    setBulkDeleting(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted", description: `${ids.length} teachers deleted` }); bulk.clear(); fetchTeachers(); }
+  };
+
+  const handleBulkPrint = () => {
+    const selected = filtered.filter(t => bulk.selectedIds.has(t.id));
+    const rows = selected.map(t => `
+      <tr>
+        <td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td>
+        <td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td>
+        <td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td>
+      </tr>`).join("");
+    printA4(`<div class="print-page">
+      ${schoolHeader("TEACHER STAFF LIST")}
+      <p class="list-subtitle">Selected Teachers: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
+      <table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      ${schoolFooter()}
+    </div>`, "Teacher List");
   };
 
   return (
@@ -159,6 +192,8 @@ const Teachers = () => {
         </div>
       </div>
 
+      <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+
       <Card className="shadow-card">
         <CardHeader className="pb-3">
           <div className="relative">
@@ -170,12 +205,14 @@ const Teachers = () => {
           {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
             <Table>
               <TableHeader><TableRow>
+                <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
                 <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Subject</TableHead><TableHead>Classes</TableHead><TableHead>Phone</TableHead><TableHead>Qualification</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
+                {filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
                 filtered.map(t => (
-                  <TableRow key={t.id}>
+                  <TableRow key={t.id} data-state={bulk.selectedIds.has(t.id) ? "selected" : undefined}>
+                    <TableCell><Checkbox checked={bulk.selectedIds.has(t.id)} onCheckedChange={() => bulk.toggle(t.id)} /></TableCell>
                     <TableCell className="font-mono text-xs">{t.teacher_id}</TableCell>
                     <TableCell className="font-medium">{t.name}</TableCell>
                     <TableCell>{t.subject}</TableCell>
