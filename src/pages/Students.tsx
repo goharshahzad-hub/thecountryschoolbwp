@@ -386,6 +386,27 @@ const Students = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* ID Card Dialog */}
+      <Dialog open={!!cardStudent} onOpenChange={o => { if (!o) setCardStudent(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle className="font-display">Student ID Card</DialogTitle></DialogHeader>
+          {cardStudent && (
+            <IDCard data={{
+              photo_url: (cardStudent as any).photo_url,
+              id_number: cardStudent.student_id,
+              name: cardStudent.name,
+              subtitle: `Class ${cardStudent.class}-${cardStudent.section}`,
+              extra_lines: [
+                `<strong>Father:</strong> ${cardStudent.father_name}`,
+                `<strong>ID:</strong> ${cardStudent.student_id}`,
+                cardStudent.phone ? `<strong>Phone:</strong> ${cardStudent.phone}` : "",
+              ].filter(Boolean),
+              type: "student",
+            }} />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
