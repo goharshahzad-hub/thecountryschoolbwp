@@ -1,15 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
-interface Student { id: string; name: string; class: string; section: string | null; }
+interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
+interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
