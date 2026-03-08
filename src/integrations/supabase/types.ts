@@ -372,6 +372,7 @@ export type Database = {
           father_name: string
           fee_status: string
           id: string
+          monthly_fee: number | null
           name: string
           parent_user_id: string | null
           phone: string | null
@@ -386,6 +387,7 @@ export type Database = {
           father_name: string
           fee_status?: string
           id?: string
+          monthly_fee?: number | null
           name: string
           parent_user_id?: string | null
           phone?: string | null
@@ -400,6 +402,7 @@ export type Database = {
           father_name?: string
           fee_status?: string
           id?: string
+          monthly_fee?: number | null
           name?: string
           parent_user_id?: string | null
           phone?: string | null

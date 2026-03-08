@@ -32,7 +32,7 @@ interface ParentProfile {
   phone: string | null;
 }
 
-const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending" };
+const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", status: "Active", fee_status: "Pending", monthly_fee: "" };
 
 const generateStudentId = (count: number) => {
   const year = new Date().getFullYear();
@@ -87,16 +87,16 @@ const Students = () => {
       const { error } = await supabase.from("students").update({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        status: form.status, fee_status: form.fee_status,
-      }).eq("id", editingId);
+        status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+      } as any).eq("id", editingId);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Updated", description: "Student updated successfully." });
     } else {
       const { error } = await supabase.from("students").insert({
         student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
         section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        status: form.status, fee_status: form.fee_status,
-      });
+        status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+      } as any);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Added", description: "Student added successfully." });
     }
@@ -108,7 +108,7 @@ const Students = () => {
   };
 
   const handleEdit = (s: Student) => {
-    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", status: s.status, fee_status: s.fee_status });
+    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || "") });
     setEditingId(s.id);
     setDialogOpen(true);
   };
@@ -196,6 +196,10 @@ const Students = () => {
                 <div className="space-y-2">
                   <Label>Class *</Label>
                   <Input placeholder="10" value={form.class} onChange={e => setForm({ ...form, class: e.target.value })} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>Monthly Fee (PKR)</Label>
+                  <Input type="number" placeholder="0" value={form.monthly_fee} onChange={e => setForm({ ...form, monthly_fee: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Section</Label>
