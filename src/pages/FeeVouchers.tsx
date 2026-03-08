@@ -9,10 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Search, Printer, Pencil, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
+import BulkActionBar from "@/components/BulkActionBar";
 
 interface FeeVoucher {
   id: string;
@@ -52,12 +55,11 @@ interface Student {
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const LATE_FEE = 300;
 
-/** Get 7th of given month/year, but if Sunday push to 8th */
 const getDueDate = (month: string, year: number) => {
   const monthIdx = MONTHS.indexOf(month);
   if (monthIdx === -1) return "";
   const d = new Date(year, monthIdx, 7);
-  if (d.getDay() === 0) d.setDate(8); // Sunday → Monday
+  if (d.getDay() === 0) d.setDate(8);
   return d.toISOString().split("T")[0];
 };
 
@@ -91,6 +93,7 @@ const FeeVouchers = () => {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyFeeForm);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const [bulkForm, setBulkForm] = useState({
     class_name: "",
@@ -333,6 +336,11 @@ const FeeVouchers = () => {
         </div>
       </div>`;
 
+    return { slipContent, voucherNo: v.voucher_no };
+  };
+
+  const printSingleVoucher = (v: FeeVoucher) => {
+    const { slipContent, voucherNo } = handlePrint(v);
     const voucherStyles = `
       @page { size: A4 landscape; margin: 8mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -364,7 +372,7 @@ const FeeVouchers = () => {
 
     const win = window.open("", "_blank");
     if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>Fee Challan - ${v.voucher_no}</title><style>${voucherStyles}
+    win.document.write(`<!DOCTYPE html><html><head><title>Fee Challan - ${voucherNo}</title><style>${voucherStyles}
       .print-preview-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #c0392b; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; font-family: Arial, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
       .print-preview-bar span { font-size: 14px; font-weight: bold; }
       .print-preview-bar button { background: #fff; color: #c0392b; border: none; padding: 8px 24px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; }
@@ -372,8 +380,61 @@ const FeeVouchers = () => {
       .print-preview-bar .close-btn { background: transparent; color: #fff; font-size: 13px; border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 4px; margin-left: 8px; }
       body { padding-top: 50px; }
     </style></head><body>
-      <div class="print-preview-bar"><span>📄 Fee Challan ${v.voucher_no} — Print Preview</span><div><button onclick="window.print()">🖨️ Print</button><button class="close-btn" onclick="window.close()">✕ Close</button></div></div>
+      <div class="print-preview-bar"><span>📄 Fee Challan ${voucherNo} — Print Preview</span><div><button onclick="window.print()">🖨️ Print</button><button class="close-btn" onclick="window.close()">✕ Close</button></div></div>
       <div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>
+    </body></html>`);
+    win.document.close();
+  };
+
+  const printMultipleVouchers = (vouchersToPrint: FeeVoucher[]) => {
+    const pages = vouchersToPrint.map(v => {
+      const { slipContent } = handlePrint(v);
+      return `<div class="voucher-container page-break">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>`;
+    });
+
+    const voucherStyles = `
+      @page { size: A4 landscape; margin: 8mm; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; font-size: 9px; color: #222; }
+      .voucher-container { display: flex; width: 100%; height: 100vh; gap: 0; }
+      .page-break { page-break-after: always; }
+      .page-break:last-child { page-break-after: auto; }
+      .slip { flex: 1; border: 1px solid #333; padding: 8px 10px; display: flex; flex-direction: column; }
+      .slip + .slip { border-left: 2px dashed #999; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 6px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 8px; color: #666; margin-bottom: 4px; }
+      .slip-heading { text-align: center; font-size: 11px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 6px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 8px; margin-bottom: 6px; }
+      .slip-info td { padding: 2px 4px; border: 1px solid #ddd; }
+      .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
+      .desc-title { font-weight: bold; font-size: 9px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 8px; }
+      .fee-table td { padding: 2px 4px; border: 1px solid #ddd; }
+      .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-top: 4px; }
+      .totals-table td { padding: 3px 4px; border: 1px solid #999; font-weight: bold; }
+      .totals-table .amt { text-align: right; width: 35%; }
+      .highlight-green { background: #d4edda; color: #155724; }
+      .highlight-yellow { background: #fff3cd; color: #856404; }
+      .highlight-red { background: #f8d7da; color: #721c24; }
+      .slip-sign { display: flex; justify-content: space-between; margin-top: auto; padding-top: 20px; font-size: 8px; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 3px; width: 70px; text-align: center; }
+      @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
+    `;
+
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><title>Fee Challans — Bulk Print (${vouchersToPrint.length})</title><style>${voucherStyles}
+      .print-preview-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #c0392b; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; font-family: Arial, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+      .print-preview-bar span { font-size: 14px; font-weight: bold; }
+      .print-preview-bar button { background: #fff; color: #c0392b; border: none; padding: 8px 24px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; }
+      .print-preview-bar button:hover { background: #f0f0f0; }
+      .print-preview-bar .close-btn { background: transparent; color: #fff; font-size: 13px; border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 4px; margin-left: 8px; }
+      body { padding-top: 50px; }
+    </style></head><body>
+      <div class="print-preview-bar"><span>📄 Bulk Print — ${vouchersToPrint.length} Challans</span><div><button onclick="window.print()">🖨️ Print All</button><button class="close-btn" onclick="window.close()">✕ Close</button></div></div>
+      ${pages.join("")}
     </body></html>`);
     win.document.close();
   };
@@ -384,6 +445,24 @@ const FeeVouchers = () => {
       student?.name.toLowerCase().includes(search.toLowerCase()) ||
       student?.student_id.toLowerCase().includes(search.toLowerCase());
   });
+
+  const bulk = useBulkSelect(filtered);
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${bulk.count} selected vouchers?`)) return;
+    setBulkDeleting(true);
+    const ids = Array.from(bulk.selectedIds);
+    const { error } = await supabase.from("fee_vouchers").delete().in("id", ids);
+    setBulkDeleting(false);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted", description: `${ids.length} vouchers deleted` }); bulk.clear(); fetchData(); }
+  };
+
+  const handleBulkPrint = () => {
+    const selected = filtered.filter(v => bulk.selectedIds.has(v.id));
+    if (selected.length === 0) return;
+    printMultipleVouchers(selected);
+  };
 
   const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
@@ -565,6 +644,8 @@ const FeeVouchers = () => {
         <ClasswiseFeeMetrics vouchers={vouchers} students={students} />
       </div>
 
+      <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+
       <Card className="shadow-card">
         <CardHeader className="pb-3">
           <div className="relative">
@@ -576,14 +657,16 @@ const FeeVouchers = () => {
           {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
             <Table>
               <TableHeader><TableRow>
+                <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
                 <TableHead>Challan No</TableHead><TableHead>Student</TableHead><TableHead>Class</TableHead><TableHead>Month</TableHead><TableHead>Tuition</TableHead><TableHead>Total</TableHead><TableHead>Due Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No challans</TableCell></TableRow> :
+                {filtered.length === 0 ? <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No challans</TableCell></TableRow> :
                 filtered.map(v => {
                   const student = getStudent(v.student_id);
                   return (
-                    <TableRow key={v.id}>
+                    <TableRow key={v.id} data-state={bulk.selectedIds.has(v.id) ? "selected" : undefined}>
+                      <TableCell><Checkbox checked={bulk.selectedIds.has(v.id)} onCheckedChange={() => bulk.toggle(v.id)} /></TableCell>
                       <TableCell className="font-mono text-xs">{v.voucher_no}</TableCell>
                       <TableCell className="font-medium">{student?.name || "—"}</TableCell>
                       <TableCell>{student?.class}-{student?.section}</TableCell>
@@ -595,7 +678,7 @@ const FeeVouchers = () => {
                       <TableCell className="text-right space-x-1">
                         {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(v)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handlePrint(v)}><Printer className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     </TableRow>
