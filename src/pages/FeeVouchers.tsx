@@ -144,7 +144,6 @@ const FeeVouchers = () => {
       fetchData();
     }
   };
-  };
 
   const markPaid = async (id: string) => {
     await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: new Date().toISOString().split("T")[0] }).eq("id", id);
