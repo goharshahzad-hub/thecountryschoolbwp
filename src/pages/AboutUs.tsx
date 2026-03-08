@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Shield, BookOpen, Users, Heart, Building, Library, Laptop, TreePine, MapPin } from "lucide-react";
+import { ArrowLeft, Shield, BookOpen, Users, Heart, Building, Laptop, TreePine, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -10,7 +10,7 @@ const AboutUs = () => {
   const facilities = [
     { icon: Shield, title: "Secure Campus", desc: "CCTV surveillance, controlled access gates, and trained security personnel ensure a safe environment for every child." },
     { icon: Building, title: "Modern Classrooms", desc: "Spacious, well-ventilated classrooms equipped with whiteboards and age-appropriate furniture for comfortable learning." },
-    { icon: Library, title: "Library", desc: "A well-stocked library with English and Urdu books, reference materials, and a quiet reading area for students." },
+    
     { icon: Laptop, title: "Computer Lab", desc: "Equipped with modern computers to provide students hands-on IT education from an early age." },
     { icon: TreePine, title: "Play Areas", desc: "Safe outdoor play areas and sports facilities for physical development and recreational activities." },
     { icon: Users, title: "Small Class Sizes", desc: "Optimal student-to-teacher ratio ensures personalized attention and better learning outcomes." },
