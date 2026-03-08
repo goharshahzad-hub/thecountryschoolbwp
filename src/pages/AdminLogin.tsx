@@ -48,7 +48,7 @@ const AdminLogin = () => {
     setLoading(false);
     if (!roleData) {
       await supabase.auth.signOut();
-      toast({ title: "Access Denied", description: "You do not have admin privileges. Please contact the school to get admin access.", variant: "destructive" });
+      toast({ title: "Access Denied", description: "You do not have admin privileges. Your request may still be pending approval.", variant: "destructive" });
       return;
     }
 
@@ -67,7 +67,9 @@ const AdminLogin = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+
+    // Sign up the user
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -75,14 +77,32 @@ const AdminLogin = () => {
         data: { full_name: fullName.trim(), phone: phone.trim() },
       },
     });
-    setLoading(false);
+
     if (error) {
+      setLoading(false);
       toast({ title: "Signup Failed", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Verification Email Sent!", description: "Please check your email and verify your account. After verification, contact the school to get admin access." });
+
+    // Submit admin access request
+    if (data.user) {
+      await supabase.from("admin_requests").insert({
+        user_id: data.user.id,
+        full_name: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+      });
+    }
+
+    setLoading(false);
+    toast({
+      title: "Request Submitted!",
+      description: "A verification email has been sent to your inbox. Your admin access request will be reviewed by the school.",
+    });
     setIsSignup(false);
     setPassword("");
+    setFullName("");
+    setPhone("");
   };
 
   return (
@@ -104,7 +124,6 @@ const AdminLogin = () => {
             <p className="text-sm text-muted-foreground">The Country School — Fahad Campus</p>
           </CardHeader>
           <CardContent>
-            {/* Tabs */}
             <div className="mb-4 flex rounded-lg border border-border overflow-hidden">
               <button
                 type="button"
@@ -152,10 +171,10 @@ const AdminLogin = () => {
                   </div>
                 </div>
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-                  {loading ? "Signing up..." : "Sign Up"}
+                  {loading ? "Submitting..." : "Submit Admin Request"}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
-                  A verification email will be sent. After verifying, contact the school to receive admin access.
+                  Your request will be sent to the school for approval. You'll receive a verification email at your address.
                 </p>
               </form>
             ) : (
