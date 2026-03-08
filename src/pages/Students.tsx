@@ -389,6 +389,7 @@ const Students = () => {
                       <TableCell>
                         <Badge variant={s.status === "Active" ? "default" : "secondary"} className={s.status === "Active" ? "bg-success text-success-foreground" : ""}>{s.status}</Badge>
                       </TableCell>
+                      <TableCell className="font-medium">₨ {((s as any).monthly_fee || 0).toLocaleString("en-PK")}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={s.fee_status === "Paid" ? "border-success/30 text-success" : s.fee_status === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive"}>{s.fee_status}</Badge>
                       </TableCell>
