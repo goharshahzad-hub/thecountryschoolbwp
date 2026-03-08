@@ -91,7 +91,7 @@ const Employees = () => {
       teacher_id: tForm.teacher_id.trim(), name: tForm.name.trim(), subject: tForm.subject.trim(),
       classes: tForm.classes.trim(), phone: tForm.phone.trim(), qualification: tForm.qualification.trim(),
       cnic: tForm.cnic.trim(), salary: tForm.salary ? parseFloat(tForm.salary) : 0,
-      status: tForm.status, joining_date: tForm.joining_date || null,
+      status: tForm.status, joining_date: tForm.joining_date || null, photo_url: tForm.photo_url,
     };
     const { error } = tEditId
       ? await supabase.from("teachers").update(payload).eq("id", tEditId)
