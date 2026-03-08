@@ -383,7 +383,10 @@ const FeeVouchers = () => {
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
                   <Label>Student *</Label>
-                  <Select value={form.student_id} onValueChange={v => setForm({ ...form, student_id: v })}>
+                  <Select value={form.student_id} onValueChange={v => {
+                    const student = students.find(s => s.id === v);
+                    setForm({ ...form, student_id: v, amount: student?.monthly_fee ? String(student.monthly_fee) : form.amount });
+                  }}>
                     <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
                     <SelectContent>
                       {students.map(s => (
