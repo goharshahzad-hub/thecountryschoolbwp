@@ -415,7 +415,7 @@ const FeeVouchers = () => {
           <tr><td class="lbl">Due Date</td><td>${v.due_date}</td></tr>
           <tr><td class="lbl">Reg. No</td><td>${student?.student_id || "—"}</td></tr>
           <tr><td class="lbl">Name</td><td>${student?.name || "—"}</td></tr>
-          <tr><td class="lbl">Father's Name</td><td>${student?.father_name || "—"}</td></tr>
+          <tr><td class="lbl">Guardian/Father's Name</td><td>${student?.father_name || "—"}</td></tr>
           <tr><td class="lbl">Class</td><td>${student?.class}-${student?.section}</td></tr>
         </table>
         <div class="desc-title">Description</div>
