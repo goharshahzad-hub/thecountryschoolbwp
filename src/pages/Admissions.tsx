@@ -269,7 +269,7 @@ const Admissions = () => {
             <Table>
               <TableHeader><TableRow>
                 <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
-                <TableHead>App No</TableHead><TableHead>Student</TableHead><TableHead>Father</TableHead><TableHead>Applying For</TableHead><TableHead>Gender</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                <TableHead>App No</TableHead><TableHead>Student</TableHead><TableHead>Guardian/Father</TableHead><TableHead>Applying For</TableHead><TableHead>Gender</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {filtered.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No admission applications</TableCell></TableRow> :
