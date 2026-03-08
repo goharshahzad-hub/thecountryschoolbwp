@@ -28,7 +28,7 @@ interface TestResult {
   exam_date: string | null;
 }
 
-interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; }
+interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; whatsapp: string | null; phone: string | null; }
 interface Subject { id: string; name: string; code: string; }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
