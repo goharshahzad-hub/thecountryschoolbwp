@@ -124,7 +124,7 @@ const Admissions = () => {
       religion: a.religion || "Islam", nationality: a.nationality || "Pakistani",
       cnic_bform: a.cnic_bform || "", father_cnic: a.father_cnic || "",
       father_occupation: a.father_occupation || "", father_phone: a.father_phone || "",
-      mother_phone: a.mother_phone || "", address: a.address || "",
+      mother_phone: a.mother_phone || "", whatsapp: (a as any).whatsapp || "", address: a.address || "",
       previous_school: a.previous_school || "", previous_class: a.previous_class || "",
       applying_for_class: a.applying_for_class, applying_for_section: a.applying_for_section || "A",
       status: a.status, remarks: a.remarks || ""

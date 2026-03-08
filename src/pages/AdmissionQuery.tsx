@@ -22,6 +22,8 @@ const AdmissionQuery = () => {
     student_name: "",
     father_name: "",
     phone: "",
+    mother_phone: "",
+    whatsapp: "",
     email: "",
     applying_for_class: "",
     message: "",
