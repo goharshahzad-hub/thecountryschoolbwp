@@ -12,6 +12,7 @@ interface FeeVoucher { student_id: string; amount: number; status: string; month
 interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
+interface ParentProfile { id: string; full_name: string; phone: string | null; created_at: string; }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
