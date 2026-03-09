@@ -149,23 +149,27 @@ export const downloadA4Pdf = async (htmlContent: string, filename: string = "Doc
   const html2pdf = mod.default;
 
   const container = document.createElement("div");
-  container.style.position = "fixed";
-  container.style.left = "-99999px";
+  container.style.position = "absolute";
+  container.style.left = "0";
   container.style.top = "0";
   container.style.width = "210mm";
   container.style.background = "white";
+  container.style.zIndex = "-9999";
+  container.style.opacity = "0";
   container.innerHTML = `<style>${A4_STYLES}</style>${htmlContent}`;
 
   document.body.appendChild(container);
+
+  // Allow the browser to render the content before capturing
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   try {
     const options: any = {
       margin: [15, 15, 15, 15],
       filename: `${filename}_${date}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 794 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      // html2pdf.js supports this, but its TypeScript types can be incomplete
       pagebreak: { mode: ["css", "legacy"] },
     };
 
