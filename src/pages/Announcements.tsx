@@ -182,9 +182,18 @@ const Announcements = () => {
                       {a.expires_at && <span>Expires: {format(new Date(a.expires_at), "dd MMM yyyy")}</span>}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      setForm({ title: a.title, content: a.content, type: a.type, is_public: a.is_public, expires_at: a.expires_at || "" });
+                      setEditingId(a.id);
+                      setDialogOpen(true);
+                    }}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

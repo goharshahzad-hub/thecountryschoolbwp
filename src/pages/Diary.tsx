@@ -163,6 +163,9 @@ const Diary = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingEntry(entry); setDialogOpen(true); }} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => printSingleDiaryAs8(entry)} title="Print 8 slips">
                           <Printer className="h-4 w-4 text-primary" />
                         </Button>
