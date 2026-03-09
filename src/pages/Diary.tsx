@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, BookOpen, Search, Printer } from "lucide-react";
+import { Plus, Trash2, BookOpen, Search, Printer, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { classOptions } from "@/lib/constants";
@@ -33,6 +33,7 @@ const Diary = () => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<DiaryEntry | null>(null);
   const [search, setSearch] = useState("");
   const [filterClass, setFilterClass] = useState("all");
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
@@ -87,7 +88,7 @@ const Diary = () => {
         </div>
         <div className="flex gap-2 flex-wrap">
           <DiaryWhatsApp entries={filtered} />
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingEntry(null); }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gradient-primary text-primary-foreground">
                 <Plus className="mr-2 h-4 w-4" />Add Entry
@@ -95,9 +96,9 @@ const Diary = () => {
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="font-display">New Diary Entry</DialogTitle>
+                <DialogTitle className="font-display">{editingEntry ? "Edit Diary Entry" : "New Diary Entry"}</DialogTitle>
               </DialogHeader>
-              <DiaryEntryForm onSuccess={fetchEntries} onClose={() => setDialogOpen(false)} />
+              <DiaryEntryForm onSuccess={fetchEntries} onClose={() => { setDialogOpen(false); setEditingEntry(null); }} editingEntry={editingEntry} />
             </DialogContent>
           </Dialog>
         </div>
@@ -162,6 +163,9 @@ const Diary = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingEntry(entry); setDialogOpen(true); }} title="Edit">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => printSingleDiaryAs8(entry)} title="Print 8 slips">
                           <Printer className="h-4 w-4 text-primary" />
                         </Button>

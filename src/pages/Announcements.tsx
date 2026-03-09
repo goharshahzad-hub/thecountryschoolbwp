@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Megaphone, Bell } from "lucide-react";
+import { Plus, Trash2, Megaphone, Bell, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -38,19 +38,16 @@ const typeColor = (type: string) => {
   return map[type] || "border-muted-foreground/30 text-muted-foreground";
 };
 
+const emptyForm = { title: "", content: "", type: "General", is_public: true, expires_at: "" };
+
 const Announcements = () => {
   const { toast } = useToast();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    content: "",
-    type: "General",
-    is_public: true,
-    expires_at: "",
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const fetchAnnouncements = async () => {
     const { data } = await supabase
@@ -70,19 +67,23 @@ const Announcements = () => {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("announcements").insert({
+    const payload = {
       title: form.title.trim(),
       content: form.content.trim(),
       type: form.type,
       is_public: form.is_public,
       expires_at: form.expires_at || null,
-    });
+    };
+    const { error } = editingId
+      ? await supabase.from("announcements").update(payload).eq("id", editingId)
+      : await supabase.from("announcements").insert(payload);
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Announcement posted" });
+      toast({ title: editingId ? "Announcement updated" : "Announcement posted" });
       setDialogOpen(false);
-      setForm({ title: "", content: "", type: "General", is_public: true, expires_at: "" });
+      setEditingId(null);
+      setForm(emptyForm);
       fetchAnnouncements();
     }
   };
@@ -105,7 +106,7 @@ const Announcements = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Announcements & Notices</h1>
           <p className="mt-1 text-sm text-muted-foreground">Post school-wide announcements visible on website & parent portal</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
           <DialogTrigger asChild>
             <Button size="sm" className="gradient-primary text-primary-foreground">
               <Plus className="mr-2 h-4 w-4" />New Announcement
@@ -113,7 +114,7 @@ const Announcements = () => {
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle className="font-display">Post Announcement</DialogTitle>
+              <DialogTitle className="font-display">{editingId ? "Edit Announcement" : "Post Announcement"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -144,7 +145,7 @@ const Announcements = () => {
                 <Label>Show on public website</Label>
               </div>
               <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>
-                {saving ? "Posting..." : "Post Announcement"}
+                {saving ? "Saving..." : editingId ? "Update Announcement" : "Post Announcement"}
               </Button>
             </form>
           </DialogContent>
@@ -181,9 +182,18 @@ const Announcements = () => {
                       {a.expires_at && <span>Expires: {format(new Date(a.expires_at), "dd MMM yyyy")}</span>}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => {
+                      setForm({ title: a.title, content: a.content, type: a.type, is_public: a.is_public, expires_at: a.expires_at || "" });
+                      setEditingId(a.id);
+                      setDialogOpen(true);
+                    }}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

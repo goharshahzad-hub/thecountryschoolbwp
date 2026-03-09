@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +16,22 @@ const SUBJECT_LIST = [
   "Physics", "Chemistry", "Biology",
 ];
 
+interface DiaryEntry {
+  id: string;
+  class_name: string;
+  section: string;
+  subject: string;
+  homework_text: string;
+  date: string;
+}
+
 interface DiaryEntryFormProps {
   onSuccess: () => void;
   onClose: () => void;
+  editingEntry?: DiaryEntry | null;
 }
 
-const DiaryEntryForm = ({ onSuccess, onClose }: DiaryEntryFormProps) => {
+const DiaryEntryForm = ({ onSuccess, onClose, editingEntry }: DiaryEntryFormProps) => {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -32,6 +42,22 @@ const DiaryEntryForm = ({ onSuccess, onClose }: DiaryEntryFormProps) => {
     homework_text: "",
     date: new Date().toISOString().split("T")[0],
   });
+
+  useEffect(() => {
+    if (editingEntry) {
+      const subjectParts = editingEntry.subject.split(", ").map(s => s.trim());
+      const knownSubjects = subjectParts.filter(s => SUBJECT_LIST.includes(s));
+      const customParts = subjectParts.filter(s => !SUBJECT_LIST.includes(s));
+      setForm({
+        class_name: editingEntry.class_name,
+        section: editingEntry.section,
+        subjects: knownSubjects,
+        customSubject: customParts.join(", "),
+        homework_text: editingEntry.homework_text,
+        date: editingEntry.date,
+      });
+    }
+  }, [editingEntry]);
 
   const toggleSubject = (subject: string) => {
     setForm(prev => ({
@@ -54,18 +80,23 @@ const DiaryEntryForm = ({ onSuccess, onClose }: DiaryEntryFormProps) => {
     }
     setSaving(true);
     const subjectStr = allSubjects.join(", ");
-    const { error } = await supabase.from("diary_entries").insert({
+    const payload = {
       class_name: form.class_name,
       section: form.section,
       subject: subjectStr,
       homework_text: form.homework_text.trim(),
       date: form.date,
-    });
+    };
+
+    const { error } = editingEntry
+      ? await supabase.from("diary_entries").update(payload).eq("id", editingEntry.id)
+      : await supabase.from("diary_entries").insert(payload);
+
     setSaving(false);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Diary entry added" });
+      toast({ title: editingEntry ? "Diary entry updated" : "Diary entry added" });
       onClose();
       onSuccess();
     }
@@ -127,7 +158,7 @@ const DiaryEntryForm = ({ onSuccess, onClose }: DiaryEntryFormProps) => {
       </div>
 
       <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>
-        {saving ? "Saving..." : "Add Entry"}
+        {saving ? "Saving..." : editingEntry ? "Update Entry" : "Add Entry"}
       </Button>
     </form>
   );
