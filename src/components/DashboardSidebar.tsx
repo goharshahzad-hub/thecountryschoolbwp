@@ -78,8 +78,11 @@ const DashboardSidebar = () => {
           const isActive = location.pathname === item.to;
           const showBadge =
             (item.to === "/dashboard/admin-requests" && pendingRequests > 0) ||
-            (item.to === "/dashboard/admission-queries" && pendingQueries > 0);
-          const badgeCount = item.to === "/dashboard/admin-requests" ? pendingRequests : pendingQueries;
+            (item.to === "/dashboard/admission-queries" && pendingQueries > 0) ||
+            (item.to === "/dashboard" && newParents > 0 && item.label === "Overview");
+          const badgeCount = item.to === "/dashboard/admin-requests" ? pendingRequests 
+            : item.to === "/dashboard/admission-queries" ? pendingQueries 
+            : newParents;
           return (
             <Link
               key={item.to}
