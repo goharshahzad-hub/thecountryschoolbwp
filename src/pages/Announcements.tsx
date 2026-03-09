@@ -106,7 +106,7 @@ const Announcements = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Announcements & Notices</h1>
           <p className="mt-1 text-sm text-muted-foreground">Post school-wide announcements visible on website & parent portal</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
           <DialogTrigger asChild>
             <Button size="sm" className="gradient-primary text-primary-foreground">
               <Plus className="mr-2 h-4 w-4" />New Announcement
@@ -114,7 +114,7 @@ const Announcements = () => {
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle className="font-display">Post Announcement</DialogTitle>
+              <DialogTitle className="font-display">{editingId ? "Edit Announcement" : "Post Announcement"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
