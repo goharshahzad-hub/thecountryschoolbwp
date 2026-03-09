@@ -101,6 +101,42 @@ const Announcements = () => {
   const active = announcements.filter(a => !a.expires_at || a.expires_at >= today);
   const expired = announcements.filter(a => a.expires_at && a.expires_at < today);
 
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9+]/g, "");
+    if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+    if (cleaned.startsWith("+")) cleaned = cleaned.slice(1);
+    return cleaned;
+  };
+
+  const sendAnnouncementWhatsApp = async (announcement: Announcement) => {
+    const { data: parentStudents } = await supabase
+      .from("students")
+      .select("id, name, class, section, whatsapp, phone, father_name")
+      .eq("status", "Active");
+    if (!parentStudents || parentStudents.length === 0) {
+      toast({ title: "No students", description: "No active students found to send alerts.", variant: "destructive" });
+      return;
+    }
+    let opened = 0;
+    parentStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\n📢 *${announcement.type.toUpperCase()} ANNOUNCEMENT*\n\n*${announcement.title}*\n\n${announcement.content}\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => {
+        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+      }, i * 800);
+      opened++;
+    });
+    if (opened === 0) {
+      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found.", variant: "destructive" });
+    } else {
+      toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
