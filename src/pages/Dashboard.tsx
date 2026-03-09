@@ -343,7 +343,43 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-        </>
+
+          {/* Recent Parent Signups */}
+          <Card className="mt-4 shadow-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <UserCheck className="h-5 w-5" /> Recent Parent Signups
+                {recentParents.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs">{recentParents.length} recent</Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentParents.length === 0 ? (
+                <p className="py-4 text-center text-muted-foreground text-sm">No parent signups yet.</p>
+              ) : (
+                <div className="divide-y divide-border">
+                  {recentParents.map(parent => {
+                    const joinedAgo = getTimeAgo(parent.created_at);
+                    return (
+                      <div key={parent.id} className="flex items-center justify-between py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
+                            {parent.full_name?.charAt(0)?.toUpperCase() || "P"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{parent.full_name || "Unknown"}</p>
+                            <p className="text-xs text-muted-foreground">{parent.phone || "No phone"}</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">{joinedAgo}</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
       )}
     </DashboardLayout>
   );
