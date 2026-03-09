@@ -29,7 +29,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }, { data: parentData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
@@ -38,6 +38,7 @@ const Dashboard = () => {
         supabase.from("students").select("id, name, class, section, monthly_fee, gender"),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
+        supabase.from("profiles").select("id, full_name, phone, created_at").eq("role", "parent").order("created_at", { ascending: false }).limit(10),
       ]);
       setAllVouchers(feeData || []);
       setAllExpenses(expenseData || []);
