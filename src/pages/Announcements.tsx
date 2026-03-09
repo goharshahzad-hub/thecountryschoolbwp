@@ -145,7 +145,7 @@ const Announcements = () => {
                 <Label>Show on public website</Label>
               </div>
               <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>
-                {saving ? "Posting..." : "Post Announcement"}
+                {saving ? "Saving..." : editingId ? "Update Announcement" : "Post Announcement"}
               </Button>
             </form>
           </DialogContent>
