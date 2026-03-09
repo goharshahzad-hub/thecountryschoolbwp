@@ -685,6 +685,17 @@ const FeeVouchers = () => {
           <p className="mt-1 text-sm text-muted-foreground">Generate and manage fee challans — Late fee: ₨{LATE_FEE} after due date (7th of each month)</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const csvData = vouchers.map(v => {
+              const student = getStudent(v.student_id);
+              return { voucher_no: v.voucher_no, student: student?.name || "", class: student ? `${student.class}-${student.section}` : "", month: v.month, year: v.year, amount: v.amount, due_date: v.due_date, paid_date: v.paid_date || "", status: v.status };
+            });
+            downloadCSV(csvData, "Fee_Vouchers", [
+              { key: "voucher_no", label: "Voucher No" }, { key: "student", label: "Student" }, { key: "class", label: "Class" },
+              { key: "month", label: "Month" }, { key: "year", label: "Year" }, { key: "amount", label: "Amount" },
+              { key: "due_date", label: "Due Date" }, { key: "paid_date", label: "Paid Date" }, { key: "status", label: "Status" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
           {/* Bulk Generate Dialog */}
           <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
             <DialogTrigger asChild>
