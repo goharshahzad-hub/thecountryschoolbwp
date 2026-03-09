@@ -25,6 +25,8 @@ const getTimeAgo = (dateStr: string) => {
   return `${Math.floor(days / 30)}mo ago`;
 };
 
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 
 const Dashboard = () => {
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
