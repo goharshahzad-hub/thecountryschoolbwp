@@ -9,10 +9,11 @@ import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
-interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
+interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
-interface ParentProfile { id: string; full_name: string; phone: string | null; created_at: string; }
+interface ParentProfile { id: string; user_id: string; full_name: string; phone: string | null; created_at: string; }
+interface LinkedStudent { name: string; class: string; section: string | null; }
 
 const getTimeAgo = (dateStr: string) => {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -47,10 +48,10 @@ const Dashboard = () => {
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("admissions").select("*", { count: "exact", head: true }).eq("status", "Pending"),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
-        supabase.from("students").select("id, name, class, section, monthly_fee, gender"),
+        supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id"),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
-        supabase.from("profiles").select("id, full_name, phone, created_at").eq("role", "parent").order("created_at", { ascending: false }).limit(10),
+        supabase.from("profiles").select("id, user_id, full_name, phone, created_at").eq("role", "parent").order("created_at", { ascending: false }),
       ]);
       setAllVouchers(feeData || []);
       setAllExpenses(expenseData || []);
@@ -356,35 +357,59 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Recent Parent Signups */}
+          {/* Parent Signups with Linking Status */}
           <Card className="mt-4 shadow-card">
             <CardHeader className="pb-2">
               <CardTitle className="font-display text-lg flex items-center gap-2">
-                <UserCheck className="h-5 w-5" /> Recent Parent Signups
+                <UserCheck className="h-5 w-5" /> Parent Accounts
                 {recentParents.length > 0 && (
-                  <Badge variant="secondary" className="ml-2 text-xs">{recentParents.length} recent</Badge>
+                  <Badge variant="secondary" className="ml-2 text-xs">{recentParents.length} total</Badge>
                 )}
+                {(() => {
+                  const unlinked = recentParents.filter(p => !students.some(s => s.parent_user_id === p.user_id)).length;
+                  return unlinked > 0 ? <Badge variant="destructive" className="text-xs">{unlinked} unlinked</Badge> : null;
+                })()}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentParents.length === 0 ? (
                 <p className="py-4 text-center text-muted-foreground text-sm">No parent signups yet.</p>
               ) : (
-                <div className="divide-y divide-border">
+                <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
                   {recentParents.map(parent => {
                     const joinedAgo = getTimeAgo(parent.created_at);
+                    const linkedStudents = students.filter(s => s.parent_user_id === parent.user_id);
+                    const isLinked = linkedStudents.length > 0;
                     return (
-                      <div key={parent.id} className="flex items-center justify-between py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
+                      <div key={parent.id} className="flex items-center justify-between py-3 gap-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-bold text-sm ${isLinked ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                             {parent.full_name?.charAt(0)?.toUpperCase() || "P"}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{parent.full_name || "Unknown"}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{parent.full_name || "Unknown"}</p>
                             <p className="text-xs text-muted-foreground">{parent.phone || "No phone"}</p>
+                            {isLinked ? (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {linkedStudents.map(s => (
+                                  <Badge key={s.id} variant="outline" className="text-[10px] bg-success/5 border-success/30 text-success">
+                                    {s.name} ({s.class}-{s.section || "A"})
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] mt-1 bg-destructive/5 border-destructive/30 text-destructive">
+                                Not linked to any student
+                              </Badge>
+                            )}
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">{joinedAgo}</Badge>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <Badge variant="outline" className="text-[10px]">{joinedAgo}</Badge>
+                          <Badge variant={isLinked ? "default" : "destructive"} className="text-[10px]">
+                            {isLinked ? "Linked" : "Unlinked"}
+                          </Badge>
+                        </div>
                       </div>
                     );
                   })}
