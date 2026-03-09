@@ -33,6 +33,7 @@ const Diary = () => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<DiaryEntry | null>(null);
   const [search, setSearch] = useState("");
   const [filterClass, setFilterClass] = useState("all");
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
