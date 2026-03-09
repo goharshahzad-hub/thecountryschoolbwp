@@ -5,16 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { classOptions } from "@/lib/constants";
+import { classOptions, diarySubjectOptions } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const SUBJECT_LIST = [
-  "English", "Urdu", "Math", "Science", "Islamiat",
-  "Social Studies", "Computer", "Nazra/Quran", "Drawing",
-  "General Knowledge", "Sindhi", "Arabic", "Pakistan Studies",
-  "Physics", "Chemistry", "Biology",
-];
 
 interface DiaryEntry {
   id: string;
