@@ -119,7 +119,8 @@ const Classes = () => {
               <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Saving..." : editingId ? "Update" : "Add Class"}</Button></div>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {loading ? <p className="text-center text-muted-foreground py-8">Loading...</p> : classes.length === 0 ? <p className="text-center text-muted-foreground py-8">No classes yet. Add your first class.</p> : (

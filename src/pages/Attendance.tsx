@@ -171,6 +171,15 @@ const Attendance = () => {
             </Select>
           )}
           <Button variant="outline" size="sm" onClick={() => {
+            const csvData = filteredStudents.map((s, i) => ({
+              sr: i + 1, student_id: s.student_id, name: s.name,
+              status: (attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)
+            }));
+            downloadCSV(csvData, `Attendance_${selectedClass}_${today}`, [
+              { key: "sr", label: "#" }, { key: "student_id", label: "Student ID" }, { key: "name", label: "Name" }, { key: "status", label: "Status" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+          <Button variant="outline" size="sm" onClick={() => {
             const rows = filteredStudents.map((s, i) => `
               <tr>
                 <td>${i + 1}</td><td>${s.student_id}</td><td style="text-align:left">${s.name}</td>

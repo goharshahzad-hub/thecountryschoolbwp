@@ -145,6 +145,13 @@ const Teachers = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
+            const csvData = filtered.map(t => ({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", salary: t.salary || 0, status: t.status }));
+            downloadCSV(csvData, "Teachers", [
+              { key: "teacher_id", label: "Teacher ID" }, { key: "name", label: "Name" }, { key: "subject", label: "Subject" },
+              { key: "classes", label: "Classes" }, { key: "phone", label: "Phone" }, { key: "qualification", label: "Qualification" }, { key: "salary", label: "Salary" }, { key: "status", label: "Status" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+          <Button variant="outline" size="sm" onClick={() => {
             const rows = filtered.map(t => `
               <tr>
                 <td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td>

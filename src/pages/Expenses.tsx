@@ -182,9 +182,22 @@ const Expenses = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Expense Sheet</h1>
           <p className="text-sm text-muted-foreground">Track and manage all school expenses</p>
         </div>
-        <Button onClick={() => { setEditingId(null); setForm(defaultForm); setDialogOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" /> Add Expense
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const csvData = filtered.map(e => ({ date: e.expense_date, head: e.expense_head, description: e.description, paid_to: e.paid_to, method: e.payment_method, amount: e.amount }));
+            downloadCSV(csvData, "Expenses", [
+              { key: "date", label: "Date" }, { key: "head", label: "Expense Head" }, { key: "description", label: "Description" },
+              { key: "paid_to", label: "Paid To" }, { key: "method", label: "Method" }, { key: "amount", label: "Amount" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = filtered.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
+            printA4(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${filtered.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expense Report");
+          }}><Printer className="mr-2 h-4 w-4" />Print</Button>
+          <Button onClick={() => { setEditingId(null); setForm(defaultForm); setDialogOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" /> Add Expense
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
