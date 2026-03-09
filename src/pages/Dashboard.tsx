@@ -12,7 +12,8 @@ interface FeeVoucher { student_id: string; amount: number; status: string; month
 interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
-interface ParentProfile { id: string; full_name: string; phone: string | null; created_at: string; }
+interface ParentProfile { id: string; user_id: string; full_name: string; phone: string | null; created_at: string; }
+interface LinkedStudent { name: string; class: string; section: string | null; }
 
 const getTimeAgo = (dateStr: string) => {
   const diff = Date.now() - new Date(dateStr).getTime();
