@@ -915,7 +915,8 @@ const FeeVouchers = () => {
                               <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
                                 <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)} title="Print"><Printer className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => savePdfVoucher(v)} title="Save PDF"><Download className="h-4 w-4 text-primary" /></Button>
                               <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             </TableCell>
                           </TableRow>
