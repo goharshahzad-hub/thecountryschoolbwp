@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Megaphone, Bell, Pencil } from "lucide-react";
+import { Plus, Trash2, Megaphone, Bell, Pencil, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { format } from "date-fns";
 
 interface Announcement {
@@ -42,6 +43,7 @@ const emptyForm = { title: "", content: "", type: "General", is_public: true, ex
 
 const Announcements = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -98,6 +100,42 @@ const Announcements = () => {
   const today = new Date().toISOString().split("T")[0];
   const active = announcements.filter(a => !a.expires_at || a.expires_at >= today);
   const expired = announcements.filter(a => a.expires_at && a.expires_at < today);
+
+  const formatPhone = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9+]/g, "");
+    if (cleaned.startsWith("0")) cleaned = "92" + cleaned.slice(1);
+    if (cleaned.startsWith("+")) cleaned = cleaned.slice(1);
+    return cleaned;
+  };
+
+  const sendAnnouncementWhatsApp = async (announcement: Announcement) => {
+    const { data: parentStudents } = await supabase
+      .from("students")
+      .select("id, name, class, section, whatsapp, phone, father_name")
+      .eq("status", "Active");
+    if (!parentStudents || parentStudents.length === 0) {
+      toast({ title: "No students", description: "No active students found to send alerts.", variant: "destructive" });
+      return;
+    }
+    let opened = 0;
+    parentStudents.forEach((s, i) => {
+      const contact = s.whatsapp || s.phone;
+      if (!contact) return;
+      const phone = formatPhone(contact);
+      const message = encodeURIComponent(
+        `Dear Parent,\n\n📢 *${announcement.type.toUpperCase()} ANNOUNCEMENT*\n\n*${announcement.title}*\n\n${announcement.content}\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+      );
+      setTimeout(() => {
+        window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+      }, i * 800);
+      opened++;
+    });
+    if (opened === 0) {
+      toast({ title: "No contacts", description: "No WhatsApp/phone numbers found.", variant: "destructive" });
+    } else {
+      toast({ title: "WhatsApp Alerts", description: `Opening ${opened} WhatsApp message(s). Send each one manually.` });
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -183,6 +221,9 @@ const Announcements = () => {
                     </div>
                   </div>
                   <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => sendAnnouncementWhatsApp(a)} title="Send via WhatsApp">
+                      <MessageCircle className="h-4 w-4 text-[hsl(142,70%,45%)]" />
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => {
                       setForm({ title: a.title, content: a.content, type: a.type, is_public: a.is_public, expires_at: a.expires_at || "" });
                       setEditingId(a.id);

@@ -537,6 +537,52 @@ const FeeVouchers = () => {
     win.document.close();
   };
 
+  const savePdfVoucher = async (v: FeeVoucher) => {
+    const { slipContent, voucherNo } = handlePrint(v);
+    const voucherStyles = `
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #222; }
+      .voucher-container { display: flex; width: 100%; gap: 0; }
+      .slip { flex: 1; border: 1px solid #333; padding: 10px 12px; display: flex; flex-direction: column; }
+      .slip + .slip { border-left: 2px dashed #999; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 12px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 4px; margin-bottom: 6px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 15px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 10px; color: #666; margin-bottom: 4px; }
+      .slip-heading { text-align: center; font-size: 13px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 4px 0; margin-bottom: 6px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 6px; }
+      .slip-info td { padding: 3px 5px; border: 1px solid #ddd; }
+      .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
+      .desc-title { font-weight: bold; font-size: 11px; background: #eee; padding: 3px 5px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+      .fee-table td { padding: 3px 5px; border: 1px solid #ddd; }
+      .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 4px; }
+      .totals-table td { padding: 4px 5px; border: 1px solid #999; font-weight: bold; }
+      .totals-table .amt { text-align: right; width: 35%; }
+      .highlight-green { background: #d4edda; color: #155724; }
+      .highlight-yellow { background: #fff3cd; color: #856404; }
+      .highlight-red { background: #f8d7da; color: #721c24; }
+      .slip-sign { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; font-size: 9px; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 3px; width: 70px; text-align: center; }
+    `;
+    const el = document.createElement("div");
+    el.innerHTML = `<style>${voucherStyles}</style><div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>`;
+    document.body.appendChild(el);
+    try {
+      const html2pdf = (await import("html2pdf.js")).default;
+      await html2pdf().set({
+        margin: 5,
+        filename: `Fee_Challan_${voucherNo}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
+      }).from(el).save();
+    } catch {
+      toast({ title: "Error", description: "Failed to generate PDF", variant: "destructive" });
+    }
+    document.body.removeChild(el);
+  };
+
   const filtered = vouchers.filter(v => {
     const student = getStudent(v.student_id);
     return v.voucher_no.toLowerCase().includes(search.toLowerCase()) ||
@@ -915,7 +961,8 @@ const FeeVouchers = () => {
                               <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
                                 <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)}><Printer className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => printSingleVoucher(v)} title="Print"><Printer className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => savePdfVoucher(v)} title="Save PDF"><Download className="h-4 w-4 text-primary" /></Button>
                               <Button variant="ghost" size="icon" onClick={() => handleDelete(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                             </TableCell>
                           </TableRow>
