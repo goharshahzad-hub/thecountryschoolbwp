@@ -1,18 +1,22 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, BookOpen, Search } from "lucide-react";
+import { Plus, Trash2, BookOpen, Search, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { classOptions } from "@/lib/constants";
 import { format } from "date-fns";
+import DiaryEntryForm from "@/components/diary/DiaryEntryForm";
+import DiaryWhatsApp from "@/components/diary/DiaryWhatsApp";
+import { printSingleDiaryAs8, printMultipleDiarySlips } from "@/components/diary/DiaryPrint";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
+import BulkActionBar from "@/components/BulkActionBar";
 
 interface DiaryEntry {
   id: string;
@@ -29,17 +33,9 @@ const Diary = () => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [filterClass, setFilterClass] = useState("all");
   const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
-  const [form, setForm] = useState({
-    class_name: "",
-    section: "A",
-    subject: "",
-    homework_text: "",
-    date: new Date().toISOString().split("T")[0],
-  });
 
   const fetchEntries = async () => {
     const { data } = await supabase
@@ -60,35 +56,26 @@ const Diary = () => {
     return true;
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.class_name || !form.subject.trim() || !form.homework_text.trim()) {
-      toast({ title: "Error", description: "Please fill all required fields", variant: "destructive" });
-      return;
-    }
-    setSaving(true);
-    const { error } = await supabase.from("diary_entries").insert({
-      class_name: form.class_name,
-      section: form.section,
-      subject: form.subject.trim(),
-      homework_text: form.homework_text.trim(),
-      date: form.date,
-    });
-    setSaving(false);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else {
-      toast({ title: "Diary entry added" });
-      setDialogOpen(false);
-      setForm({ class_name: "", section: "A", subject: "", homework_text: "", date: new Date().toISOString().split("T")[0] });
-      fetchEntries();
-    }
-  };
+  const bulk = useBulkSelect(filtered);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this diary entry?")) return;
     const { error } = await supabase.from("diary_entries").delete().eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: "Deleted" }); fetchEntries(); }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${bulk.count} selected entries?`)) return;
+    const ids = Array.from(bulk.selectedIds);
+    const { error } = await supabase.from("diary_entries").delete().in("id", ids);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: `${ids.length} entries deleted` }); bulk.clear(); fetchEntries(); }
+  };
+
+  const handleBulkPrint = () => {
+    const selected = filtered.filter(e => bulk.selectedIds.has(e.id));
+    printMultipleDiarySlips(selected);
   };
 
   return (
@@ -98,57 +85,22 @@ const Diary = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Diary / Homework</h1>
           <p className="mt-1 text-sm text-muted-foreground">Post daily homework and diary entries for each class</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gradient-primary text-primary-foreground">
-              <Plus className="mr-2 h-4 w-4" />Add Entry
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="font-display">New Diary Entry</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Class *</Label>
-                  <Select value={form.class_name} onValueChange={v => setForm({ ...form, class_name: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
-                    <SelectContent>
-                      {classOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Section</Label>
-                  <Select value={form.section} onValueChange={v => setForm({ ...form, section: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A">A</SelectItem>
-                      <SelectItem value="B">B</SelectItem>
-                      <SelectItem value="C">C</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Subject *</Label>
-                  <Input placeholder="e.g. English, Math" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date</Label>
-                  <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Homework / Diary Details *</Label>
-                <Textarea placeholder="Write homework details here..." value={form.homework_text} onChange={e => setForm({ ...form, homework_text: e.target.value })} rows={4} required />
-              </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>
-                {saving ? "Saving..." : "Add Entry"}
+        <div className="flex gap-2 flex-wrap">
+          <DiaryWhatsApp entries={filtered} />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gradient-primary text-primary-foreground">
+                <Plus className="mr-2 h-4 w-4" />Add Entry
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="font-display">New Diary Entry</DialogTitle>
+              </DialogHeader>
+              <DiaryEntryForm onSuccess={fetchEntries} onClose={() => setDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
@@ -166,6 +118,13 @@ const Diary = () => {
         <Input type="date" className="w-[160px]" value={filterDate} onChange={e => setFilterDate(e.target.value)} />
       </div>
 
+      <BulkActionBar
+        count={bulk.count}
+        onDelete={handleBulkDelete}
+        onPrint={handleBulkPrint}
+        onClear={bulk.clear}
+      />
+
       <Card className="shadow-card">
         <CardContent className="p-0">
           {loading ? (
@@ -179,6 +138,9 @@ const Diary = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} />
+                  </TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Subject</TableHead>
@@ -189,6 +151,9 @@ const Diary = () => {
               <TableBody>
                 {filtered.map(entry => (
                   <TableRow key={entry.id}>
+                    <TableCell>
+                      <Checkbox checked={bulk.selectedIds.has(entry.id)} onCheckedChange={() => bulk.toggle(entry.id)} />
+                    </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{format(new Date(entry.date), "dd MMM yyyy")}</TableCell>
                     <TableCell>{entry.class_name}-{entry.section}</TableCell>
                     <TableCell className="font-medium">{entry.subject}</TableCell>
@@ -196,9 +161,14 @@ const Diary = () => {
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">{entry.homework_text}</p>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(entry.id)} title="Delete">
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => printSingleDiaryAs8(entry)} title="Print 8 slips">
+                          <Printer className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(entry.id)} title="Delete">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
