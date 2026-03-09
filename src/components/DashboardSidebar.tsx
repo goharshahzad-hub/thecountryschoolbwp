@@ -39,20 +39,15 @@ const DashboardSidebar = () => {
   const { theme, setTheme } = useTheme();
   const [pendingRequests, setPendingRequests] = useState(0);
   const [pendingQueries, setPendingQueries] = useState(0);
-  const [newParents, setNewParents] = useState(0);
 
   useEffect(() => {
     const fetchCounts = async () => {
-      // Count parents who signed up in the last 7 days
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const [reqRes, queryRes, parentRes] = await Promise.all([
+      const [reqRes, queryRes] = await Promise.all([
         supabase.from("admin_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("admission_queries").select("*", { count: "exact", head: true }).eq("status", "New"),
-        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "parent").gte("created_at", sevenDaysAgo),
       ]);
       setPendingRequests(reqRes.count || 0);
       setPendingQueries(queryRes.count || 0);
-      setNewParents(parentRes.count || 0);
     };
     fetchCounts();
   }, []);
