@@ -170,8 +170,6 @@ export const downloadA4Pdf = async (htmlContent: string, filename: string = "Doc
     };
 
     await html2pdf().set(options).from(container).save();
-      .from(container)
-      .save();
   } finally {
     document.body.removeChild(container);
   }
