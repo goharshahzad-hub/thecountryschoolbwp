@@ -67,19 +67,23 @@ const Announcements = () => {
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("announcements").insert({
+    const payload = {
       title: form.title.trim(),
       content: form.content.trim(),
       type: form.type,
       is_public: form.is_public,
       expires_at: form.expires_at || null,
-    });
+    };
+    const { error } = editingId
+      ? await supabase.from("announcements").update(payload).eq("id", editingId)
+      : await supabase.from("announcements").insert(payload);
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Announcement posted" });
+      toast({ title: editingId ? "Announcement updated" : "Announcement posted" });
       setDialogOpen(false);
-      setForm({ title: "", content: "", type: "General", is_public: true, expires_at: "" });
+      setEditingId(null);
+      setForm(emptyForm);
       fetchAnnouncements();
     }
   };
