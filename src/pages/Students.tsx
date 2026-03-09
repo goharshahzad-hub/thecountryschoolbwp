@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Download, Pencil, Trash2, Link2, Unlink, Printer, CreditCard } from "lucide-react";
+import { downloadCSV } from "@/lib/csvUtils";
 import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
