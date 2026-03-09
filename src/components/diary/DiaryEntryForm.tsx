@@ -123,7 +123,7 @@ const DiaryEntryForm = ({ onSuccess, onClose, editingEntry }: DiaryEntryFormProp
       <div className="space-y-2">
         <Label>Subjects * (select multiple)</Label>
         <div className="grid grid-cols-3 gap-2 rounded-md border p-3 max-h-[160px] overflow-y-auto">
-          {SUBJECT_LIST.map(sub => (
+          {diarySubjectOptions.map(sub => (
             <label key={sub} className="flex items-center gap-2 text-sm cursor-pointer">
               <Checkbox
                 checked={form.subjects.includes(sub)}
