@@ -38,19 +38,16 @@ const typeColor = (type: string) => {
   return map[type] || "border-muted-foreground/30 text-muted-foreground";
 };
 
+const emptyForm = { title: "", content: "", type: "General", is_public: true, expires_at: "" };
+
 const Announcements = () => {
   const { toast } = useToast();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    content: "",
-    type: "General",
-    is_public: true,
-    expires_at: "",
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const fetchAnnouncements = async () => {
     const { data } = await supabase
