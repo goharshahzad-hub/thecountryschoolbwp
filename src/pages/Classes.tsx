@@ -81,10 +81,21 @@ const Classes = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Classes</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage classes and sections ({classes.length} total)</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Add Class</Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const csvData = classes.map(c => ({ name: c.name, section: c.section, level: c.level, room: c.room || "", max_students: c.max_students || 0 }));
+            downloadCSV(csvData, "Classes", [
+              { key: "name", label: "Class Name" }, { key: "section", label: "Section" }, { key: "level", label: "Level" }, { key: "room", label: "Room" }, { key: "max_students", label: "Max Students" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = classes.map(c => `<tr><td>${c.name}</td><td>${c.section}</td><td>${c.level}</td><td>${c.room || "—"}</td><td>${c.max_students}</td></tr>`).join("");
+            printA4(`<div class="print-page">${schoolHeader("CLASS LIST")}<p class="list-subtitle">Total Classes: ${classes.length}</p><table><thead><tr><th>Class</th><th>Section</th><th>Level</th><th>Room</th><th>Max Students</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Class List");
+          }}><Printer className="mr-2 h-4 w-4" />Print</Button>
+          <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gradient-primary text-primary-foreground"><Plus className="mr-2 h-4 w-4" />Add Class</Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Class" : "Add New Class"}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
