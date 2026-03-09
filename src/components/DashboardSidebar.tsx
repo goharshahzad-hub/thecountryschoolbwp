@@ -27,6 +27,7 @@ const navItems = [
   { to: "/dashboard/results", icon: BarChart3, label: "Results" },
   { to: "/dashboard/timetable", icon: Calendar, label: "Timetable" },
   { to: "/dashboard/expenses", icon: Wallet, label: "Expenses" },
+  { to: "/dashboard/signedup-parents", icon: UserCheck, label: "Signedup Parents" },
   { to: "/dashboard/admin-requests", icon: ShieldCheck, label: "Admin Requests" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
