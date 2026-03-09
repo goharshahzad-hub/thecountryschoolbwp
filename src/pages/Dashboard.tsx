@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
