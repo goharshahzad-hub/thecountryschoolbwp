@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
@@ -11,14 +12,28 @@ interface FeeVoucher { student_id: string; amount: number; status: string; month
 interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
+interface ParentProfile { id: string; full_name: string; phone: string | null; created_at: string; }
+
+const getTimeAgo = (dateStr: string) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+};
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 
 const Dashboard = () => {
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [recentParents, setRecentParents] = useState<ParentProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0, admissions: 0 });
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
@@ -26,7 +41,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }, { data: parentData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
@@ -35,11 +50,13 @@ const Dashboard = () => {
         supabase.from("students").select("id, name, class, section, monthly_fee, gender"),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
+        supabase.from("profiles").select("id, full_name, phone, created_at").eq("role", "parent").order("created_at", { ascending: false }).limit(10),
       ]);
       setAllVouchers(feeData || []);
       setAllExpenses(expenseData || []);
       setStudents(studentData || []);
       setAttendanceRecords(attData || []);
+      setRecentParents(parentData || []);
       setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0, admissions: ac || 0 });
       setLoading(false);
     };
@@ -334,6 +351,43 @@ const Dashboard = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Parent Signups */}
+          <Card className="mt-4 shadow-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <UserCheck className="h-5 w-5" /> Recent Parent Signups
+                {recentParents.length > 0 && (
+                  <Badge variant="secondary" className="ml-2 text-xs">{recentParents.length} recent</Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentParents.length === 0 ? (
+                <p className="py-4 text-center text-muted-foreground text-sm">No parent signups yet.</p>
+              ) : (
+                <div className="divide-y divide-border">
+                  {recentParents.map(parent => {
+                    const joinedAgo = getTimeAgo(parent.created_at);
+                    return (
+                      <div key={parent.id} className="flex items-center justify-between py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
+                            {parent.full_name?.charAt(0)?.toUpperCase() || "P"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{parent.full_name || "Unknown"}</p>
+                            <p className="text-xs text-muted-foreground">{parent.phone || "No phone"}</p>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">{joinedAgo}</Badge>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

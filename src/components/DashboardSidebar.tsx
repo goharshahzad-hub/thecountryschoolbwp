@@ -38,15 +38,20 @@ const DashboardSidebar = () => {
   const { theme, setTheme } = useTheme();
   const [pendingRequests, setPendingRequests] = useState(0);
   const [pendingQueries, setPendingQueries] = useState(0);
+  const [newParents, setNewParents] = useState(0);
 
   useEffect(() => {
     const fetchCounts = async () => {
-      const [reqRes, queryRes] = await Promise.all([
+      // Count parents who signed up in the last 7 days
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const [reqRes, queryRes, parentRes] = await Promise.all([
         supabase.from("admin_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("admission_queries").select("*", { count: "exact", head: true }).eq("status", "New"),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "parent").gte("created_at", sevenDaysAgo),
       ]);
       setPendingRequests(reqRes.count || 0);
       setPendingQueries(queryRes.count || 0);
+      setNewParents(parentRes.count || 0);
     };
     fetchCounts();
   }, []);
@@ -73,8 +78,11 @@ const DashboardSidebar = () => {
           const isActive = location.pathname === item.to;
           const showBadge =
             (item.to === "/dashboard/admin-requests" && pendingRequests > 0) ||
-            (item.to === "/dashboard/admission-queries" && pendingQueries > 0);
-          const badgeCount = item.to === "/dashboard/admin-requests" ? pendingRequests : pendingQueries;
+            (item.to === "/dashboard/admission-queries" && pendingQueries > 0) ||
+            (item.to === "/dashboard" && newParents > 0 && item.label === "Overview");
+          const badgeCount = item.to === "/dashboard/admin-requests" ? pendingRequests 
+            : item.to === "/dashboard/admission-queries" ? pendingQueries 
+            : newParents;
           return (
             <Link
               key={item.to}
