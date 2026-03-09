@@ -9,7 +9,7 @@ import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
-interface Student { id: string; name: string; class: string; section: string | null; gender?: string; }
+interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
 interface ParentProfile { id: string; user_id: string; full_name: string; phone: string | null; created_at: string; }
