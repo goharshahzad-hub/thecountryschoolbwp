@@ -88,7 +88,7 @@ const Diary = () => {
         </div>
         <div className="flex gap-2 flex-wrap">
           <DiaryWhatsApp entries={filtered} />
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingEntry(null); }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gradient-primary text-primary-foreground">
                 <Plus className="mr-2 h-4 w-4" />Add Entry
@@ -96,9 +96,9 @@ const Diary = () => {
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="font-display">New Diary Entry</DialogTitle>
+                <DialogTitle className="font-display">{editingEntry ? "Edit Diary Entry" : "New Diary Entry"}</DialogTitle>
               </DialogHeader>
-              <DiaryEntryForm onSuccess={fetchEntries} onClose={() => setDialogOpen(false)} />
+              <DiaryEntryForm onSuccess={fetchEntries} onClose={() => { setDialogOpen(false); setEditingEntry(null); }} editingEntry={editingEntry} />
             </DialogContent>
           </Dialog>
         </div>
