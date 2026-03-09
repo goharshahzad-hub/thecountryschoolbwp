@@ -380,6 +380,7 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+        </>
       )}
     </DashboardLayout>
   );
