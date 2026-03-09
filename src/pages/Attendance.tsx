@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import { downloadCSV } from "@/lib/csvUtils";
 
 type Status = "present" | "absent" | "late";
 
