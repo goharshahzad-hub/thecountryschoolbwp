@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import StudentwiseFeeMetrics from "@/components/StudentwiseFeeMetrics";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { downloadCSV } from "@/lib/csvUtils";
 
 interface FeeRecord {
   id: string;
