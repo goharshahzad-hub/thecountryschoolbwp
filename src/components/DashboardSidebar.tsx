@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
   FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
-  BookMarked, Megaphone, MessageCircle, Moon, Sun
+  BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck
 } from "lucide-react";
 
 const navItems = [
