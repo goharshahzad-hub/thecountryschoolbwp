@@ -33,6 +33,7 @@ import BlogPost from "./pages/BlogPost";
 import AboutUs from "./pages/AboutUs";
 import Curriculum from "./pages/Curriculum";
 import FAQ from "./pages/FAQ";
+import SignedupParents from "./pages/SignedupParents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
