@@ -33,6 +33,7 @@ import BlogPost from "./pages/BlogPost";
 import AboutUs from "./pages/AboutUs";
 import Curriculum from "./pages/Curriculum";
 import FAQ from "./pages/FAQ";
+import SignedupParents from "./pages/SignedupParents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
             <Route path="/dashboard/whatsapp-broadcast" element={<WhatsAppBroadcast />} />
             <Route path="/dashboard/admin-requests" element={<AdminRequests />} />
+            <Route path="/dashboard/signedup-parents" element={<SignedupParents />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
             <Route path="/reset-password" element={<ResetPassword />} />
