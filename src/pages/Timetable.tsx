@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Printer, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface TimetableEntry {
   id: string;
@@ -87,6 +88,45 @@ const Timetable = () => {
     fetchEntries();
   };
 
+  const buildTimetableHtml = () => {
+    if (timeSlots.length === 0) return "";
+    const rows = timeSlots.map(time => {
+      const cells = days.map(day => {
+        const entry = getEntry(time, day);
+        return `<td style="padding:8px;border:1px solid #333;text-align:center;">${entry ? `<strong>${entry.subject}</strong>${entry.teacher_name ? `<br><span style="font-size:10px;color:#666;">${entry.teacher_name}</span>` : ""}` : "—"}</td>`;
+      }).join("");
+      return `<tr><td style="padding:8px;border:1px solid #333;font-weight:bold;white-space:nowrap;">${time}</td>${cells}</tr>`;
+    }).join("");
+
+    return `
+      <div class="print-page">
+        ${schoolHeader(`CLASS ${selectedClass} — WEEKLY TIMETABLE`)}
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead>
+            <tr style="background:#f0f0f0;">
+              <th style="padding:8px;border:1px solid #333;">Time</th>
+              ${days.map(d => `<th style="padding:8px;border:1px solid #333;">${d}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        ${schoolFooter()}
+      </div>
+    `;
+  };
+
+  const handlePrint = () => {
+    const html = buildTimetableHtml();
+    if (!html) return;
+    printA4(html, `Timetable - ${selectedClass}`);
+  };
+
+  const handleDownloadPdf = async () => {
+    const html = buildTimetableHtml();
+    if (!html) return;
+    await downloadA4Pdf(html, `Timetable_${selectedClass}`);
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -94,14 +134,22 @@ const Timetable = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Timetable</h1>
           <p className="mt-1 text-sm text-muted-foreground">Weekly class schedule</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {classOptions.length > 0 && (
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {classOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <>
+              <Select value={selectedClass} onValueChange={setSelectedClass}>
+                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {classOptions.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={handlePrint} disabled={timeSlots.length === 0}>
+                <Printer className="mr-2 h-4 w-4" />Print
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={timeSlots.length === 0}>
+                <Download className="mr-2 h-4 w-4" />Save PDF
+              </Button>
+            </>
           )}
           <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) { setEditingId(null); setForm({ class_name: "", section: "A", day_of_week: "Monday", time_slot: "", subject: "", teacher_name: "" }); } }}>
             <DialogTrigger asChild>
