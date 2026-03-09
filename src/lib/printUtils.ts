@@ -159,15 +159,17 @@ export const downloadA4Pdf = async (htmlContent: string, filename: string = "Doc
   document.body.appendChild(container);
 
   try {
-    await html2pdf()
-      .set({
-        margin: [15, 15, 15, 15],
-        filename: `${filename}_${date}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] },
-      })
+    const options: any = {
+      margin: [15, 15, 15, 15],
+      filename: `${filename}_${date}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      // html2pdf.js supports this, but its TypeScript types can be incomplete
+      pagebreak: { mode: ["css", "legacy"] },
+    };
+
+    await html2pdf().set(options).from(container).save();
       .from(container)
       .save();
   } finally {
