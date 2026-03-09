@@ -5,16 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { classOptions } from "@/lib/constants";
+import { classOptions, diarySubjectOptions } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-const SUBJECT_LIST = [
-  "English", "Urdu", "Math", "Science", "Islamiat",
-  "Social Studies", "Computer", "Nazra/Quran", "Drawing",
-  "General Knowledge", "Sindhi", "Arabic", "Pakistan Studies",
-  "Physics", "Chemistry", "Biology",
-];
 
 interface DiaryEntry {
   id: string;
@@ -46,8 +39,8 @@ const DiaryEntryForm = ({ onSuccess, onClose, editingEntry }: DiaryEntryFormProp
   useEffect(() => {
     if (editingEntry) {
       const subjectParts = editingEntry.subject.split(", ").map(s => s.trim());
-      const knownSubjects = subjectParts.filter(s => SUBJECT_LIST.includes(s));
-      const customParts = subjectParts.filter(s => !SUBJECT_LIST.includes(s));
+      const knownSubjects = subjectParts.filter(s => diarySubjectOptions.includes(s));
+      const customParts = subjectParts.filter(s => !diarySubjectOptions.includes(s));
       setForm({
         class_name: editingEntry.class_name,
         section: editingEntry.section,
@@ -130,7 +123,7 @@ const DiaryEntryForm = ({ onSuccess, onClose, editingEntry }: DiaryEntryFormProp
       <div className="space-y-2">
         <Label>Subjects * (select multiple)</Label>
         <div className="grid grid-cols-3 gap-2 rounded-md border p-3 max-h-[160px] overflow-y-auto">
-          {SUBJECT_LIST.map(sub => (
+          {diarySubjectOptions.map(sub => (
             <label key={sub} className="flex items-center gap-2 text-sm cursor-pointer">
               <Checkbox
                 checked={form.subjects.includes(sub)}
