@@ -13,11 +13,10 @@ import { classOptions } from "@/lib/constants";
 import { format } from "date-fns";
 import DiaryEntryForm from "@/components/diary/DiaryEntryForm";
 import DiaryWhatsApp from "@/components/diary/DiaryWhatsApp";
-import { printSingleDiaryAs8, printMultipleDiarySlips } from "@/components/diary/DiaryPrint";
+import { downloadDiarySlipsPdf, printSingleDiaryAs8, printMultipleDiarySlips } from "@/components/diary/DiaryPrint";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
-import { downloadCSV } from "@/lib/csvUtils";
 
 interface DiaryEntry {
   id: string;
