@@ -44,6 +44,7 @@ const Dashboard = () => {
       setAllExpenses(expenseData || []);
       setStudents(studentData || []);
       setAttendanceRecords(attData || []);
+      setRecentParents(parentData || []);
       setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0, admissions: ac || 0 });
       setLoading(false);
     };
