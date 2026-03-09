@@ -39,8 +39,8 @@ const DiaryEntryForm = ({ onSuccess, onClose, editingEntry }: DiaryEntryFormProp
   useEffect(() => {
     if (editingEntry) {
       const subjectParts = editingEntry.subject.split(", ").map(s => s.trim());
-      const knownSubjects = subjectParts.filter(s => SUBJECT_LIST.includes(s));
-      const customParts = subjectParts.filter(s => !SUBJECT_LIST.includes(s));
+      const knownSubjects = subjectParts.filter(s => diarySubjectOptions.includes(s));
+      const customParts = subjectParts.filter(s => !diarySubjectOptions.includes(s));
       setForm({
         class_name: editingEntry.class_name,
         section: editingEntry.section,
