@@ -141,6 +141,40 @@ ${htmlContent}
   win.document.close();
 };
 
+export const downloadA4Pdf = async (htmlContent: string, filename: string = "Document") => {
+  const date = new Date().toISOString().split("T")[0];
+
+  // html2pdf is client-only; dynamic import prevents bundling issues in some environments
+  const mod = await import("html2pdf.js");
+  const html2pdf = mod.default;
+
+  const container = document.createElement("div");
+  container.style.position = "fixed";
+  container.style.left = "-99999px";
+  container.style.top = "0";
+  container.style.width = "210mm";
+  container.style.background = "white";
+  container.innerHTML = `<style>${A4_STYLES}</style>${htmlContent}`;
+
+  document.body.appendChild(container);
+
+  try {
+    const options: any = {
+      margin: [15, 15, 15, 15],
+      filename: `${filename}_${date}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      // html2pdf.js supports this, but its TypeScript types can be incomplete
+      pagebreak: { mode: ["css", "legacy"] },
+    };
+
+    await html2pdf().set(options).from(container).save();
+  } finally {
+    document.body.removeChild(container);
+  }
+};
+
 export const printFromRef = (ref: React.RefObject<HTMLDivElement>, title: string = "Print") => {
   const content = ref.current;
   if (!content) return;

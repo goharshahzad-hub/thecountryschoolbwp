@@ -13,11 +13,10 @@ import { classOptions } from "@/lib/constants";
 import { format } from "date-fns";
 import DiaryEntryForm from "@/components/diary/DiaryEntryForm";
 import DiaryWhatsApp from "@/components/diary/DiaryWhatsApp";
-import { printSingleDiaryAs8, printMultipleDiarySlips } from "@/components/diary/DiaryPrint";
+import { downloadDiarySlipsPdf, printSingleDiaryAs8, printMultipleDiarySlips } from "@/components/diary/DiaryPrint";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
-import { downloadCSV } from "@/lib/csvUtils";
 
 interface DiaryEntry {
   id: string;
@@ -88,12 +87,13 @@ const Diary = () => {
           <p className="mt-1 text-sm text-muted-foreground">Post daily homework and diary entries for each class</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => {
-            const csvData = filtered.map(e => ({ date: e.date, class: `${e.class_name}-${e.section}`, subject: e.subject, homework: e.homework_text }));
-            downloadCSV(csvData, "Diary_Entries", [
-              { key: "date", label: "Date" }, { key: "class", label: "Class" }, { key: "subject", label: "Subject" }, { key: "homework", label: "Homework" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => downloadDiarySlipsPdf(filtered)}
+          >
+            <Download className="mr-2 h-4 w-4" />Save PDF
+          </Button>
           <DiaryWhatsApp entries={filtered} />
           <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingEntry(null); }}>
             <DialogTrigger asChild>

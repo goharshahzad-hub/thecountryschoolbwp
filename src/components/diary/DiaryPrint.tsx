@@ -1,4 +1,4 @@
-import { printA4 } from "@/lib/printUtils";
+import { downloadA4Pdf, printA4 } from "@/lib/printUtils";
 import { format } from "date-fns";
 
 interface DiaryEntry {
@@ -10,8 +10,8 @@ interface DiaryEntry {
   date: string;
 }
 
-export const printDiarySlips = (entries: DiaryEntry[]) => {
-  if (entries.length === 0) return;
+const buildDiarySlipsHtml = (entries: DiaryEntry[]) => {
+  if (entries.length === 0) return "";
 
   // Build slips - 8 per page
   const slipHtml = (entry: DiaryEntry) => `
@@ -58,12 +58,24 @@ export const printDiarySlips = (entries: DiaryEntry[]) => {
         height: 277mm;
         padding: 0;
       ">
-        ${pageEntries.map(e => slipHtml(e)).join("")}
+        ${pageEntries.map((e) => slipHtml(e)).join("")}
       </div>
     `);
   }
 
-  printA4(pages.join(""), "Diary Slips");
+  return pages.join("");
+};
+
+export const printDiarySlips = (entries: DiaryEntry[]) => {
+  const html = buildDiarySlipsHtml(entries);
+  if (!html) return;
+  printA4(html, "Diary Slips");
+};
+
+export const downloadDiarySlipsPdf = async (entries: DiaryEntry[]) => {
+  const html = buildDiarySlipsHtml(entries);
+  if (!html) return;
+  await downloadA4Pdf(html, "Diary_Slips");
 };
 
 /**
@@ -80,3 +92,4 @@ export const printSingleDiaryAs8 = (entry: DiaryEntry) => {
 export const printMultipleDiarySlips = (entries: DiaryEntry[]) => {
   printDiarySlips(entries);
 };
+
