@@ -43,6 +43,7 @@ const emptyForm = { title: "", content: "", type: "General", is_public: true, ex
 
 const Announcements = () => {
   const { toast } = useToast();
+  const { settings } = useSchoolSettings();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
