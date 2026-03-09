@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Pencil, Trash2, Printer, CreditCard } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, Printer, CreditCard, Download } from "lucide-react";
+import { downloadCSV } from "@/lib/csvUtils";
 import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -203,6 +204,13 @@ const Employees = () => {
         <TabsContent value="teaching" className="space-y-4">
           <div className="flex flex-wrap gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={() => {
+              const csvData = filteredTeachers.map(t => ({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", salary: t.salary || 0, status: t.status }));
+              downloadCSV(csvData, "Teaching_Staff", [
+                { key: "teacher_id", label: "ID" }, { key: "name", label: "Name" }, { key: "subject", label: "Subject" }, { key: "classes", label: "Classes" },
+                { key: "phone", label: "Phone" }, { key: "qualification", label: "Qualification" }, { key: "salary", label: "Salary" }, { key: "status", label: "Status" }
+              ]);
+            }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            <Button variant="outline" size="sm" onClick={() => {
               const rows = filteredTeachers.map(t => `<tr><td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td><td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td><td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td></tr>`).join("");
               printA4(`<div class="print-page">${schoolHeader("TEACHING STAFF LIST")}<p class="list-subtitle">Total: ${filteredTeachers.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Teaching Staff List");
             }}><Printer className="mr-2 h-4 w-4" />Print List</Button>
@@ -282,6 +290,13 @@ const Employees = () => {
         {/* ═══ NON-TEACHING STAFF TAB ═══ */}
         <TabsContent value="non-teaching" className="space-y-4">
           <div className="flex flex-wrap gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => {
+              const csvData = filteredStaff.map(s => ({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", salary: s.salary || 0, status: s.status }));
+              downloadCSV(csvData, "Non_Teaching_Staff", [
+                { key: "staff_id", label: "ID" }, { key: "name", label: "Name" }, { key: "designation", label: "Designation" }, { key: "department", label: "Department" },
+                { key: "phone", label: "Phone" }, { key: "salary", label: "Salary" }, { key: "status", label: "Status" }
+              ]);
+            }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
             <Button variant="outline" size="sm" onClick={() => {
               const rows = filteredStaff.map(s => `<tr><td>${s.staff_id}</td><td style="text-align:left">${s.name}</td><td>${s.designation}</td><td>${s.department}</td><td>${s.phone || "—"}</td><td>${s.salary ? `₨ ${Number(s.salary).toLocaleString("en-PK")}` : "—"}</td><td>${s.status}</td></tr>`).join("");
               printA4(`<div class="print-page">${schoolHeader("NON-TEACHING STAFF LIST")}<p class="list-subtitle">Total: ${filteredStaff.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Department</th><th>Phone</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Non-Teaching Staff List");

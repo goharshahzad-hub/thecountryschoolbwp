@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Download, Pencil, Trash2, Printer } from "lucide-react";
+import { downloadCSV } from "@/lib/csvUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
@@ -143,6 +144,13 @@ const Teachers = () => {
           <p className="mt-1 text-sm text-muted-foreground">Manage faculty members ({teachers.length} total)</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const csvData = filtered.map(t => ({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", salary: t.salary || 0, status: t.status }));
+            downloadCSV(csvData, "Teachers", [
+              { key: "teacher_id", label: "Teacher ID" }, { key: "name", label: "Name" }, { key: "subject", label: "Subject" },
+              { key: "classes", label: "Classes" }, { key: "phone", label: "Phone" }, { key: "qualification", label: "Qualification" }, { key: "salary", label: "Salary" }, { key: "status", label: "Status" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = filtered.map(t => `
               <tr>

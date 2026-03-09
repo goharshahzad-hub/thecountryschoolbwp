@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, BookOpen, Search, Printer, Pencil } from "lucide-react";
+import { Plus, Trash2, BookOpen, Search, Printer, Pencil, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { classOptions } from "@/lib/constants";
@@ -17,6 +17,7 @@ import { printSingleDiaryAs8, printMultipleDiarySlips } from "@/components/diary
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
+import { downloadCSV } from "@/lib/csvUtils";
 
 interface DiaryEntry {
   id: string;
@@ -87,6 +88,12 @@ const Diary = () => {
           <p className="mt-1 text-sm text-muted-foreground">Post daily homework and diary entries for each class</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => {
+            const csvData = filtered.map(e => ({ date: e.date, class: `${e.class_name}-${e.section}`, subject: e.subject, homework: e.homework_text }));
+            downloadCSV(csvData, "Diary_Entries", [
+              { key: "date", label: "Date" }, { key: "class", label: "Class" }, { key: "subject", label: "Subject" }, { key: "homework", label: "Homework" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
           <DiaryWhatsApp entries={filtered} />
           <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditingEntry(null); }}>
             <DialogTrigger asChild>

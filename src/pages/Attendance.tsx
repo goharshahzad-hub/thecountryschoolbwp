@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import { downloadCSV } from "@/lib/csvUtils";
 
 type Status = "present" | "absent" | "late";
 
@@ -169,6 +170,15 @@ const Attendance = () => {
               </SelectContent>
             </Select>
           )}
+          <Button variant="outline" size="sm" onClick={() => {
+            const csvData = filteredStudents.map((s, i) => ({
+              sr: i + 1, student_id: s.student_id, name: s.name,
+              status: (attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)
+            }));
+            downloadCSV(csvData, `Attendance_${selectedClass}_${today}`, [
+              { key: "sr", label: "#" }, { key: "student_id", label: "Student ID" }, { key: "name", label: "Name" }, { key: "status", label: "Status" }
+            ]);
+          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = filteredStudents.map((s, i) => `
               <tr>

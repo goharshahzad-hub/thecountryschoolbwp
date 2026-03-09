@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import StudentwiseFeeMetrics from "@/components/StudentwiseFeeMetrics";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { downloadCSV } from "@/lib/csvUtils";
 
 interface FeeRecord {
   id: string;
@@ -82,6 +83,16 @@ const Fees = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Management</h1>
           <p className="mt-1 text-sm text-muted-foreground">Track and manage student fee payments</p>
         </div>
+        <Button variant="outline" size="sm" onClick={() => {
+          const csvData = fees.map(f => {
+            const student = students.find(s => s.id === f.student_id);
+            return { voucher_no: f.voucher_no, student_name: student?.name || "", class: student ? `${student.class}-${student.section}` : "", amount: f.amount, due_date: f.due_date, paid_date: f.paid_date || "", status: f.status };
+          });
+          downloadCSV(csvData, "Fee_Report", [
+            { key: "voucher_no", label: "Voucher No" }, { key: "student_name", label: "Student" }, { key: "class", label: "Class" },
+            { key: "amount", label: "Amount" }, { key: "due_date", label: "Due Date" }, { key: "paid_date", label: "Paid Date" }, { key: "status", label: "Status" }
+          ]);
+        }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
         <Button variant="outline" size="sm" onClick={() => {
           const rows = fees.map(f => {
             const student = students.find(s => s.id === f.student_id);
