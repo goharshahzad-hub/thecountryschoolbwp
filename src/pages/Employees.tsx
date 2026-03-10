@@ -263,6 +263,7 @@ const Employees = () => {
                   <div className="space-y-2"><Label>CNIC</Label><Input placeholder="XXXXX-XXXXXXX-X" value={tForm.cnic} onChange={e => setTForm({ ...tForm, cnic: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Salary (PKR)</Label><Input type="number" placeholder="25000" value={tForm.salary} onChange={e => setTForm({ ...tForm, salary: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Joining Date</Label><Input type="date" value={tForm.joining_date} onChange={e => setTForm({ ...tForm, joining_date: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Date of Birth</Label><Input type="date" value={tForm.date_of_birth} onChange={e => setTForm({ ...tForm, date_of_birth: e.target.value })} /></div>
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={tForm.status} onValueChange={v => setTForm({ ...tForm, status: v })}>
