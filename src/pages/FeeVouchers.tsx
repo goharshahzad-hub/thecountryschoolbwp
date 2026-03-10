@@ -238,6 +238,19 @@ const FeeVouchers = () => {
       toast({ title: "No Students", description: `No students found in Class ${bulkForm.class_name}`, variant: "destructive" });
       return;
     }
+    // Check for existing vouchers for this class+month+year
+    const bulkYear = parseInt(bulkForm.year);
+    const existingStudentIds = new Set(
+      vouchers.filter(v => v.month === bulkForm.month && v.year === bulkYear && classStudents.some(s => s.id === v.student_id)).map(v => v.student_id)
+    );
+    const newStudents = classStudents.filter(s => !existingStudentIds.has(s.id));
+    if (newStudents.length === 0) {
+      toast({ title: "Duplicates", description: `All students in Class ${bulkForm.class_name} already have vouchers for ${bulkForm.month} ${bulkForm.year}.`, variant: "destructive" });
+      return;
+    }
+    if (newStudents.length < classStudents.length) {
+      toast({ title: "Note", description: `${existingStudentIds.size} students already have vouchers — skipping duplicates.` });
+    }
     setSaving(true);
     const dueDate = getDueDate(bulkForm.month, parseInt(bulkForm.year));
     const bulkRegFee = parseFloat(bulkForm.registration_fee) || 0;
