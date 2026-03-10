@@ -331,8 +331,50 @@ const Employees = () => {
                 <form onSubmit={handleStaffSubmit} className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label>Staff ID *</Label><Input value={sForm.staff_id} onChange={e => setSForm({ ...sForm, staff_id: e.target.value })} readOnly={!sEditId} className={!sEditId ? "bg-muted" : ""} required /></div>
                   <div className="space-y-2"><Label>Name *</Label><Input placeholder="Full name" value={sForm.name} onChange={e => setSForm({ ...sForm, name: e.target.value })} required /></div>
-                  <div className="space-y-2"><Label>Designation</Label><Input placeholder="Peon, Guard, Driver..." value={sForm.designation} onChange={e => setSForm({ ...sForm, designation: e.target.value })} /></div>
-                  <div className="space-y-2"><Label>Department</Label><Input placeholder="Admin, Security..." value={sForm.department} onChange={e => setSForm({ ...sForm, department: e.target.value })} /></div>
+                  <div className="space-y-2">
+                    <Label>Designation</Label>
+                    <Select value={sForm.designation} onValueChange={v => setSForm({ ...sForm, designation: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select designation" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Office Manager">Office Manager</SelectItem>
+                        <SelectItem value="Accountant">Accountant</SelectItem>
+                        <SelectItem value="Clerk">Clerk</SelectItem>
+                        <SelectItem value="Receptionist">Receptionist</SelectItem>
+                        <SelectItem value="Data Entry Operator">Data Entry Operator</SelectItem>
+                        <SelectItem value="IT Support">IT Support</SelectItem>
+                        <SelectItem value="Lab Attendant">Lab Attendant</SelectItem>
+                        <SelectItem value="Peon">Peon</SelectItem>
+                        <SelectItem value="Sweeper">Sweeper</SelectItem>
+                        <SelectItem value="Guard">Guard</SelectItem>
+                        <SelectItem value="Watchman">Watchman</SelectItem>
+                        <SelectItem value="Driver">Driver</SelectItem>
+                        <SelectItem value="Cook">Cook</SelectItem>
+                        <SelectItem value="Helper">Helper</SelectItem>
+                        <SelectItem value="Gardener">Gardener</SelectItem>
+                        <SelectItem value="Electrician">Electrician</SelectItem>
+                        <SelectItem value="Plumber">Plumber</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Department</Label>
+                    <Select value={sForm.department} onValueChange={v => setSForm({ ...sForm, department: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Management">Management</SelectItem>
+                        <SelectItem value="Administration">Administration</SelectItem>
+                        <SelectItem value="Accounts">Accounts</SelectItem>
+                        <SelectItem value="IT">IT</SelectItem>
+                        <SelectItem value="Security">Security</SelectItem>
+                        <SelectItem value="Maintenance">Maintenance</SelectItem>
+                        <SelectItem value="Transport">Transport</SelectItem>
+                        <SelectItem value="Kitchen/Canteen">Kitchen/Canteen</SelectItem>
+                        <SelectItem value="Library">Library</SelectItem>
+                        <SelectItem value="Laboratory">Laboratory</SelectItem>
+                        <SelectItem value="Housekeeping">Housekeeping</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="space-y-2"><Label>Phone</Label><Input placeholder="0321-XXXXXXX" value={sForm.phone} onChange={e => setSForm({ ...sForm, phone: e.target.value })} /></div>
                   <div className="space-y-2"><Label>CNIC</Label><Input placeholder="XXXXX-XXXXXXX-X" value={sForm.cnic} onChange={e => setSForm({ ...sForm, cnic: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Qualification</Label><Input placeholder="Matric" value={sForm.qualification} onChange={e => setSForm({ ...sForm, qualification: e.target.value })} /></div>
