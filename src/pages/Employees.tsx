@@ -150,12 +150,18 @@ const Employees = () => {
     if (!sForm.staff_id.trim() || !sForm.name.trim()) {
       toast({ title: "Error", description: "Please fill required fields", variant: "destructive" }); return;
     }
+    // Duplicate check
+    if (!sEditId) {
+      const dup = staff.find(s => s.staff_id === sForm.staff_id.trim());
+      if (dup) { toast({ title: "Duplicate", description: `Staff ID "${sForm.staff_id}" already exists.`, variant: "destructive" }); return; }
+    }
     setSSaving(true);
     const payload = {
       staff_id: sForm.staff_id.trim(), name: sForm.name.trim(), designation: sForm.designation.trim(),
       department: sForm.department.trim(), phone: sForm.phone.trim(), cnic: sForm.cnic.trim(),
       salary: sForm.salary ? parseFloat(sForm.salary) : 0, qualification: sForm.qualification.trim(),
       address: sForm.address.trim(), status: sForm.status, joining_date: sForm.joining_date || null, photo_url: sForm.photo_url,
+      date_of_birth: sForm.date_of_birth || null,
     };
     const { error } = sEditId
       ? await supabase.from("non_teaching_staff" as any).update(payload as any).eq("id", sEditId)
