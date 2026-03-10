@@ -182,6 +182,14 @@ const FeeVouchers = () => {
       toast({ title: "Error", description: "Please select a student", variant: "destructive" });
       return;
     }
+    // Duplicate voucher check (same student + month + year, only for new entries)
+    if (!editingId) {
+      const dup = vouchers.find(v => v.student_id === form.student_id && v.month === form.month && v.year === parseInt(form.year));
+      if (dup) {
+        toast({ title: "Duplicate Voucher", description: `A voucher for this student for ${form.month} ${form.year} already exists.`, variant: "destructive" });
+        return;
+      }
+    }
     setSaving(true);
     const dueDate = getDueDate(form.month, parseInt(form.year));
     const total = calcTotal(form);
