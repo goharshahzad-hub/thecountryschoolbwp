@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck, Cake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,11 +9,12 @@ import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
-interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; }
+interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; date_of_birth?: string | null; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
 interface ParentProfile { id: string; user_id: string; full_name: string; phone: string | null; created_at: string; }
 interface LinkedStudent { name: string; class: string; section: string | null; }
+interface BirthdayPerson { name: string; type: "student" | "teacher" | "staff"; detail: string; date_of_birth: string; }
 
 const getTimeAgo = (dateStr: string) => {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -35,6 +36,7 @@ const Dashboard = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [recentParents, setRecentParents] = useState<ParentProfile[]>([]);
+  const [birthdayPeople, setBirthdayPeople] = useState<BirthdayPerson[]>([]);
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({ students: 0, teachers: 0, classes: 0, admissions: 0 });
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
@@ -42,16 +44,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }, { data: parentData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }, { data: parentData }, { data: teacherData }, { data: staffData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("admissions").select("*", { count: "exact", head: true }).eq("status", "Pending"),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
-        supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id"),
+        supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id, date_of_birth"),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
         supabase.from("profiles").select("id, user_id, full_name, phone, created_at").eq("role", "parent").order("created_at", { ascending: false }),
+        supabase.from("teachers").select("name, subject, date_of_birth").eq("status", "Active"),
+        supabase.from("non_teaching_staff" as any).select("name, designation, date_of_birth").eq("status", "Active"),
       ]);
       setAllVouchers(feeData || []);
       setAllExpenses(expenseData || []);
@@ -59,6 +63,28 @@ const Dashboard = () => {
       setAttendanceRecords(attData || []);
       setRecentParents(parentData || []);
       setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0, admissions: ac || 0 });
+
+      // Build birthday list for today & upcoming 7 days
+      const today = new Date();
+      const birthdays: BirthdayPerson[] = [];
+      const checkBirthday = (dob: string | null | undefined, name: string, type: BirthdayPerson["type"], detail: string) => {
+        if (!dob) return;
+        const d = new Date(dob);
+        const thisYear = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+        const diff = Math.floor((thisYear.getTime() - today.getTime()) / 86400000);
+        if (diff >= 0 && diff <= 7) {
+          birthdays.push({ name, type, detail, date_of_birth: dob });
+        }
+        // Also check if birthday was yesterday (still show)
+        if (diff === -1) {
+          birthdays.push({ name, type, detail, date_of_birth: dob });
+        }
+      };
+      (studentData || []).forEach((s: any) => checkBirthday(s.date_of_birth, s.name, "student", `Class ${s.class}-${s.section || "A"}`));
+      (teacherData || []).forEach((t: any) => checkBirthday(t.date_of_birth, t.name, "teacher", t.subject || "Teacher"));
+      (staffData || []).forEach((s: any) => checkBirthday((s as any).date_of_birth, (s as any).name, "staff", (s as any).designation || "Staff"));
+      setBirthdayPeople(birthdays);
+
       setLoading(false);
     };
     fetchStats();
@@ -310,6 +336,50 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Birthday Alerts */}
+          {birthdayPeople.length > 0 && (
+            <Card className="mb-4 shadow-card border-primary/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <Cake className="h-5 w-5 text-primary" /> 🎂 Birthday Alerts
+                  <Badge variant="secondary" className="ml-2 text-xs">{birthdayPeople.length} upcoming</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
+                  {birthdayPeople.map((bp, i) => {
+                    const dob = new Date(bp.date_of_birth);
+                    const today = new Date();
+                    const thisYearBday = new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+                    const diffDays = Math.floor((thisYearBday.getTime() - today.getTime()) / 86400000);
+                    const isToday = diffDays === 0;
+                    const label = isToday ? "Today! 🎉" : diffDays === 1 ? "Tomorrow" : diffDays < 0 ? "Yesterday" : `In ${diffDays} days`;
+                    const age = today.getFullYear() - dob.getFullYear();
+                    return (
+                      <div key={i} className="flex items-center justify-between py-2.5 gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-full text-lg ${isToday ? "bg-primary/20" : "bg-muted"}`}>
+                            🎂
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{bp.name}</p>
+                            <p className="text-xs text-muted-foreground">{bp.detail} · Turning {age}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge variant={bp.type === "student" ? "default" : "secondary"} className="text-[10px]">
+                            {bp.type === "student" ? "Student" : bp.type === "teacher" ? "Teacher" : "Staff"}
+                          </Badge>
+                          <span className={`text-xs font-medium ${isToday ? "text-primary" : "text-muted-foreground"}`}>{label}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
 

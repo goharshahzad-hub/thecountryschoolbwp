@@ -39,7 +39,7 @@ interface ParentProfile {
   phone: string | null;
 }
 
-const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "" };
+const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "", date_of_birth: "" };
 
 const generateStudentId = (count: number) => {
   const year = new Date().getFullYear();
@@ -93,25 +93,28 @@ const Students = () => {
       toast({ title: "Error", description: "Please fill all required fields", variant: "destructive" });
       return;
     }
+    // Duplicate check on student_id (only for new entries)
+    if (!editingId) {
+      const existing = students.find(s => s.student_id === form.student_id.trim());
+      if (existing) {
+        toast({ title: "Duplicate", description: `Student ID "${form.student_id}" already exists.`, variant: "destructive" });
+        return;
+      }
+    }
     setSaving(true);
+    const basePayload = {
+      student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
+      section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
+      mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(), gender: form.gender,
+      status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
+      photo_url: form.photo_url, date_of_birth: form.date_of_birth || null,
+    };
     if (editingId) {
-      const { error } = await supabase.from("students").update({
-        student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
-        section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(), gender: form.gender,
-        status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
-        photo_url: form.photo_url,
-      } as any).eq("id", editingId);
+      const { error } = await supabase.from("students").update(basePayload as any).eq("id", editingId);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Updated", description: "Student updated successfully." });
     } else {
-      const { error } = await supabase.from("students").insert({
-        student_id: form.student_id.trim(), name: form.name.trim(), class: form.class.trim(),
-        section: form.section, father_name: form.father_name.trim(), phone: form.phone.trim(),
-        mother_phone: form.mother_phone.trim(), whatsapp: form.whatsapp.trim(), gender: form.gender,
-        status: form.status, fee_status: form.fee_status, monthly_fee: form.monthly_fee ? Number(form.monthly_fee) : 0,
-        photo_url: form.photo_url,
-      } as any);
+      const { error } = await supabase.from("students").insert(basePayload as any);
       if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
       else toast({ title: "Added", description: "Student added successfully." });
     }
@@ -123,7 +126,7 @@ const Students = () => {
   };
 
   const handleEdit = (s: Student) => {
-    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", gender: (s as any).gender || "Male", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || ""), photo_url: (s as any).photo_url || "" });
+    setForm({ student_id: s.student_id, name: s.name, class: s.class, section: s.section || "A", father_name: s.father_name, phone: s.phone || "", mother_phone: (s as any).mother_phone || "", whatsapp: (s as any).whatsapp || "", gender: (s as any).gender || "Male", status: s.status, fee_status: s.fee_status, monthly_fee: String((s as any).monthly_fee || ""), photo_url: (s as any).photo_url || "", date_of_birth: (s as any).date_of_birth || "" });
     setEditingId(s.id);
     setDialogOpen(true);
   };
@@ -271,6 +274,10 @@ const Students = () => {
                 <div className="space-y-2">
                   <Label>Monthly Fee (PKR)</Label>
                   <Input type="number" placeholder="0" value={form.monthly_fee} onChange={e => setForm({ ...form, monthly_fee: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date of Birth</Label>
+                  <Input type="date" value={form.date_of_birth} onChange={e => setForm({ ...form, date_of_birth: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <Label>Section</Label>

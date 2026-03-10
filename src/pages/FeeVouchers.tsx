@@ -182,6 +182,14 @@ const FeeVouchers = () => {
       toast({ title: "Error", description: "Please select a student", variant: "destructive" });
       return;
     }
+    // Duplicate voucher check (same student + month + year, only for new entries)
+    if (!editingId) {
+      const dup = vouchers.find(v => v.student_id === form.student_id && v.month === form.month && v.year === parseInt(form.year));
+      if (dup) {
+        toast({ title: "Duplicate Voucher", description: `A voucher for this student for ${form.month} ${form.year} already exists.`, variant: "destructive" });
+        return;
+      }
+    }
     setSaving(true);
     const dueDate = getDueDate(form.month, parseInt(form.year));
     const total = calcTotal(form);
@@ -230,8 +238,21 @@ const FeeVouchers = () => {
       toast({ title: "No Students", description: `No students found in Class ${bulkForm.class_name}`, variant: "destructive" });
       return;
     }
+    // Check for existing vouchers for this class+month+year
+    const bulkYear = parseInt(bulkForm.year);
+    const existingStudentIds = new Set(
+      vouchers.filter(v => v.month === bulkForm.month && v.year === bulkYear && classStudents.some(s => s.id === v.student_id)).map(v => v.student_id)
+    );
+    const newStudents = classStudents.filter(s => !existingStudentIds.has(s.id));
+    if (newStudents.length === 0) {
+      toast({ title: "Duplicates", description: `All students in Class ${bulkForm.class_name} already have vouchers for ${bulkForm.month} ${bulkForm.year}.`, variant: "destructive" });
+      return;
+    }
+    if (newStudents.length < classStudents.length) {
+      toast({ title: "Note", description: `${existingStudentIds.size} students already have vouchers — skipping duplicates.` });
+    }
     setSaving(true);
-    const dueDate = getDueDate(bulkForm.month, parseInt(bulkForm.year));
+    const dueDate = getDueDate(bulkForm.month, bulkYear);
     const bulkRegFee = parseFloat(bulkForm.registration_fee) || 0;
     const bulkAdmFee = parseFloat(bulkForm.admission_fee) || 0;
     const bulkSecDep = parseFloat(bulkForm.security_deposit) || 0;
@@ -244,9 +265,7 @@ const FeeVouchers = () => {
     const useBulkTuition = bulkForm.tuition_fee.trim() !== "";
     const bulkTuition = parseFloat(bulkForm.tuition_fee) || 0;
 
-    const bulkYear = parseInt(bulkForm.year);
-
-    const rows = classStudents.map((s, i) => {
+    const rows = newStudents.map((s, i) => {
       const tuition = useBulkTuition ? bulkTuition : (s.monthly_fee || 0);
       // Auto-calculate per-student arrears from last month's unpaid + late fee
       const studentArrears = calcStudentArrears(s.id, bulkForm.month, bulkYear);
@@ -280,7 +299,7 @@ const FeeVouchers = () => {
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Bulk Vouchers Generated", description: `${rows.length} vouchers created for Class ${bulkForm.class_name}` });
+      toast({ title: "Bulk Vouchers Generated", description: `${rows.length} vouchers created for Class ${bulkForm.class_name}${existingStudentIds.size > 0 ? ` (${existingStudentIds.size} skipped)` : ""}` });
       setBulkDialogOpen(false);
       fetchData();
     }

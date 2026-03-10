@@ -32,8 +32,8 @@ interface NonTeachingStaff {
   qualification: string | null; address: string | null; joining_date: string | null; status: string;
 }
 
-const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "", photo_url: "" };
-const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "", photo_url: "" };
+const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "", photo_url: "", date_of_birth: "" };
+const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "", photo_url: "", date_of_birth: "" };
 
 const genTeacherId = (n: number) => `TCH-${(n + 1).toString().padStart(4, "0")}`;
 const genStaffId = (n: number) => `STF-${(n + 1).toString().padStart(4, "0")}`;
@@ -88,23 +88,29 @@ const Employees = () => {
     if (!tForm.teacher_id.trim() || !tForm.name.trim()) {
       toast({ title: "Error", description: "Please fill required fields", variant: "destructive" }); return;
     }
+    // Duplicate check
+    if (!tEditId) {
+      const dup = teachers.find(t => t.teacher_id === tForm.teacher_id.trim());
+      if (dup) { toast({ title: "Duplicate", description: `Teacher ID "${tForm.teacher_id}" already exists.`, variant: "destructive" }); return; }
+    }
     setTSaving(true);
     const payload = {
       teacher_id: tForm.teacher_id.trim(), name: tForm.name.trim(), subject: tForm.subject.trim(),
       classes: tForm.classes.trim(), phone: tForm.phone.trim(), qualification: tForm.qualification.trim(),
       cnic: tForm.cnic.trim(), salary: tForm.salary ? parseFloat(tForm.salary) : 0,
       status: tForm.status, joining_date: tForm.joining_date || null, photo_url: tForm.photo_url,
+      date_of_birth: tForm.date_of_birth || null,
     };
     const { error } = tEditId
-      ? await supabase.from("teachers").update(payload).eq("id", tEditId)
-      : await supabase.from("teachers").insert(payload);
+      ? await supabase.from("teachers").update(payload as any).eq("id", tEditId)
+      : await supabase.from("teachers").insert(payload as any);
     setTSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: tEditId ? "Updated" : "Added" }); setTDialogOpen(false); setTForm(emptyTeacherForm); setTEditId(null); fetchTeachers(); }
   };
 
   const handleTeacherEdit = (t: Teacher) => {
-    setTForm({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", cnic: t.cnic || "", salary: t.salary?.toString() || "", status: t.status, joining_date: t.joining_date || "", photo_url: (t as any).photo_url || "" });
+    setTForm({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", cnic: t.cnic || "", salary: t.salary?.toString() || "", status: t.status, joining_date: t.joining_date || "", photo_url: (t as any).photo_url || "", date_of_birth: (t as any).date_of_birth || "" });
     setTEditId(t.id); setTDialogOpen(true);
   };
 
@@ -144,12 +150,18 @@ const Employees = () => {
     if (!sForm.staff_id.trim() || !sForm.name.trim()) {
       toast({ title: "Error", description: "Please fill required fields", variant: "destructive" }); return;
     }
+    // Duplicate check
+    if (!sEditId) {
+      const dup = staff.find(s => s.staff_id === sForm.staff_id.trim());
+      if (dup) { toast({ title: "Duplicate", description: `Staff ID "${sForm.staff_id}" already exists.`, variant: "destructive" }); return; }
+    }
     setSSaving(true);
     const payload = {
       staff_id: sForm.staff_id.trim(), name: sForm.name.trim(), designation: sForm.designation.trim(),
       department: sForm.department.trim(), phone: sForm.phone.trim(), cnic: sForm.cnic.trim(),
       salary: sForm.salary ? parseFloat(sForm.salary) : 0, qualification: sForm.qualification.trim(),
       address: sForm.address.trim(), status: sForm.status, joining_date: sForm.joining_date || null, photo_url: sForm.photo_url,
+      date_of_birth: sForm.date_of_birth || null,
     };
     const { error } = sEditId
       ? await supabase.from("non_teaching_staff" as any).update(payload as any).eq("id", sEditId)
@@ -160,7 +172,7 @@ const Employees = () => {
   };
 
   const handleStaffEdit = (s: NonTeachingStaff) => {
-    setSForm({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", cnic: s.cnic || "", salary: s.salary?.toString() || "", qualification: s.qualification || "", address: s.address || "", status: s.status, joining_date: s.joining_date || "", photo_url: (s as any).photo_url || "" });
+    setSForm({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", cnic: s.cnic || "", salary: s.salary?.toString() || "", qualification: s.qualification || "", address: s.address || "", status: s.status, joining_date: s.joining_date || "", photo_url: (s as any).photo_url || "", date_of_birth: (s as any).date_of_birth || "" });
     setSEditId(s.id); setSDialogOpen(true);
   };
 
@@ -251,6 +263,7 @@ const Employees = () => {
                   <div className="space-y-2"><Label>CNIC</Label><Input placeholder="XXXXX-XXXXXXX-X" value={tForm.cnic} onChange={e => setTForm({ ...tForm, cnic: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Salary (PKR)</Label><Input type="number" placeholder="25000" value={tForm.salary} onChange={e => setTForm({ ...tForm, salary: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Joining Date</Label><Input type="date" value={tForm.joining_date} onChange={e => setTForm({ ...tForm, joining_date: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Date of Birth</Label><Input type="date" value={tForm.date_of_birth} onChange={e => setTForm({ ...tForm, date_of_birth: e.target.value })} /></div>
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={tForm.status} onValueChange={v => setTForm({ ...tForm, status: v })}>
@@ -380,6 +393,7 @@ const Employees = () => {
                   <div className="space-y-2"><Label>Qualification</Label><Input placeholder="Matric" value={sForm.qualification} onChange={e => setSForm({ ...sForm, qualification: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Salary (PKR)</Label><Input type="number" placeholder="15000" value={sForm.salary} onChange={e => setSForm({ ...sForm, salary: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Joining Date</Label><Input type="date" value={sForm.joining_date} onChange={e => setSForm({ ...sForm, joining_date: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Date of Birth</Label><Input type="date" value={sForm.date_of_birth} onChange={e => setSForm({ ...sForm, date_of_birth: e.target.value })} /></div>
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={sForm.status} onValueChange={v => setSForm({ ...sForm, status: v })}>
