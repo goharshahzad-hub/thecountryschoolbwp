@@ -44,16 +44,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }, { data: parentData }] = await Promise.all([
+      const [{ count: sc }, { count: tc }, { count: cc }, { count: ac }, { data: feeData }, { data: studentData }, { data: expenseData }, { data: attData }, { data: parentData }, { data: teacherData }, { data: staffData }] = await Promise.all([
         supabase.from("students").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("admissions").select("*", { count: "exact", head: true }).eq("status", "Pending"),
         supabase.from("fee_vouchers").select("student_id, amount, status, month, year"),
-        supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id"),
+        supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id, date_of_birth"),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
         supabase.from("profiles").select("id, user_id, full_name, phone, created_at").eq("role", "parent").order("created_at", { ascending: false }),
+        supabase.from("teachers").select("name, subject, date_of_birth").eq("status", "Active"),
+        supabase.from("non_teaching_staff" as any).select("name, designation, date_of_birth").eq("status", "Active"),
       ]);
       setAllVouchers(feeData || []);
       setAllExpenses(expenseData || []);
@@ -61,6 +63,28 @@ const Dashboard = () => {
       setAttendanceRecords(attData || []);
       setRecentParents(parentData || []);
       setCounts({ students: sc || 0, teachers: tc || 0, classes: cc || 0, admissions: ac || 0 });
+
+      // Build birthday list for today & upcoming 7 days
+      const today = new Date();
+      const birthdays: BirthdayPerson[] = [];
+      const checkBirthday = (dob: string | null | undefined, name: string, type: BirthdayPerson["type"], detail: string) => {
+        if (!dob) return;
+        const d = new Date(dob);
+        const thisYear = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+        const diff = Math.floor((thisYear.getTime() - today.getTime()) / 86400000);
+        if (diff >= 0 && diff <= 7) {
+          birthdays.push({ name, type, detail, date_of_birth: dob });
+        }
+        // Also check if birthday was yesterday (still show)
+        if (diff === -1) {
+          birthdays.push({ name, type, detail, date_of_birth: dob });
+        }
+      };
+      (studentData || []).forEach((s: any) => checkBirthday(s.date_of_birth, s.name, "student", `Class ${s.class}-${s.section || "A"}`));
+      (teacherData || []).forEach((t: any) => checkBirthday(t.date_of_birth, t.name, "teacher", t.subject || "Teacher"));
+      (staffData || []).forEach((s: any) => checkBirthday((s as any).date_of_birth, (s as any).name, "staff", (s as any).designation || "Staff"));
+      setBirthdayPeople(birthdays);
+
       setLoading(false);
     };
     fetchStats();
