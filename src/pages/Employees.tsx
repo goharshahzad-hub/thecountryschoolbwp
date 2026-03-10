@@ -32,8 +32,8 @@ interface NonTeachingStaff {
   qualification: string | null; address: string | null; joining_date: string | null; status: string;
 }
 
-const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "", photo_url: "" };
-const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "", photo_url: "" };
+const emptyTeacherForm = { teacher_id: "", name: "", subject: "", classes: "", phone: "", qualification: "", cnic: "", salary: "", status: "Active", joining_date: "", photo_url: "", date_of_birth: "" };
+const emptyStaffForm = { staff_id: "", name: "", designation: "", department: "", phone: "", cnic: "", salary: "", qualification: "", address: "", status: "Active", joining_date: "", photo_url: "", date_of_birth: "" };
 
 const genTeacherId = (n: number) => `TCH-${(n + 1).toString().padStart(4, "0")}`;
 const genStaffId = (n: number) => `STF-${(n + 1).toString().padStart(4, "0")}`;
