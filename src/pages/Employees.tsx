@@ -393,6 +393,7 @@ const Employees = () => {
                   <div className="space-y-2"><Label>Qualification</Label><Input placeholder="Matric" value={sForm.qualification} onChange={e => setSForm({ ...sForm, qualification: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Salary (PKR)</Label><Input type="number" placeholder="15000" value={sForm.salary} onChange={e => setSForm({ ...sForm, salary: e.target.value })} /></div>
                   <div className="space-y-2"><Label>Joining Date</Label><Input type="date" value={sForm.joining_date} onChange={e => setSForm({ ...sForm, joining_date: e.target.value })} /></div>
+                  <div className="space-y-2"><Label>Date of Birth</Label><Input type="date" value={sForm.date_of_birth} onChange={e => setSForm({ ...sForm, date_of_birth: e.target.value })} /></div>
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select value={sForm.status} onValueChange={v => setSForm({ ...sForm, status: v })}>

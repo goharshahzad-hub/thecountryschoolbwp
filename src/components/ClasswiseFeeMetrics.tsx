@@ -141,7 +141,7 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
             {/* Totals Row */}
             <TableRow className="bg-muted/50 font-semibold">
               <TableCell>Total</TableCell>
-              <TableCell className="text-center">{students.length}</TableCell>
+              <TableCell>{metrics.reduce((s, m) => s + m.totalStudents, 0)}</TableCell>
               {!compact && (
                 <TableCell className="text-right">₨ {totals.totalAmount.toLocaleString("en-PK")}</TableCell>
               )}

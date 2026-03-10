@@ -299,7 +299,7 @@ const FeeVouchers = () => {
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Bulk Vouchers Generated", description: `${rows.length} vouchers created for Class ${bulkForm.class_name}` });
+      toast({ title: "Bulk Vouchers Generated", description: `${rows.length} vouchers created for Class ${bulkForm.class_name}${existingStudentIds.size > 0 ? ` (${existingStudentIds.size} skipped)` : ""}` });
       setBulkDialogOpen(false);
       fetchData();
     }
