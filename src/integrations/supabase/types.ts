@@ -457,6 +457,7 @@ export type Database = {
           address: string | null
           cnic: string | null
           created_at: string
+          date_of_birth: string | null
           department: string
           designation: string
           id: string
@@ -474,6 +475,7 @@ export type Database = {
           address?: string | null
           cnic?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string
           designation?: string
           id?: string
@@ -491,6 +493,7 @@ export type Database = {
           address?: string | null
           cnic?: string | null
           created_at?: string
+          date_of_birth?: string | null
           department?: string
           designation?: string
           id?: string
@@ -576,6 +579,7 @@ export type Database = {
         Row: {
           class: string
           created_at: string
+          date_of_birth: string | null
           father_name: string
           fee_status: string
           gender: string
@@ -595,6 +599,7 @@ export type Database = {
         Insert: {
           class: string
           created_at?: string
+          date_of_birth?: string | null
           father_name: string
           fee_status?: string
           gender?: string
@@ -614,6 +619,7 @@ export type Database = {
         Update: {
           class?: string
           created_at?: string
+          date_of_birth?: string | null
           father_name?: string
           fee_status?: string
           gender?: string
@@ -659,6 +665,7 @@ export type Database = {
           classes: string
           cnic: string | null
           created_at: string
+          date_of_birth: string | null
           id: string
           joining_date: string | null
           name: string
@@ -676,6 +683,7 @@ export type Database = {
           classes?: string
           cnic?: string | null
           created_at?: string
+          date_of_birth?: string | null
           id?: string
           joining_date?: string | null
           name: string
@@ -693,6 +701,7 @@ export type Database = {
           classes?: string
           cnic?: string | null
           created_at?: string
+          date_of_birth?: string | null
           id?: string
           joining_date?: string | null
           name?: string
