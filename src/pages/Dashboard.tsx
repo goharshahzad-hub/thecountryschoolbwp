@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck } from "lucide-react";
+import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck, Cake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,11 +9,12 @@ import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
-interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; }
+interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; date_of_birth?: string | null; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
 interface ParentProfile { id: string; user_id: string; full_name: string; phone: string | null; created_at: string; }
 interface LinkedStudent { name: string; class: string; section: string | null; }
+interface BirthdayPerson { name: string; type: "student" | "teacher" | "staff"; detail: string; date_of_birth: string; }
 
 const getTimeAgo = (dateStr: string) => {
   const diff = Date.now() - new Date(dateStr).getTime();
