@@ -110,7 +110,7 @@ const Employees = () => {
   };
 
   const handleTeacherEdit = (t: Teacher) => {
-    setTForm({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", cnic: t.cnic || "", salary: t.salary?.toString() || "", status: t.status, joining_date: t.joining_date || "", photo_url: (t as any).photo_url || "" });
+    setTForm({ teacher_id: t.teacher_id, name: t.name, subject: t.subject, classes: t.classes, phone: t.phone || "", qualification: t.qualification || "", cnic: t.cnic || "", salary: t.salary?.toString() || "", status: t.status, joining_date: t.joining_date || "", photo_url: (t as any).photo_url || "", date_of_birth: (t as any).date_of_birth || "" });
     setTEditId(t.id); setTDialogOpen(true);
   };
 
