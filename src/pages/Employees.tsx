@@ -172,7 +172,7 @@ const Employees = () => {
   };
 
   const handleStaffEdit = (s: NonTeachingStaff) => {
-    setSForm({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", cnic: s.cnic || "", salary: s.salary?.toString() || "", qualification: s.qualification || "", address: s.address || "", status: s.status, joining_date: s.joining_date || "", photo_url: (s as any).photo_url || "" });
+    setSForm({ staff_id: s.staff_id, name: s.name, designation: s.designation, department: s.department, phone: s.phone || "", cnic: s.cnic || "", salary: s.salary?.toString() || "", qualification: s.qualification || "", address: s.address || "", status: s.status, joining_date: s.joining_date || "", photo_url: (s as any).photo_url || "", date_of_birth: (s as any).date_of_birth || "" });
     setSEditId(s.id); setSDialogOpen(true);
   };
 
