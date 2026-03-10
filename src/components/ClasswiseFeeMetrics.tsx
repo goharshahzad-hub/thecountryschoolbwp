@@ -89,7 +89,7 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
       <CardHeader className="pb-3">
         <CardTitle className="font-display text-lg">Class-wise Fee Collection</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
