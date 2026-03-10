@@ -88,16 +88,22 @@ const Employees = () => {
     if (!tForm.teacher_id.trim() || !tForm.name.trim()) {
       toast({ title: "Error", description: "Please fill required fields", variant: "destructive" }); return;
     }
+    // Duplicate check
+    if (!tEditId) {
+      const dup = teachers.find(t => t.teacher_id === tForm.teacher_id.trim());
+      if (dup) { toast({ title: "Duplicate", description: `Teacher ID "${tForm.teacher_id}" already exists.`, variant: "destructive" }); return; }
+    }
     setTSaving(true);
     const payload = {
       teacher_id: tForm.teacher_id.trim(), name: tForm.name.trim(), subject: tForm.subject.trim(),
       classes: tForm.classes.trim(), phone: tForm.phone.trim(), qualification: tForm.qualification.trim(),
       cnic: tForm.cnic.trim(), salary: tForm.salary ? parseFloat(tForm.salary) : 0,
       status: tForm.status, joining_date: tForm.joining_date || null, photo_url: tForm.photo_url,
+      date_of_birth: tForm.date_of_birth || null,
     };
     const { error } = tEditId
-      ? await supabase.from("teachers").update(payload).eq("id", tEditId)
-      : await supabase.from("teachers").insert(payload);
+      ? await supabase.from("teachers").update(payload as any).eq("id", tEditId)
+      : await supabase.from("teachers").insert(payload as any);
     setTSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: tEditId ? "Updated" : "Added" }); setTDialogOpen(false); setTForm(emptyTeacherForm); setTEditId(null); fetchTeachers(); }
