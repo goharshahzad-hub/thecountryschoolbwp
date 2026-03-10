@@ -265,9 +265,7 @@ const FeeVouchers = () => {
     const useBulkTuition = bulkForm.tuition_fee.trim() !== "";
     const bulkTuition = parseFloat(bulkForm.tuition_fee) || 0;
 
-    const bulkYear = parseInt(bulkForm.year);
-
-    const rows = classStudents.map((s, i) => {
+    const rows = newStudents.map((s, i) => {
       const tuition = useBulkTuition ? bulkTuition : (s.monthly_fee || 0);
       // Auto-calculate per-student arrears from last month's unpaid + late fee
       const studentArrears = calcStudentArrears(s.id, bulkForm.month, bulkYear);
