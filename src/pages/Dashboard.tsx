@@ -337,6 +337,50 @@ const Dashboard = () => {
             </Card>
           </div>
 
+          {/* Birthday Alerts */}
+          {birthdayPeople.length > 0 && (
+            <Card className="mb-4 shadow-card border-primary/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <Cake className="h-5 w-5 text-primary" /> 🎂 Birthday Alerts
+                  <Badge variant="secondary" className="ml-2 text-xs">{birthdayPeople.length} upcoming</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
+                  {birthdayPeople.map((bp, i) => {
+                    const dob = new Date(bp.date_of_birth);
+                    const today = new Date();
+                    const thisYearBday = new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+                    const diffDays = Math.floor((thisYearBday.getTime() - today.getTime()) / 86400000);
+                    const isToday = diffDays === 0;
+                    const label = isToday ? "Today! 🎉" : diffDays === 1 ? "Tomorrow" : diffDays < 0 ? "Yesterday" : `In ${diffDays} days`;
+                    const age = today.getFullYear() - dob.getFullYear();
+                    return (
+                      <div key={i} className="flex items-center justify-between py-2.5 gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-full text-lg ${isToday ? "bg-primary/20" : "bg-muted"}`}>
+                            🎂
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{bp.name}</p>
+                            <p className="text-xs text-muted-foreground">{bp.detail} · Turning {age}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge variant={bp.type === "student" ? "default" : "secondary"} className="text-[10px]">
+                            {bp.type === "student" ? "Student" : bp.type === "teacher" ? "Teacher" : "Staff"}
+                          </Badge>
+                          <span className={`text-xs font-medium ${isToday ? "text-primary" : "text-muted-foreground"}`}>{label}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <ClasswiseFeeMetrics vouchers={filteredVouchers} students={students} />
 
           {/* Balance Sheet */}
