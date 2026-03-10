@@ -252,7 +252,7 @@ const FeeVouchers = () => {
       toast({ title: "Note", description: `${existingStudentIds.size} students already have vouchers — skipping duplicates.` });
     }
     setSaving(true);
-    const dueDate = getDueDate(bulkForm.month, parseInt(bulkForm.year));
+    const dueDate = getDueDate(bulkForm.month, bulkYear);
     const bulkRegFee = parseFloat(bulkForm.registration_fee) || 0;
     const bulkAdmFee = parseFloat(bulkForm.admission_fee) || 0;
     const bulkSecDep = parseFloat(bulkForm.security_deposit) || 0;
