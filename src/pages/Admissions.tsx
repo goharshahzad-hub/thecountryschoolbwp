@@ -122,7 +122,18 @@ const Admissions = () => {
 
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: editingId ? "Updated" : "Application Submitted" }); setDialogOpen(false); setForm(emptyForm); setEditingId(null); fetchAdmissions(); }
+    else {
+      // Send WhatsApp alert to parent on new admission
+      if (!editingId && form.whatsapp) {
+        const cleanPhone = form.whatsapp.replace(/[^0-9]/g, "");
+        const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;
+        const msg = encodeURIComponent(
+          `Assalam o Alaikum,\n\nDear ${form.father_name},\n\nWe are pleased to inform you that the admission application for *${form.student_name}* has been submitted at *The Country School*.\n\nApplication No: *${payload.application_no}*\nClass Applied For: *${form.applying_for_class}-${form.applying_for_section}*\n\nOur team will review your application and contact you soon.\n\nRegards,\nThe Country School\nModel Town Fahad Campus, Bahawalpur`
+        );
+        window.open(`https://wa.me/${fullPhone}?text=${msg}`, "_blank");
+      }
+      toast({ title: editingId ? "Updated" : "Application Submitted" }); setDialogOpen(false); setForm(emptyForm); setEditingId(null); fetchAdmissions();
+    }
   };
 
   const handleEdit = (a: Admission) => {

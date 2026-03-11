@@ -7,10 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MessageCircle, Users, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { classOptions } from "@/lib/constants";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import { useToast } from "@/hooks/use-toast";
+import { useBulkSelect } from "@/hooks/useBulkSelect";
 
 interface Student {
   id: string;
@@ -26,6 +29,7 @@ interface Student {
 
 const WhatsAppBroadcast = () => {
   const { settings } = useSchoolSettings();
+  const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterClass, setFilterClass] = useState("all");
@@ -49,10 +53,37 @@ const WhatsAppBroadcast = () => {
     return filtered.filter(s => s.whatsapp || s.phone);
   }, [filtered]);
 
+  const bulk = useBulkSelect(withPhone);
+
   const buildUrl = (phone: string) => {
     const clean = phone.replace(/[^0-9]/g, "");
     const full = clean.startsWith("0") ? "92" + clean.slice(1) : clean;
     return `https://wa.me/${full}?text=${encodeURIComponent(message)}`;
+  };
+
+  const handleSendAll = () => {
+    const targets = bulk.count > 0
+      ? withPhone.filter(s => bulk.selectedIds.has(s.id))
+      : withPhone;
+
+    if (targets.length === 0) {
+      toast({ title: "No recipients", description: "No students with phone numbers to send to.", variant: "destructive" });
+      return;
+    }
+
+    if (!confirm(`This will open ${targets.length} WhatsApp tab(s). You need to send each one manually. Continue?`)) return;
+
+    let opened = 0;
+    targets.forEach((s, i) => {
+      const phone = s.whatsapp || s.phone || "";
+      if (!phone) return;
+      setTimeout(() => {
+        window.open(buildUrl(phone), "_blank");
+      }, i * 800);
+      opened++;
+    });
+
+    toast({ title: "WhatsApp Broadcast", description: `Opening ${opened} WhatsApp tab(s). Send each message manually.` });
   };
 
   return (
@@ -99,8 +130,8 @@ const WhatsAppBroadcast = () => {
                 <p className="text-xs text-muted-foreground mb-1">Recipients</p>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold text-foreground">{withPhone.length}</span>
-                  <span className="text-xs text-muted-foreground">parents with phone numbers</span>
+                  <span className="text-sm font-semibold text-foreground">{bulk.count > 0 ? bulk.count : withPhone.length}</span>
+                  <span className="text-xs text-muted-foreground">{bulk.count > 0 ? "selected" : "parents with phone numbers"}</span>
                 </div>
                 {filtered.length - withPhone.length > 0 && (
                   <p className="text-xs text-destructive mt-1">
@@ -108,6 +139,13 @@ const WhatsAppBroadcast = () => {
                   </p>
                 )}
               </div>
+              <Button
+                className="w-full bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
+                onClick={handleSendAll}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {bulk.count > 0 ? `Send to ${bulk.count} Selected` : `Send to All (${withPhone.length})`}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -129,6 +167,7 @@ const WhatsAppBroadcast = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
                       <TableHead>#</TableHead>
                       <TableHead>Student</TableHead>
                       <TableHead>Guardian/Father</TableHead>
@@ -141,7 +180,8 @@ const WhatsAppBroadcast = () => {
                     {withPhone.map((s, i) => {
                       const phone = s.whatsapp || s.phone || "";
                       return (
-                        <TableRow key={s.id}>
+                        <TableRow key={s.id} data-state={bulk.selectedIds.has(s.id) ? "selected" : undefined}>
+                          <TableCell><Checkbox checked={bulk.selectedIds.has(s.id)} onCheckedChange={() => bulk.toggle(s.id)} /></TableCell>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell className="font-medium">{s.name}</TableCell>
                           <TableCell>{s.father_name}</TableCell>

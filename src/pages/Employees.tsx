@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -209,6 +209,7 @@ const Employees = () => {
       <Tabs defaultValue="teaching" className="space-y-4">
         <TabsList>
           <TabsTrigger value="teaching">Teaching Staff ({teachers.length})</TabsTrigger>
+          <TabsTrigger value="management">Management ({teachers.filter(t => ["Principal", "Vice Principal", "Head Teacher", "Coordinator"].includes(t.subject)).length})</TabsTrigger>
           <TabsTrigger value="non-teaching">Non-Teaching Staff ({staff.length})</TabsTrigger>
         </TabsList>
 
@@ -316,6 +317,45 @@ const Employees = () => {
                   </TableBody>
                 </Table>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ═══ MANAGEMENT STAFF TAB ═══ */}
+        <TabsContent value="management" className="space-y-4">
+          <Card className="shadow-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-display text-base">Management & Leadership</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader><TableRow>
+                  <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Designation</TableHead><TableHead>Classes</TableHead><TableHead>Phone</TableHead><TableHead>Qualification</TableHead><TableHead>Salary</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                </TableRow></TableHeader>
+                <TableBody>
+                  {(() => {
+                    const mgmt = teachers.filter(t => ["Principal", "Vice Principal", "Head Teacher", "Coordinator"].includes(t.subject));
+                    return mgmt.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No management staff found</TableCell></TableRow> :
+                    mgmt.map(t => (
+                      <TableRow key={t.id}>
+                        <TableCell className="font-mono text-xs">{t.teacher_id}</TableCell>
+                        <TableCell className="font-medium">{t.name}</TableCell>
+                        <TableCell>{t.subject}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{t.classes}</TableCell>
+                        <TableCell className="text-muted-foreground">{t.phone}</TableCell>
+                        <TableCell className="text-xs">{t.qualification}</TableCell>
+                        <TableCell className="text-xs">{t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</TableCell>
+                        <TableCell><Badge variant={t.status === "Active" ? "default" : "secondary"} className={t.status === "Active" ? "bg-success text-success-foreground" : ""}>{t.status}</Badge></TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setTCardItem(t)} title="ID Card"><CreditCard className="h-4 w-4 text-primary" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleTeacherEdit(t)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleTeacherDelete(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </TableCell>
+                      </TableRow>
+                    ));
+                  })()}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
