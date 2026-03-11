@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle, Download } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle, Download, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
@@ -40,6 +41,7 @@ const Attendance = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
@@ -75,6 +77,7 @@ const Attendance = () => {
       filteredStudents.forEach(s => { if (!att[s.id]) att[s.id] = "present"; });
       setAttendance(att);
       setExistingRecords(existing);
+      setSelectedIds(new Set());
     };
     fetchAttendance();
   }, [selectedClass, students]);
@@ -85,6 +88,20 @@ const Attendance = () => {
       const next = order[(order.indexOf(prev[studentId]) + 1) % 3];
       return { ...prev, [studentId]: next };
     });
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(prev =>
+      prev.size === filteredStudents.length ? new Set() : new Set(filteredStudents.map(s => s.id))
+    );
   };
 
   const handleSave = async () => {
@@ -101,6 +118,45 @@ const Attendance = () => {
     setSaving(false);
     setSaved(true);
     toast({ title: "Saved", description: "Attendance saved successfully." });
+  };
+
+  const handleDeleteSingle = async (studentId: string) => {
+    if (!existingRecords[studentId]) {
+      toast({ title: "No Record", description: "No saved attendance record for this student today.", variant: "destructive" });
+      return;
+    }
+    if (!confirm("Delete this attendance record?")) return;
+    await supabase.from("attendance_records").delete().eq("id", existingRecords[studentId]);
+    const newExisting = { ...existingRecords };
+    delete newExisting[studentId];
+    setExistingRecords(newExisting);
+    setAttendance(prev => ({ ...prev, [studentId]: "present" }));
+    toast({ title: "Deleted", description: "Attendance record removed." });
+  };
+
+  const handleBulkDelete = async () => {
+    const idsToDelete = Array.from(selectedIds).filter(id => existingRecords[id]);
+    if (idsToDelete.length === 0) {
+      toast({ title: "No Records", description: "No saved attendance records for selected students.", variant: "destructive" });
+      return;
+    }
+    if (!confirm(`Delete attendance for ${idsToDelete.length} student(s)?`)) return;
+    const recordIds = idsToDelete.map(id => existingRecords[id]);
+    await supabase.from("attendance_records").delete().in("id", recordIds);
+    const newExisting = { ...existingRecords };
+    const newAtt = { ...attendance };
+    idsToDelete.forEach(id => { delete newExisting[id]; newAtt[id] = "present"; });
+    setExistingRecords(newExisting);
+    setAttendance(newAtt);
+    setSelectedIds(new Set());
+    toast({ title: "Deleted", description: `${idsToDelete.length} attendance record(s) removed.` });
+  };
+
+  const handleBulkSetStatus = (status: Status) => {
+    const newAtt = { ...attendance };
+    selectedIds.forEach(id => { newAtt[id] = status; });
+    setAttendance(newAtt);
+    toast({ title: "Updated", description: `${selectedIds.size} student(s) marked as ${status}.` });
   };
 
   const formatPhone = (phone: string) => {
@@ -137,15 +193,6 @@ const Attendance = () => {
     }
   };
 
-  const handleDelete = async (studentId: string) => {
-    if (!existingRecords[studentId]) return;
-    await supabase.from("attendance_records").delete().eq("id", existingRecords[studentId]);
-    const newExisting = { ...existingRecords };
-    delete newExisting[studentId];
-    setExistingRecords(newExisting);
-    toast({ title: "Deleted", description: "Attendance record removed." });
-  };
-
   const counts = {
     present: Object.values(attendance).filter(v => v === "present").length,
     absent: Object.values(attendance).filter(v => v === "absent").length,
@@ -159,7 +206,7 @@ const Attendance = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Attendance</h1>
           <p className="mt-1 text-sm text-muted-foreground">Mark daily attendance — {new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {classOptions.length > 0 && (
             <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -242,10 +289,40 @@ const Attendance = () => {
         </div>
       )}
 
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
+          <Button size="sm" variant="outline" onClick={() => handleBulkSetStatus("present")} className="border-success/30 text-success">
+            <CheckCircle className="mr-1 h-3.5 w-3.5" />Mark Present
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleBulkSetStatus("absent")} className="border-destructive/30 text-destructive">
+            <XCircle className="mr-1 h-3.5 w-3.5" />Mark Absent
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleBulkSetStatus("late")} className="border-warning/30 text-warning">
+            <Clock className="mr-1 h-3.5 w-3.5" />Mark Late
+          </Button>
+          <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+            <Trash2 className="mr-1 h-3.5 w-3.5" />Delete Records
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>Clear</Button>
+        </div>
+      )}
+
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle className="font-display text-lg">
-            {selectedClass ? `Class ${selectedClass}` : "Select a class"}
+          <CardTitle className="font-display text-lg flex items-center justify-between">
+            <span>{selectedClass ? `Class ${selectedClass}` : "Select a class"}</span>
+            {filteredStudents.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedIds.size === filteredStudents.length && filteredStudents.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+                <span className="text-xs text-muted-foreground font-normal">Select All</span>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -258,34 +335,47 @@ const Attendance = () => {
           ) : (
             <div className="space-y-2">
               {filteredStudents.map((s, i) => (
-                <button
+                <div
                   key={s.id}
-                  onClick={() => toggle(s.id)}
-                  className="flex w-full items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                  className={`flex w-full items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/50 ${selectedIds.has(s.id) ? "bg-primary/5 border-primary/30" : ""}`}
                 >
                   <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={selectedIds.has(s.id)}
+                      onCheckedChange={() => toggleSelect(s.id)}
+                      onClick={e => e.stopPropagation()}
+                    />
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground">
                       {i + 1}
                     </span>
-                    <div className="text-left">
+                    <button onClick={() => toggle(s.id)} className="text-left">
                       <span className="text-sm font-medium text-foreground">{s.name}</span>
                       <span className="ml-2 text-xs text-muted-foreground">{s.student_id}</span>
-                    </div>
+                    </button>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      attendance[s.id] === "present" ? "border-success/30 bg-success/10 text-success" :
-                      attendance[s.id] === "absent" ? "border-destructive/30 bg-destructive/10 text-destructive" :
-                      "border-warning/30 bg-warning/10 text-warning"
-                    }
-                  >
-                    {attendance[s.id] === "present" && <CheckCircle className="mr-1 h-3 w-3" />}
-                    {attendance[s.id] === "absent" && <XCircle className="mr-1 h-3 w-3" />}
-                    {attendance[s.id] === "late" && <Clock className="mr-1 h-3 w-3" />}
-                    {(attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)}
-                  </Badge>
-                </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => toggle(s.id)}>
+                      <Badge
+                        variant="outline"
+                        className={
+                          attendance[s.id] === "present" ? "border-success/30 bg-success/10 text-success" :
+                          attendance[s.id] === "absent" ? "border-destructive/30 bg-destructive/10 text-destructive" :
+                          "border-warning/30 bg-warning/10 text-warning"
+                        }
+                      >
+                        {attendance[s.id] === "present" && <CheckCircle className="mr-1 h-3 w-3" />}
+                        {attendance[s.id] === "absent" && <XCircle className="mr-1 h-3 w-3" />}
+                        {attendance[s.id] === "late" && <Clock className="mr-1 h-3 w-3" />}
+                        {(attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)}
+                      </Badge>
+                    </button>
+                    {existingRecords[s.id] && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteSingle(s.id)} title="Delete record">
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           )}
