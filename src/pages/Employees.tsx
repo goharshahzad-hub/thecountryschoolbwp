@@ -209,6 +209,7 @@ const Employees = () => {
       <Tabs defaultValue="teaching" className="space-y-4">
         <TabsList>
           <TabsTrigger value="teaching">Teaching Staff ({teachers.length})</TabsTrigger>
+          <TabsTrigger value="management">Management ({teachers.filter(t => ["Principal", "Vice Principal", "Head Teacher", "Coordinator"].includes(t.subject)).length})</TabsTrigger>
           <TabsTrigger value="non-teaching">Non-Teaching Staff ({staff.length})</TabsTrigger>
         </TabsList>
 
