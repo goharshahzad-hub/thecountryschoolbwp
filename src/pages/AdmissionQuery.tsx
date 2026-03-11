@@ -46,6 +46,15 @@ const AdmissionQuery = () => {
     }
     // Send email notification (fire and forget)
     supabase.functions.invoke("notify-admission-query", { body: form }).catch(() => {});
+    // Send WhatsApp alert to parent if WhatsApp number provided
+    if (form.whatsapp) {
+      const cleanPhone = form.whatsapp.replace(/[^0-9]/g, "");
+      const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;
+      const whatsappMsg = encodeURIComponent(
+        `Assalam o Alaikum,\n\nDear ${form.father_name},\n\nThank you for submitting an admission inquiry for *${form.student_name}* at *The Country School*.\n\nWe have received your application for *${form.applying_for_class}*. Our team will contact you shortly.\n\nRegards,\nThe Country School\nModel Town Fahad Campus, Bahawalpur`
+      );
+      window.open(`https://wa.me/${fullPhone}?text=${whatsappMsg}`, "_blank");
+    }
     setSubmitting(false);
     setSubmitted(true);
     toast.success("Admission query submitted successfully!");
