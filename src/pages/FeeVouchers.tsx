@@ -761,6 +761,45 @@ const FeeVouchers = () => {
               { key: "due_date", label: "Due Date" }, { key: "paid_date", label: "Paid Date" }, { key: "status", label: "Status" }
             ]);
           }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+          {/* Generate All Classes Button */}
+          <Button size="sm" variant="outline" onClick={async () => {
+            if (uniqueClasses.length === 0) { toast({ title: "No Classes", description: "No students found.", variant: "destructive" }); return; }
+            const month = MONTHS[new Date().getMonth()];
+            const year = new Date().getFullYear();
+            if (!confirm(`Generate vouchers for ALL ${uniqueClasses.length} classes for ${month} ${year}? Existing duplicates will be skipped.`)) return;
+            setSaving(true);
+            let totalCreated = 0;
+            let totalSkipped = 0;
+            const dueDate = getDueDate(month, year);
+            for (const cls of uniqueClasses) {
+              const classStudents = students.filter(s => s.class === cls);
+              const existingStudentIds = new Set(
+                vouchers.filter(v => v.month === month && v.year === year && classStudents.some(s => s.id === v.student_id)).map(v => v.student_id)
+              );
+              const newStudents = classStudents.filter(s => !existingStudentIds.has(s.id));
+              totalSkipped += existingStudentIds.size;
+              if (newStudents.length === 0) continue;
+              const rows = newStudents.map((s, i) => {
+                const tuition = s.monthly_fee || 0;
+                const arrears = calcStudentArrears(s.id, month, year);
+                return {
+                  voucher_no: generateVoucherNo(totalCreated + i),
+                  student_id: s.id, amount: tuition + arrears, tuition_fee: tuition, fee_type: "Monthly",
+                  month, year, due_date: dueDate, issue_date: new Date().toISOString().split("T")[0],
+                  status: "Pending" as string, remarks: "", registration_fee: 0, admission_fee: 0,
+                  security_deposit: 0, annual_charges: 0, trip_charges: 0, books_charges: 0,
+                  arrears, late_fee: 0, discount: 0, late_fee_amount: LATE_FEE,
+                };
+              });
+              await supabase.from("fee_vouchers").insert(rows as any);
+              totalCreated += rows.length;
+            }
+            setSaving(false);
+            toast({ title: "All Classes Generated", description: `${totalCreated} vouchers created${totalSkipped > 0 ? `, ${totalSkipped} skipped (duplicates)` : ""}.` });
+            fetchData();
+          }} disabled={saving}>
+            <Users className="mr-2 h-4 w-4" />{saving ? "Generating..." : "Generate All Classes"}
+          </Button>
           {/* Bulk Generate Dialog */}
           <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
             <DialogTrigger asChild>
