@@ -41,8 +41,8 @@ const Fees = () => {
 
   const fetchData = async () => {
     const [{ data: feeData }, { data: studentData }] = await Promise.all([
-      supabase.from("fee_vouchers").select("*").order("created_at", { ascending: false }),
-      supabase.from("students").select("id, student_id, name, class, section, monthly_fee"),
+      supabase.from("fee_vouchers").select("*").order("created_at", { ascending: false }).limit(10000),
+      supabase.from("students").select("id, student_id, name, class, section, monthly_fee").limit(5000),
     ]);
     if (feeData) setFees(feeData);
     if (studentData) setStudents(studentData);
