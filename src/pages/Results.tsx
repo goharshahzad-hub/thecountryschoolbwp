@@ -354,11 +354,14 @@ const Results = () => {
     return cleaned;
   };
 
-  const sendMonthlyTestAlerts = () => {
+  const sendMonthlyTestAlerts = (selectedStudentIds?: Set<string>) => {
     if (!mtViewClass || !mtViewMonth || mtViewResults.length === 0) return;
     const allSubIds = [...new Set(mtViewResults.map(r => r.subject_id))];
+    const targetStudents = selectedStudentIds
+      ? mtViewStudents.filter(s => selectedStudentIds.has(s.id))
+      : mtViewStudents;
     let opened = 0;
-    mtViewStudents.forEach((s, i) => {
+    targetStudents.forEach((s, i) => {
       const contact = s.whatsapp || s.phone;
       if (!contact) return;
       const studentResultsList = allSubIds.map(sid => {
