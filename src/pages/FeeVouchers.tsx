@@ -17,8 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
-import { downloadCSV } from "@/lib/csvUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeVoucher {
   id: string;
