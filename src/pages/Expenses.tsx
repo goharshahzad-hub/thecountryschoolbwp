@@ -11,8 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Filter, DollarSign, TrendingDown, Download, Printer } from "lucide-react";
-import { downloadCSV } from "@/lib/csvUtils";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 const EXPENSE_HEADS = [
   "Teaching Staff Salaries",
@@ -184,12 +183,9 @@ const Expenses = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const csvData = filtered.map(e => ({ date: e.expense_date, head: e.expense_head, description: e.description, paid_to: e.paid_to, method: e.payment_method, amount: e.amount }));
-            downloadCSV(csvData, "Expenses", [
-              { key: "date", label: "Date" }, { key: "head", label: "Expense Head" }, { key: "description", label: "Description" },
-              { key: "paid_to", label: "Paid To" }, { key: "method", label: "Method" }, { key: "amount", label: "Amount" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            const rows = filtered.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${filtered.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expenses");
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = filtered.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
             printA4(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${filtered.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expense Report");

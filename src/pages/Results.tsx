@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -259,7 +260,7 @@ const Results = () => {
         const total = parseFloat(bulkTotalMarks);
         return {
           student_id: s.id, subject_id: bulkSubject,
-          exam_type: bulkExamType, term: bulkTerm,
+          exam_type: bulkTerm, term: bulkTerm,
           total_marks: total, obtained_marks: obtained,
           grade: gradeFromPercent((obtained / total) * 100),
           exam_date: bulkExamDate || null, remarks: "",
@@ -285,8 +286,7 @@ const Results = () => {
   const monthlyResults = results.filter(r =>
     monthlyClassStudents.some(s => s.id === r.student_id) &&
     (monthlySubject && monthlySubject !== "all" ? r.subject_id === monthlySubject : true) &&
-    r.term === monthlyTerm &&
-    r.exam_type === monthlyExamType
+    r.term === monthlyTerm
   );
 
   const handlePrintTermCard = () => {
@@ -322,7 +322,7 @@ const Results = () => {
     }
 
     printA4(`<div class="print-page">
-      ${schoolHeader(`${monthlyExamType.toUpperCase()} — ${monthlyTerm}`)}
+      ${schoolHeader(`TERM RESULT — ${monthlyTerm}`)}
       <div class="print-info">
         <div>Class: <span>${monthlyClass}</span></div>
         <div>Subject: <span>${subjectName}</span></div>
@@ -331,7 +331,7 @@ const Results = () => {
       </div>
       ${tableHtml}
       ${schoolFooter()}
-    </div>`, `${monthlyExamType} - Class ${monthlyClass}`);
+    </div>`, `Term Result - Class ${monthlyClass}`);
   };
 
   const handlePrintReport = () => {
@@ -354,11 +354,14 @@ const Results = () => {
     return cleaned;
   };
 
-  const sendMonthlyTestAlerts = () => {
+  const sendMonthlyTestAlerts = (selectedStudentIds?: Set<string>) => {
     if (!mtViewClass || !mtViewMonth || mtViewResults.length === 0) return;
     const allSubIds = [...new Set(mtViewResults.map(r => r.subject_id))];
+    const targetStudents = selectedStudentIds
+      ? mtViewStudents.filter(s => selectedStudentIds.has(s.id))
+      : mtViewStudents;
     let opened = 0;
-    mtViewStudents.forEach((s, i) => {
+    targetStudents.forEach((s, i) => {
       const contact = s.whatsapp || s.phone;
       if (!contact) return;
       const studentResultsList = allSubIds.map(sid => {
@@ -389,11 +392,14 @@ const Results = () => {
     }
   };
 
-  const sendTermResultAlerts = () => {
+  const sendTermResultAlerts = (selectedStudentIds?: Set<string>) => {
     if (!monthlyClass || monthlyResults.length === 0) return;
     const allSubIds = [...new Set(monthlyResults.map(r => r.subject_id))];
+    const targetStudents = selectedStudentIds 
+      ? monthlyClassStudents.filter(s => selectedStudentIds.has(s.id))
+      : monthlyClassStudents;
     let opened = 0;
-    monthlyClassStudents.forEach((s, i) => {
+    targetStudents.forEach((s, i) => {
       const contact = s.whatsapp || s.phone;
       if (!contact) return;
       const sResults = monthlyResults.filter(r => r.student_id === s.id);
@@ -412,7 +418,7 @@ const Results = () => {
       const overallPct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(0) : "0";
       const phone = formatPhone(contact);
       const message = encodeURIComponent(
-        `Dear Parent,\n\n*${monthlyExamType} Result — ${monthlyTerm}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${subjectLines.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+        `Dear Parent,\n\n*${monthlyTerm} Result*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${subjectLines.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
       );
       setTimeout(() => { window.open(`https://wa.me/${phone}?text=${message}`, "_blank"); }, i * 800);
       opened++;
@@ -547,6 +553,9 @@ const Results = () => {
     else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass} — ${classReportMonth} Monthly Test. Send each one manually.` });
   };
 
+  // Multi-select state for WhatsApp
+  const [mtSelectedIds, setMtSelectedIds] = useState<Set<string>>(new Set());
+  const [termSelectedIds, setTermSelectedIds] = useState<Set<string>>(new Set());
 
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
@@ -746,14 +755,22 @@ const Results = () => {
                   <Printer className="mr-2 h-4 w-4" />Print Result
                 </Button>
                 {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
-                  <Button onClick={sendMonthlyTestAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
-                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
-                  </Button>
+                  <>
+                    <Button onClick={() => sendMonthlyTestAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                      <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
+                    </Button>
+                    {mtSelectedIds.size > 0 && (
+                      <Button onClick={() => sendMonthlyTestAlerts(mtSelectedIds)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
+                        <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Selected ({mtSelectedIds.size})
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
               {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
                 <Table>
                   <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={mtSelectedIds.size === mtViewStudents.length && mtViewStudents.length > 0} onCheckedChange={() => setMtSelectedIds(prev => prev.size === mtViewStudents.length ? new Set() : new Set(mtViewStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
                     <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
                   </TableRow></TableHeader>
@@ -761,7 +778,8 @@ const Results = () => {
                     {mtViewResults.map((r, i) => {
                       const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
                       return (
-                        <TableRow key={r.id}>
+                        <TableRow key={r.id} data-state={mtSelectedIds.has(r.student_id) ? "selected" : undefined}>
+                          <TableCell><Checkbox checked={mtSelectedIds.has(r.student_id)} onCheckedChange={() => setMtSelectedIds(prev => { const next = new Set(prev); if (next.has(r.student_id)) next.delete(r.student_id); else next.add(r.student_id); return next; })} /></TableCell>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell className="font-medium">{getStudent(r.student_id)?.name}</TableCell>
                           <TableCell>{getSubject(r.subject_id)?.name}</TableCell>
@@ -801,16 +819,6 @@ const Results = () => {
                   <Select value={bulkSubject} onValueChange={setBulkSubject}>
                     <SelectTrigger><SelectValue placeholder="Select subject" /></SelectTrigger>
                     <SelectContent>{subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 min-w-[130px]">
-                  <Label>Exam Type</Label>
-                  <Select value={bulkExamType} onValueChange={setBulkExamType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Mid Term">Mid Term</SelectItem>
-                      <SelectItem value="Final Term">Final Term</SelectItem>
-                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2 min-w-[120px]">
@@ -898,16 +906,6 @@ const Results = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2 min-w-[130px]">
-                  <Label>Exam Type</Label>
-                  <Select value={monthlyExamType} onValueChange={setMonthlyExamType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Mid Term">Mid Term</SelectItem>
-                      <SelectItem value="Final Term">Final Term</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2 min-w-[120px]">
                   <Label>Term</Label>
                   <Select value={monthlyTerm} onValueChange={setMonthlyTerm}>
@@ -919,14 +917,22 @@ const Results = () => {
                   <Printer className="mr-2 h-4 w-4" />Print Result Card
                 </Button>
                 {monthlyClass && monthlyResults.length > 0 && (
-                  <Button onClick={sendTermResultAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
-                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
-                  </Button>
+                  <>
+                    <Button onClick={() => sendTermResultAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                      <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
+                    </Button>
+                    {termSelectedIds.size > 0 && (
+                      <Button onClick={() => sendTermResultAlerts(termSelectedIds)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
+                        <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Selected ({termSelectedIds.size})
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
               {monthlyClass && monthlyResults.length > 0 && (
                 <Table>
                   <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={termSelectedIds.size === monthlyClassStudents.length && monthlyClassStudents.length > 0} onCheckedChange={() => setTermSelectedIds(prev => prev.size === monthlyClassStudents.length ? new Set() : new Set(monthlyClassStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
                     <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
                   </TableRow></TableHeader>
@@ -934,7 +940,8 @@ const Results = () => {
                     {monthlyResults.map((r, i) => {
                       const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
                       return (
-                        <TableRow key={r.id}>
+                        <TableRow key={r.id} data-state={termSelectedIds.has(r.student_id) ? "selected" : undefined}>
+                          <TableCell><Checkbox checked={termSelectedIds.has(r.student_id)} onCheckedChange={() => setTermSelectedIds(prev => { const next = new Set(prev); if (next.has(r.student_id)) next.delete(r.student_id); else next.add(r.student_id); return next; })} /></TableCell>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell className="font-medium">{getStudent(r.student_id)?.name}</TableCell>
                           <TableCell>{getSubject(r.subject_id)?.name}</TableCell>

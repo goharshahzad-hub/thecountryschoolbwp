@@ -17,8 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
-import { downloadCSV } from "@/lib/csvUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeVoucher {
   id: string;
@@ -751,16 +750,12 @@ const FeeVouchers = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const csvData = vouchers.map(v => {
+            const rows = vouchers.map(v => {
               const student = getStudent(v.student_id);
-              return { voucher_no: v.voucher_no, student: student?.name || "", class: student ? `${student.class}-${student.section}` : "", month: v.month, year: v.year, amount: v.amount, due_date: v.due_date, paid_date: v.paid_date || "", status: v.status };
-            });
-            downloadCSV(csvData, "Fee_Vouchers", [
-              { key: "voucher_no", label: "Voucher No" }, { key: "student", label: "Student" }, { key: "class", label: "Class" },
-              { key: "month", label: "Month" }, { key: "year", label: "Year" }, { key: "amount", label: "Amount" },
-              { key: "due_date", label: "Due Date" }, { key: "paid_date", label: "Paid Date" }, { key: "status", label: "Status" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+              return `<tr><td>${v.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>${v.month}</td><td>${v.year}</td><td>₨ ${Number(v.amount).toLocaleString("en-PK")}</td><td>${v.due_date}</td><td>${v.paid_date || "—"}</td><td>${v.status}</td></tr>`;
+            }).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("FEE VOUCHERS REPORT")}<table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Month</th><th>Year</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee_Vouchers");
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           {/* Generate All Classes Button */}
           <Button size="sm" variant="outline" onClick={async () => {
             if (uniqueClasses.length === 0) { toast({ title: "No Classes", description: "No students found.", variant: "destructive" }); return; }

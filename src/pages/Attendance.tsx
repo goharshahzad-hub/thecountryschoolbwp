@@ -8,9 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle, Download, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
-import { downloadCSV } from "@/lib/csvUtils";
 
 type Status = "present" | "absent" | "late";
 
@@ -121,15 +120,22 @@ const Attendance = () => {
   };
 
   const handleDeleteSingle = async (studentId: string) => {
-    if (!existingRecords[studentId]) {
+    const recordId = existingRecords[studentId];
+    if (!recordId) {
       toast({ title: "No Record", description: "No saved attendance record for this student today.", variant: "destructive" });
       return;
     }
     if (!confirm("Delete this attendance record?")) return;
-    await supabase.from("attendance_records").delete().eq("id", existingRecords[studentId]);
-    const newExisting = { ...existingRecords };
-    delete newExisting[studentId];
-    setExistingRecords(newExisting);
+    const { error } = await supabase.from("attendance_records").delete().eq("id", recordId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExistingRecords(prev => {
+      const next = { ...prev };
+      delete next[studentId];
+      return next;
+    });
     setAttendance(prev => ({ ...prev, [studentId]: "present" }));
     toast({ title: "Deleted", description: "Attendance record removed." });
   };
@@ -142,12 +148,21 @@ const Attendance = () => {
     }
     if (!confirm(`Delete attendance for ${idsToDelete.length} student(s)?`)) return;
     const recordIds = idsToDelete.map(id => existingRecords[id]);
-    await supabase.from("attendance_records").delete().in("id", recordIds);
-    const newExisting = { ...existingRecords };
-    const newAtt = { ...attendance };
-    idsToDelete.forEach(id => { delete newExisting[id]; newAtt[id] = "present"; });
-    setExistingRecords(newExisting);
-    setAttendance(newAtt);
+    const { error } = await supabase.from("attendance_records").delete().in("id", recordIds);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExistingRecords(prev => {
+      const next = { ...prev };
+      idsToDelete.forEach(id => delete next[id]);
+      return next;
+    });
+    setAttendance(prev => {
+      const next = { ...prev };
+      idsToDelete.forEach(id => { next[id] = "present"; });
+      return next;
+    });
     setSelectedIds(new Set());
     toast({ title: "Deleted", description: `${idsToDelete.length} attendance record(s) removed.` });
   };
@@ -218,14 +233,16 @@ const Attendance = () => {
             </Select>
           )}
           <Button variant="outline" size="sm" onClick={() => {
-            const csvData = filteredStudents.map((s, i) => ({
-              sr: i + 1, student_id: s.student_id, name: s.name,
-              status: (attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)
-            }));
-            downloadCSV(csvData, `Attendance_${selectedClass}_${today}`, [
-              { key: "sr", label: "#" }, { key: "student_id", label: "Student ID" }, { key: "name", label: "Name" }, { key: "status", label: "Status" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            const rows = filteredStudents.map((s, i) => `
+              <tr><td>${i + 1}</td><td>${s.student_id}</td><td style="text-align:left">${s.name}</td>
+              <td>${(attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)}</td></tr>`).join("");
+            const html = `<div class="print-page">${schoolHeader("DAILY ATTENDANCE SHEET")}
+              <div class="print-info"><div>Class: <span>${selectedClass}</span></div><div>Date: <span>${new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span></div>
+              <div>Present: <span>${counts.present}</span></div><div>Absent: <span>${counts.absent}</span> | Late: <span>${counts.late}</span></div></div>
+              <table><thead><tr><th>#</th><th>ID</th><th>Name</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+              ${schoolFooter()}</div>`;
+            downloadA4Pdf(html, `Attendance_${selectedClass}_${today}`);
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = filteredStudents.map((s, i) => `
               <tr>
