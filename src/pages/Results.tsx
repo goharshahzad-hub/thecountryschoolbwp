@@ -887,16 +887,6 @@ const Results = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2 min-w-[130px]">
-                  <Label>Exam Type</Label>
-                  <Select value={monthlyExamType} onValueChange={setMonthlyExamType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Mid Term">Mid Term</SelectItem>
-                      <SelectItem value="Final Term">Final Term</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2 min-w-[120px]">
                   <Label>Term</Label>
                   <Select value={monthlyTerm} onValueChange={setMonthlyTerm}>
