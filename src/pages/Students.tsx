@@ -201,12 +201,9 @@ const Students = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const csvData = filtered.map(s => ({ student_id: s.student_id, name: s.name, class: `${s.class}-${s.section}`, father_name: s.father_name, phone: s.phone || "", status: s.status, fee_status: s.fee_status }));
-            downloadCSV(csvData, "Students", [
-              { key: "student_id", label: "Student ID" }, { key: "name", label: "Name" }, { key: "class", label: "Class" },
-              { key: "father_name", label: "Father Name" }, { key: "phone", label: "Phone" }, { key: "status", label: "Status" }, { key: "fee_status", label: "Fee Status" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            const rows = filtered.map(s => `<tr><td>${s.student_id}</td><td style="text-align:left">${s.name}</td><td>${s.class}-${s.section}</td><td style="text-align:left">${s.father_name}</td><td>${s.phone || "—"}</td><td>${s.status}</td><td>${s.fee_status}</td></tr>`).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("STUDENT LIST")}<p class="list-subtitle">Total Students: ${filtered.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>Guardian</th><th>Phone</th><th>Status</th><th>Fee</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Students");
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = filtered.map(s => `
               <tr>
