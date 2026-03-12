@@ -9,8 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Users, User, Pencil, Trash2, Download, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { downloadCSV } from "@/lib/csvUtils";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { useToast } from "@/hooks/use-toast";
 
 interface ClassItem {
