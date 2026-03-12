@@ -917,14 +917,22 @@ const Results = () => {
                   <Printer className="mr-2 h-4 w-4" />Print Result Card
                 </Button>
                 {monthlyClass && monthlyResults.length > 0 && (
-                  <Button onClick={() => sendTermResultAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
-                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
-                  </Button>
+                  <>
+                    <Button onClick={() => sendTermResultAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                      <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
+                    </Button>
+                    {termSelectedIds.size > 0 && (
+                      <Button onClick={() => sendTermResultAlerts(termSelectedIds)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
+                        <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Selected ({termSelectedIds.size})
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
               {monthlyClass && monthlyResults.length > 0 && (
                 <Table>
                   <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={termSelectedIds.size === monthlyClassStudents.length && monthlyClassStudents.length > 0} onCheckedChange={() => setTermSelectedIds(prev => prev.size === monthlyClassStudents.length ? new Set() : new Set(monthlyClassStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
                     <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
                   </TableRow></TableHeader>
@@ -932,7 +940,8 @@ const Results = () => {
                     {monthlyResults.map((r, i) => {
                       const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
                       return (
-                        <TableRow key={r.id}>
+                        <TableRow key={r.id} data-state={termSelectedIds.has(r.student_id) ? "selected" : undefined}>
+                          <TableCell><Checkbox checked={termSelectedIds.has(r.student_id)} onCheckedChange={() => setTermSelectedIds(prev => { const next = new Set(prev); if (next.has(r.student_id)) next.delete(r.student_id); else next.add(r.student_id); return next; })} /></TableCell>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell className="font-medium">{getStudent(r.student_id)?.name}</TableCell>
                           <TableCell>{getSubject(r.subject_id)?.name}</TableCell>
