@@ -259,7 +259,7 @@ const Results = () => {
         const total = parseFloat(bulkTotalMarks);
         return {
           student_id: s.id, subject_id: bulkSubject,
-          exam_type: bulkExamType, term: bulkTerm,
+          exam_type: bulkTerm, term: bulkTerm,
           total_marks: total, obtained_marks: obtained,
           grade: gradeFromPercent((obtained / total) * 100),
           exam_date: bulkExamDate || null, remarks: "",
