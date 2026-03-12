@@ -11,8 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Filter, DollarSign, TrendingDown, Download, Printer } from "lucide-react";
-import { downloadCSV } from "@/lib/csvUtils";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 const EXPENSE_HEADS = [
   "Teaching Staff Salaries",
