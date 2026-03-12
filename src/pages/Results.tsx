@@ -901,8 +901,8 @@ const Results = () => {
                   <Printer className="mr-2 h-4 w-4" />Print Result Card
                 </Button>
                 {monthlyClass && monthlyResults.length > 0 && (
-                  <Button onClick={sendTermResultAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
-                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
+                  <Button onClick={() => sendTermResultAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
                   </Button>
                 )}
               </div>
