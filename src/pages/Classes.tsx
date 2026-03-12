@@ -82,11 +82,9 @@ const Classes = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const csvData = classes.map(c => ({ name: c.name, section: c.section, level: c.level, room: c.room || "", max_students: c.max_students || 0 }));
-            downloadCSV(csvData, "Classes", [
-              { key: "name", label: "Class Name" }, { key: "section", label: "Section" }, { key: "level", label: "Level" }, { key: "room", label: "Room" }, { key: "max_students", label: "Max Students" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            const rows = classes.map(c => `<tr><td>${c.name}</td><td>${c.section}</td><td>${c.level}</td><td>${c.room || "—"}</td><td>${c.max_students}</td></tr>`).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("CLASS LIST")}<table><thead><tr><th>Class</th><th>Section</th><th>Level</th><th>Room</th><th>Max Students</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Classes");
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = classes.map(c => `<tr><td>${c.name}</td><td>${c.section}</td><td>${c.level}</td><td>${c.room || "—"}</td><td>${c.max_students}</td></tr>`).join("");
             printA4(`<div class="print-page">${schoolHeader("CLASS LIST")}<p class="list-subtitle">Total Classes: ${classes.length}</p><table><thead><tr><th>Class</th><th>Section</th><th>Level</th><th>Room</th><th>Max Students</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Class List");
