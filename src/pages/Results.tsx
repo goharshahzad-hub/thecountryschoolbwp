@@ -550,6 +550,9 @@ const Results = () => {
     else toast({ title: "WhatsApp Alerts", description: `Opening ${opened} message(s) for Class ${classReportClass} — ${classReportMonth} Monthly Test. Send each one manually.` });
   };
 
+  // Multi-select state for WhatsApp
+  const [mtSelectedIds, setMtSelectedIds] = useState<Set<string>>(new Set());
+  const [termSelectedIds, setTermSelectedIds] = useState<Set<string>>(new Set());
 
   const studentResults = results.filter(r => r.student_id === reportStudent && r.term === reportTerm);
   const student = getStudent(reportStudent);
