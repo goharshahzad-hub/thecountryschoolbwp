@@ -148,12 +148,21 @@ const Attendance = () => {
     }
     if (!confirm(`Delete attendance for ${idsToDelete.length} student(s)?`)) return;
     const recordIds = idsToDelete.map(id => existingRecords[id]);
-    await supabase.from("attendance_records").delete().in("id", recordIds);
-    const newExisting = { ...existingRecords };
-    const newAtt = { ...attendance };
-    idsToDelete.forEach(id => { delete newExisting[id]; newAtt[id] = "present"; });
-    setExistingRecords(newExisting);
-    setAttendance(newAtt);
+    const { error } = await supabase.from("attendance_records").delete().in("id", recordIds);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExistingRecords(prev => {
+      const next = { ...prev };
+      idsToDelete.forEach(id => delete next[id]);
+      return next;
+    });
+    setAttendance(prev => {
+      const next = { ...prev };
+      idsToDelete.forEach(id => { next[id] = "present"; });
+      return next;
+    });
     setSelectedIds(new Set());
     toast({ title: "Deleted", description: `${idsToDelete.length} attendance record(s) removed.` });
   };
