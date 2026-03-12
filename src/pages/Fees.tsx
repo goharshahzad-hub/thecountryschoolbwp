@@ -9,8 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import StudentwiseFeeMetrics from "@/components/StudentwiseFeeMetrics";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
-import { downloadCSV } from "@/lib/csvUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 
 interface FeeRecord {
   id: string;
