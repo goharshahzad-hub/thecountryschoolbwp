@@ -120,15 +120,22 @@ const Attendance = () => {
   };
 
   const handleDeleteSingle = async (studentId: string) => {
-    if (!existingRecords[studentId]) {
+    const recordId = existingRecords[studentId];
+    if (!recordId) {
       toast({ title: "No Record", description: "No saved attendance record for this student today.", variant: "destructive" });
       return;
     }
     if (!confirm("Delete this attendance record?")) return;
-    await supabase.from("attendance_records").delete().eq("id", existingRecords[studentId]);
-    const newExisting = { ...existingRecords };
-    delete newExisting[studentId];
-    setExistingRecords(newExisting);
+    const { error } = await supabase.from("attendance_records").delete().eq("id", recordId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setExistingRecords(prev => {
+      const next = { ...prev };
+      delete next[studentId];
+      return next;
+    });
     setAttendance(prev => ({ ...prev, [studentId]: "present" }));
     toast({ title: "Deleted", description: "Attendance record removed." });
   };
