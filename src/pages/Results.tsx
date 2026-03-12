@@ -770,6 +770,7 @@ const Results = () => {
               {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
                 <Table>
                   <TableHeader><TableRow>
+                    <TableHead className="w-10"><Checkbox checked={mtSelectedIds.size === mtViewStudents.length && mtViewStudents.length > 0} onCheckedChange={() => setMtSelectedIds(prev => prev.size === mtViewStudents.length ? new Set() : new Set(mtViewStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
                     <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
                   </TableRow></TableHeader>
@@ -777,7 +778,8 @@ const Results = () => {
                     {mtViewResults.map((r, i) => {
                       const pct = ((Number(r.obtained_marks) / Number(r.total_marks)) * 100).toFixed(1);
                       return (
-                        <TableRow key={r.id}>
+                        <TableRow key={r.id} data-state={mtSelectedIds.has(r.student_id) ? "selected" : undefined}>
+                          <TableCell><Checkbox checked={mtSelectedIds.has(r.student_id)} onCheckedChange={() => setMtSelectedIds(prev => { const next = new Set(prev); if (next.has(r.student_id)) next.delete(r.student_id); else next.add(r.student_id); return next; })} /></TableCell>
                           <TableCell>{i + 1}</TableCell>
                           <TableCell className="font-medium">{getStudent(r.student_id)?.name}</TableCell>
                           <TableCell>{getSubject(r.subject_id)?.name}</TableCell>
