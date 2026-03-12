@@ -285,8 +285,7 @@ const Results = () => {
   const monthlyResults = results.filter(r =>
     monthlyClassStudents.some(s => s.id === r.student_id) &&
     (monthlySubject && monthlySubject !== "all" ? r.subject_id === monthlySubject : true) &&
-    r.term === monthlyTerm &&
-    r.exam_type === monthlyExamType
+    r.term === monthlyTerm
   );
 
   const handlePrintTermCard = () => {
