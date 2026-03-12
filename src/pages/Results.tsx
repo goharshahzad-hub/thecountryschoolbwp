@@ -755,9 +755,16 @@ const Results = () => {
                   <Printer className="mr-2 h-4 w-4" />Print Result
                 </Button>
                 {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
-                  <Button onClick={sendMonthlyTestAlerts} variant="outline" className="border-success/30 text-success hover:bg-success/10">
-                    <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Results ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
-                  </Button>
+                  <>
+                    <Button onClick={() => sendMonthlyTestAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
+                      <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
+                    </Button>
+                    {mtSelectedIds.size > 0 && (
+                      <Button onClick={() => sendMonthlyTestAlerts(mtSelectedIds)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
+                        <MessageCircle className="mr-2 h-4 w-4" />WhatsApp Selected ({mtSelectedIds.size})
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
               {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
