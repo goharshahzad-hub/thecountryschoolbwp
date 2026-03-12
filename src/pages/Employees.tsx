@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Pencil, Trash2, Printer, CreditCard, Download } from "lucide-react";
-import { downloadCSV } from "@/lib/csvUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
