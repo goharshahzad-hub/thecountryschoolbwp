@@ -320,6 +320,23 @@ const Employees = () => {
 
         {/* ═══ MANAGEMENT STAFF TAB ═══ */}
         <TabsContent value="management" className="space-y-4">
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => {
+              const mgmt = teachers.filter(t => ["Principal", "Vice Principal", "Head Teacher", "Coordinator"].includes(t.subject));
+              const rows = mgmt.map(t => `<tr><td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td><td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td><td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td></tr>`).join("");
+              downloadA4Pdf(`<div class="print-page">${schoolHeader("MANAGEMENT STAFF LIST")}<p class="list-subtitle">Total: ${mgmt.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Management_Staff");
+            }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
+            <Button variant="outline" size="sm" onClick={() => {
+              const mgmt = teachers.filter(t => ["Principal", "Vice Principal", "Head Teacher", "Coordinator"].includes(t.subject));
+              const rows = mgmt.map(t => `<tr><td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td><td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td><td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td></tr>`).join("");
+              printA4(`<div class="print-page">${schoolHeader("MANAGEMENT STAFF LIST")}<p class="list-subtitle">Total: ${mgmt.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Management Staff List");
+            }}><Printer className="mr-2 h-4 w-4" />Print List</Button>
+            <Dialog open={tDialogOpen} onOpenChange={o => { setTDialogOpen(o); if (!o) { setTForm(emptyTeacherForm); setTEditId(null); } }}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setTForm({ ...emptyTeacherForm, teacher_id: genTeacherId(teachers.length) })}><Plus className="mr-2 h-4 w-4" />Add Employee</Button>
+              </DialogTrigger>
+            </Dialog>
+          </div>
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="font-display text-base">Management & Leadership</CardTitle>
