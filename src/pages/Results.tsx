@@ -388,11 +388,14 @@ const Results = () => {
     }
   };
 
-  const sendTermResultAlerts = () => {
+  const sendTermResultAlerts = (selectedStudentIds?: Set<string>) => {
     if (!monthlyClass || monthlyResults.length === 0) return;
     const allSubIds = [...new Set(monthlyResults.map(r => r.subject_id))];
+    const targetStudents = selectedStudentIds 
+      ? monthlyClassStudents.filter(s => selectedStudentIds.has(s.id))
+      : monthlyClassStudents;
     let opened = 0;
-    monthlyClassStudents.forEach((s, i) => {
+    targetStudents.forEach((s, i) => {
       const contact = s.whatsapp || s.phone;
       if (!contact) return;
       const sResults = monthlyResults.filter(r => r.student_id === s.id);
@@ -411,7 +414,7 @@ const Results = () => {
       const overallPct = totalMax > 0 ? ((totalObt / totalMax) * 100).toFixed(0) : "0";
       const phone = formatPhone(contact);
       const message = encodeURIComponent(
-        `Dear Parent,\n\n*${monthlyExamType} Result — ${monthlyTerm}*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${subjectLines.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
+        `Dear Parent,\n\n*${monthlyTerm} Result*\n\nStudent: *${s.name}* (${s.student_id})\nClass: *${s.class}-${s.section || "A"}*\n\n*Subject-wise Results:*\n${subjectLines.join("\n")}\n\n*Overall: ${totalObt}/${totalMax} (${overallPct}%)*\n\nRegards,\nAdmin Office\n${settings.school_name}, ${settings.campus}, ${settings.city}.\nPhone: ${settings.phone}`
       );
       setTimeout(() => { window.open(`https://wa.me/${phone}?text=${message}`, "_blank"); }, i * 800);
       opened++;
