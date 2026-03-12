@@ -233,14 +233,16 @@ const Attendance = () => {
             </Select>
           )}
           <Button variant="outline" size="sm" onClick={() => {
-            const csvData = filteredStudents.map((s, i) => ({
-              sr: i + 1, student_id: s.student_id, name: s.name,
-              status: (attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)
-            }));
-            downloadCSV(csvData, `Attendance_${selectedClass}_${today}`, [
-              { key: "sr", label: "#" }, { key: "student_id", label: "Student ID" }, { key: "name", label: "Name" }, { key: "status", label: "Status" }
-            ]);
-          }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            const rows = filteredStudents.map((s, i) => `
+              <tr><td>${i + 1}</td><td>${s.student_id}</td><td style="text-align:left">${s.name}</td>
+              <td>${(attendance[s.id] || "present").charAt(0).toUpperCase() + (attendance[s.id] || "present").slice(1)}</td></tr>`).join("");
+            const html = `<div class="print-page">${schoolHeader("DAILY ATTENDANCE SHEET")}
+              <div class="print-info"><div>Class: <span>${selectedClass}</span></div><div>Date: <span>${new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span></div>
+              <div>Present: <span>${counts.present}</span></div><div>Absent: <span>${counts.absent}</span> | Late: <span>${counts.late}</span></div></div>
+              <table><thead><tr><th>#</th><th>ID</th><th>Name</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+              ${schoolFooter()}</div>`;
+            downloadA4Pdf(html, `Attendance_${selectedClass}_${today}`);
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
             const rows = filteredStudents.map((s, i) => `
               <tr>
