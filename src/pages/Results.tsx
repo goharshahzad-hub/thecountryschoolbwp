@@ -321,7 +321,7 @@ const Results = () => {
     }
 
     printA4(`<div class="print-page">
-      ${schoolHeader(`${monthlyExamType.toUpperCase()} — ${monthlyTerm}`)}
+      ${schoolHeader(`TERM RESULT — ${monthlyTerm}`)}
       <div class="print-info">
         <div>Class: <span>${monthlyClass}</span></div>
         <div>Subject: <span>${subjectName}</span></div>
