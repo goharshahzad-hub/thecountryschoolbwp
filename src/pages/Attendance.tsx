@@ -8,9 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CheckCircle, XCircle, Clock, Save, Printer, MessageCircle, Download, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
-import { downloadCSV } from "@/lib/csvUtils";
 
 type Status = "present" | "absent" | "late";
 
