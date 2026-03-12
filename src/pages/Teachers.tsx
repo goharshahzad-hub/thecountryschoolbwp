@@ -13,7 +13,7 @@ import { Search, Plus, Download, Pencil, Trash2, Printer } from "lucide-react";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
 
