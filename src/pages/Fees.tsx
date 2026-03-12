@@ -83,15 +83,12 @@ const Fees = () => {
           <p className="mt-1 text-sm text-muted-foreground">Track and manage student fee payments</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => {
-          const csvData = fees.map(f => {
+          const rows = fees.map(f => {
             const student = students.find(s => s.id === f.student_id);
-            return { voucher_no: f.voucher_no, student_name: student?.name || "", class: student ? `${student.class}-${student.section}` : "", amount: f.amount, due_date: f.due_date, paid_date: f.paid_date || "", status: f.status };
-          });
-          downloadCSV(csvData, "Fee_Report", [
-            { key: "voucher_no", label: "Voucher No" }, { key: "student_name", label: "Student" }, { key: "class", label: "Class" },
-            { key: "amount", label: "Amount" }, { key: "due_date", label: "Due Date" }, { key: "paid_date", label: "Paid Date" }, { key: "status", label: "Status" }
-          ]);
-        }}><Download className="mr-2 h-4 w-4" />Save CSV</Button>
+            return `<tr><td>${f.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>₨ ${Number(f.amount).toLocaleString("en-PK")}</td><td>${f.due_date}</td><td>${f.paid_date || "—"}</td><td>${f.status}</td></tr>`;
+          }).join("");
+          downloadA4Pdf(`<div class="print-page">${schoolHeader("FEE REPORT")}<table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee_Report");
+        }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
         <Button variant="outline" size="sm" onClick={() => {
           const rows = fees.map(f => {
             const student = students.find(s => s.id === f.student_id);
