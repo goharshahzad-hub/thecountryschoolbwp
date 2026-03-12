@@ -330,7 +330,7 @@ const Results = () => {
       </div>
       ${tableHtml}
       ${schoolFooter()}
-    </div>`, `${monthlyExamType} - Class ${monthlyClass}`);
+    </div>`, `Term Result - Class ${monthlyClass}`);
   };
 
   const handlePrintReport = () => {
