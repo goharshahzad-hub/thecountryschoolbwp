@@ -273,24 +273,51 @@ const SignedupParents = () => {
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Link Student to {linkParent?.full_name}</DialogTitle>
-            <DialogDescription>Select a student to link to this parent account.</DialogDescription>
+            <DialogTitle>Link Students to {linkParent?.full_name}</DialogTitle>
+            <DialogDescription>Select one or more students to link to this parent account.</DialogDescription>
           </DialogHeader>
-          <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a student..." />
-            </SelectTrigger>
-            <SelectContent>
-              {allStudentsForLink.map(s => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.student_id} — {s.name} ({s.class}{s.section ? `-${s.section}` : ""}) {s.parent_user_id ? "⚠️ Already linked" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          {/* Student selector */}
+          <div className="flex gap-2">
+            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select a student..." />
+              </SelectTrigger>
+              <SelectContent>
+                {allStudentsForLink.filter(s => !selectedStudentIds.includes(s.id)).map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.student_id} — {s.name} ({s.class}{s.section ? `-${s.section}` : ""}) {s.parent_user_id ? "⚠️ Linked" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={addStudentToSelection} disabled={!selectedStudentId}>Add</Button>
+          </div>
+
+          {/* Selected students list */}
+          {selectedStudentIds.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">Students to link ({selectedStudentIds.length}):</p>
+              <div className="flex flex-wrap gap-2">
+                {selectedStudentIds.map(sid => {
+                  const s = allStudentsForLink.find(st => st.id === sid);
+                  if (!s) return null;
+                  return (
+                    <span key={sid} className="inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs font-medium">
+                      {s.name} ({s.class})
+                      <button onClick={() => removeStudentFromSelection(sid)} className="ml-1 text-destructive hover:text-destructive/80">×</button>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleLink} disabled={!selectedStudentId}>Link Student</Button>
+            <Button onClick={handleLink} disabled={selectedStudentIds.length === 0}>
+              Link {selectedStudentIds.length} Student(s)
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
