@@ -252,8 +252,8 @@ const SignedupParents = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="outline" onClick={() => { setLinkParent(parent); setSelectedStudentId(""); setLinkDialogOpen(true); }}>
-                            <Link2 className="mr-1 h-3 w-3" /> Link
+                          <Button size="sm" variant="outline" onClick={() => { setLinkParent(parent); setSelectedStudentIds([]); setSelectedStudentId(""); setLinkDialogOpen(true); }}>
+                            <Link2 className="mr-1 h-3 w-3" /> Link Students
                           </Button>
                           <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { setDeleteParent(parent); setDeleteDialogOpen(true); }}>
                             <Trash2 className="h-4 w-4" />
