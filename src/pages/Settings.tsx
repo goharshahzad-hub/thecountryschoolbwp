@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useWebsiteContent, StatItem, FeatureItem, GalleryItem, SocialLinks } from "@/hooks/useWebsiteContent";
+import { useWebsiteContent, StatItem, FeatureItem, GalleryItem, SocialLinks, BannerSettings } from "@/hooks/useWebsiteContent";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import GalleryManager from "@/components/GalleryManager";
 import logo from "@/assets/logo.jpg";
