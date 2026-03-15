@@ -48,7 +48,7 @@ const Index = () => {
             <img src={logo} alt={`${settings.school_name} Logo`} className="h-10 w-10 rounded-full object-cover" />
             <div>
               <h1 className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</h1>
-              <p className="text-xs text-muted-foreground">{settings.campus}, Bahawalpur</p>
+              <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall (Since 1984) — {settings.campus}, {settings.city}</p>
             </div>
           </div>
           <nav className="hidden items-center gap-6 md:flex">
