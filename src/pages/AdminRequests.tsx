@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ShieldCheck, ShieldX, Clock, UserCheck } from "lucide-react";
+import { ShieldCheck, ShieldX, Clock, UserCheck, Pencil, Trash2 } from "lucide-react";
 
 interface AdminRequest {
   id: string;
@@ -30,6 +33,9 @@ const AdminRequests = () => {
   const [requests, setRequests] = useState<AdminRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingReq, setEditingReq] = useState<AdminRequest | null>(null);
+  const [editForm, setEditForm] = useState({ full_name: "", email: "", phone: "" });
 
   const fetchRequests = async () => {
     const { data, error } = await supabase
@@ -44,27 +50,21 @@ const AdminRequests = () => {
 
   const handleApprove = async (req: AdminRequest) => {
     setProcessing(req.id);
-
-    // Grant admin role
     const { error: roleError } = await supabase.from("user_roles").insert({
       user_id: req.user_id,
       role: "admin" as const,
     });
-
     if (roleError) {
       toast.error("Failed to grant admin role: " + roleError.message);
       setProcessing(null);
       return;
     }
-
-    // Update request status
     const { data: { user } } = await supabase.auth.getUser();
     await supabase.from("admin_requests").update({
       status: "approved",
       reviewed_by: user?.id,
       reviewed_at: new Date().toISOString(),
     }).eq("id", req.id);
-
     toast.success(`${req.full_name} has been granted admin access!`);
     setProcessing(null);
     fetchRequests();
@@ -81,6 +81,43 @@ const AdminRequests = () => {
     toast.success(`Request from ${req.full_name} has been rejected.`);
     setProcessing(null);
     fetchRequests();
+  };
+
+  const handleDelete = async (req: AdminRequest) => {
+    if (!confirm(`Delete request from ${req.full_name}? This cannot be undone.`)) return;
+    const { error } = await supabase.from("admin_requests").delete().eq("id", req.id);
+    if (error) {
+      toast.error("Failed to delete: " + error.message);
+    } else {
+      // If approved, also remove admin role
+      if (req.status === "approved") {
+        await supabase.from("user_roles").delete().eq("user_id", req.user_id).eq("role", "admin");
+      }
+      toast.success("Request deleted.");
+      fetchRequests();
+    }
+  };
+
+  const openEdit = (req: AdminRequest) => {
+    setEditingReq(req);
+    setEditForm({ full_name: req.full_name, email: req.email, phone: req.phone || "" });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingReq) return;
+    const { error } = await supabase.from("admin_requests").update({
+      full_name: editForm.full_name.trim(),
+      email: editForm.email.trim(),
+      phone: editForm.phone.trim() || null,
+    }).eq("id", editingReq.id);
+    if (error) {
+      toast.error("Failed to update: " + error.message);
+    } else {
+      toast.success("Request updated.");
+      setEditDialogOpen(false);
+      fetchRequests();
+    }
   };
 
   const pendingCount = requests.filter(r => r.status === "pending").length;
@@ -137,33 +174,24 @@ const AdminRequests = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {req.status === "pending" ? (
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                className="gradient-primary text-primary-foreground"
-                                onClick={() => handleApprove(req)}
-                                disabled={processing === req.id}
-                              >
-                                <ShieldCheck className="mr-1 h-3 w-3" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                                onClick={() => handleReject(req)}
-                                disabled={processing === req.id}
-                              >
-                                <ShieldX className="mr-1 h-3 w-3" />
-                                Reject
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              {req.reviewed_at && `Reviewed ${format(new Date(req.reviewed_at), "dd MMM")}`}
-                            </span>
-                          )}
+                          <div className="flex justify-end gap-1">
+                            {req.status === "pending" && (
+                              <>
+                                <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => handleApprove(req)} disabled={processing === req.id}>
+                                  <ShieldCheck className="mr-1 h-3 w-3" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleReject(req)} disabled={processing === req.id}>
+                                  <ShieldX className="mr-1 h-3 w-3" /> Reject
+                                </Button>
+                              </>
+                            )}
+                            <Button size="sm" variant="ghost" onClick={() => openEdit(req)} title="Edit">
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleDelete(req)} title="Delete">
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -174,6 +202,33 @@ const AdminRequests = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Edit Admin Request</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Full Name</Label>
+              <Input value={editForm.full_name} onChange={e => setEditForm(prev => ({ ...prev, full_name: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" value={editForm.email} onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={editForm.phone} onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditSave}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

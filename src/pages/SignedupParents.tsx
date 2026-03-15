@@ -36,9 +36,10 @@ const SignedupParents = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "linked" | "unlinked">("all");
 
-  // Link dialog
+  // Link dialog - supports multiple student selection
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkParent, setLinkParent] = useState<ParentProfile | null>(null);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState("");
 
   // Delete dialog
