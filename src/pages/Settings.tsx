@@ -145,6 +145,21 @@ const SettingsPage = () => {
           </CardContent>
         </Card>
 
+        {/* Scrolling Banner */}
+        <Card className="shadow-card">
+          <CardHeader><CardTitle className="font-display">Scrolling Banner</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Label className="text-sm">Enabled</Label>
+              <input type="checkbox" checked={banner.enabled} onChange={e => setBanner(prev => ({ ...prev, enabled: e.target.checked }))} className="h-4 w-4 rounded border-input accent-primary" />
+            </div>
+            <div className="space-y-2">
+              <Label>Banner Text</Label>
+              <Textarea value={banner.text} onChange={e => setBanner(prev => ({ ...prev, text: e.target.value }))} rows={3} placeholder="Scrolling text that appears at the top of the website" />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Hero Section */}
         <Card className="shadow-card">
           <CardHeader><CardTitle className="font-display">Hero Section</CardTitle></CardHeader>
