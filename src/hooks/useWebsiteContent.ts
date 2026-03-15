@@ -87,8 +87,7 @@ export const useWebsiteContent = () => {
   const updateSection = async (key: string, value: any) => {
     const { error } = await supabase
       .from("website_content")
-      .update({ content: value, updated_at: new Date().toISOString() })
-      .eq("section_key", key);
+      .upsert({ section_key: key, content: value, updated_at: new Date().toISOString() }, { onConflict: "section_key" });
     if (!error) {
       setContent(prev => ({ ...prev, [key]: value }));
     }
