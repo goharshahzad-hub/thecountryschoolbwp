@@ -8,6 +8,7 @@ import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Lightbox from "@/components/Lightbox";
+import ScrollingBanner from "@/components/ScrollingBanner";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
