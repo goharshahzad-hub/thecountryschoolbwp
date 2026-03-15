@@ -77,16 +77,32 @@ const SignedupParents = () => {
   const allStudentsForLink = useMemo(() => students, [students]);
 
   const handleLink = async () => {
-    if (!linkParent || !selectedStudentId) return;
-    const { error } = await supabase.from("students").update({ parent_user_id: linkParent.user_id }).eq("id", selectedStudentId);
-    if (error) {
-      toast.error("Failed to link student: " + error.message);
+    if (!linkParent || selectedStudentIds.length === 0) return;
+    const results = await Promise.all(
+      selectedStudentIds.map(sid =>
+        supabase.from("students").update({ parent_user_id: linkParent.user_id }).eq("id", sid)
+      )
+    );
+    const hasError = results.some(r => r.error);
+    if (hasError) {
+      toast.error("Some students failed to link.");
     } else {
-      toast.success("Student linked successfully!");
+      toast.success(`${selectedStudentIds.length} student(s) linked successfully!`);
       setLinkDialogOpen(false);
-      setSelectedStudentId("");
+      setSelectedStudentIds([]);
       fetchData();
     }
+  };
+
+  const addStudentToSelection = () => {
+    if (selectedStudentId && !selectedStudentIds.includes(selectedStudentId)) {
+      setSelectedStudentIds(prev => [...prev, selectedStudentId]);
+      setSelectedStudentId("");
+    }
+  };
+
+  const removeStudentFromSelection = (id: string) => {
+    setSelectedStudentIds(prev => prev.filter(sid => sid !== id));
   };
 
   const handleUnlink = async (studentId: string) => {
