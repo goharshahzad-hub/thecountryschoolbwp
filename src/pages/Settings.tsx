@@ -84,6 +84,7 @@ const SettingsPage = () => {
       updateSection("features", features),
       updateSection("gallery", gallery),
       updateSection("social_links", socialLinks),
+      updateSection("banner", banner),
     ]);
     setSavingContent(false);
     if (results.some(e => e)) toast.error("Failed to save some content");
