@@ -61,9 +61,13 @@ const Index = () => {
             <Link to="/parent-login">
               <Button variant="outline" size="sm">Parent Login</Button>
             </Link>
-            {isAdmin && (
+            {isAdmin ? (
               <Link to="/dashboard">
                 <Button size="sm" className="gradient-primary border-0 text-primary-foreground">Admin Portal</Button>
+              </Link>
+            ) : (
+              <Link to="/admin-login">
+                <Button variant="outline" size="sm"><Shield className="mr-1 h-3 w-3" />Admin Login</Button>
               </Link>
             )}
           </div>
