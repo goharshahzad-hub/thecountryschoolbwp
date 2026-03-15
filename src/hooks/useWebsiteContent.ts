@@ -41,6 +41,7 @@ export interface WebsiteContent {
 
 const defaults: WebsiteContent = {
   hero: { tagline: "Empowering young minds with quality education, strong values, and a nurturing environment since day one." },
+  banner: { text: "The Country School, a Project of Bloomfield Hall (Since 1984), Model Town Fahad Campus, Bahawalpur. Contact No. 0322-6107000, 0305-7457171.", enabled: true },
   stats: [
     { value: "500+", label: "Students Enrolled" },
     { value: "35+", label: "Expert Teachers" },
