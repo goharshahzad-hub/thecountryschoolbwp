@@ -27,6 +27,7 @@ const SettingsPage = () => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [banner, setBanner] = useState<BannerSettings>({ text: "", enabled: true });
   const [socialLinks, setSocialLinks] = useState<SocialLinks>({
     facebook: { url: "", handle: "" },
     instagram: { url: "", handle: "" },
