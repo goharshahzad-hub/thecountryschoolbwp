@@ -85,6 +85,7 @@ const Index = () => {
           <h2 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
             {settings.school_name}
           </h2>
+          <p className="mb-1 text-base font-medium text-primary-foreground/80">A Project of Bloomfield Hall (Since 1984)</p>
           <p className="mb-2 text-lg font-medium text-primary-foreground/80 md:text-xl">
             {settings.campus}, {settings.city}
           </p>
