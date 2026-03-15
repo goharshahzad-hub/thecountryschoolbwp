@@ -86,7 +86,9 @@ const Students = () => {
     s.class.toLowerCase().includes(search.toLowerCase())
   );
 
-  const bulk = useBulkSelect(filtered);
+  const sort = useTableSort<Student>("student_id");
+  const sorted = sort.sortData(filtered);
+  const bulk = useBulkSelect(sorted);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
