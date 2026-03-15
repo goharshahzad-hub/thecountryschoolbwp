@@ -24,6 +24,11 @@ export interface SocialLinks {
   tiktok: { url: string; handle: string };
 }
 
+export interface BannerSettings {
+  text: string;
+  enabled: boolean;
+}
+
 export interface WebsiteContent {
   hero: { tagline: string };
   stats: StatItem[];
@@ -31,6 +36,7 @@ export interface WebsiteContent {
   about: { heading: string; subheading: string };
   gallery: GalleryItem[];
   social_links: SocialLinks;
+  banner: BannerSettings;
 }
 
 const defaults: WebsiteContent = {
