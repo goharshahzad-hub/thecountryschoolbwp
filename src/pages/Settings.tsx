@@ -44,6 +44,7 @@ const SettingsPage = () => {
       setStats([...content.stats]);
       setFeatures([...content.features]);
       setGallery([...content.gallery]);
+      setBanner(content.banner ? { ...content.banner } : { text: "", enabled: true });
       setSocialLinks({ ...content.social_links });
     }
   }, [contentLoading, content]);
