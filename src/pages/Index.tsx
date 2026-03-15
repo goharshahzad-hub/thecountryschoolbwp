@@ -8,6 +8,7 @@ import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Lightbox from "@/components/Lightbox";
+import ScrollingBanner from "@/components/ScrollingBanner";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
@@ -38,6 +39,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Scrolling Banner */}
+      <ScrollingBanner />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
@@ -45,7 +48,7 @@ const Index = () => {
             <img src={logo} alt={`${settings.school_name} Logo`} className="h-10 w-10 rounded-full object-cover" />
             <div>
               <h1 className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</h1>
-              <p className="text-xs text-muted-foreground">{settings.campus}, Bahawalpur</p>
+              <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall (Since 1984) — {settings.campus}, {settings.city}</p>
             </div>
           </div>
           <nav className="hidden items-center gap-6 md:flex">
@@ -82,6 +85,7 @@ const Index = () => {
           <h2 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
             {settings.school_name}
           </h2>
+          <p className="mb-1 text-base font-medium text-primary-foreground/80">A Project of Bloomfield Hall (Since 1984)</p>
           <p className="mb-2 text-lg font-medium text-primary-foreground/80 md:text-xl">
             {settings.campus}, {settings.city}
           </p>

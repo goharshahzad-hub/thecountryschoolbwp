@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Download, Pencil, Trash2, Link2, Unlink, Printer, CreditCard } from "lucide-react";
+import SortableTableHead, { useTableSort } from "@/components/SortableTableHead";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
@@ -85,7 +86,9 @@ const Students = () => {
     s.class.toLowerCase().includes(search.toLowerCase())
   );
 
-  const bulk = useBulkSelect(filtered);
+  const sort = useTableSort<Student>("student_id");
+  const sorted = sort.sortData(filtered);
+  const bulk = useBulkSelect(sorted);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -395,23 +398,23 @@ const Students = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Guardian/Father's Name</TableHead>
-                  <TableHead>Gender</TableHead>
+                  <SortableTableHead label="ID" sortKey="student_id" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
+                  <SortableTableHead label="Name" sortKey="name" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
+                  <SortableTableHead label="Class" sortKey="class" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
+                  <SortableTableHead label="Guardian/Father" sortKey="father_name" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
+                  <SortableTableHead label="Gender" sortKey="gender" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
                   <TableHead>WhatsApp</TableHead>
                   <TableHead>Parent</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Monthly Fee</TableHead>
-                  <TableHead>Fee Status</TableHead>
+                  <SortableTableHead label="Status" sortKey="status" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
+                  <SortableTableHead label="Monthly Fee" sortKey="monthly_fee" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
+                  <SortableTableHead label="Fee Status" sortKey="fee_status" currentSort={sort.sortKey} currentDirection={sort.sortDir} onSort={sort.handleSort} />
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
+                {sorted.length === 0 ? (
                   <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground py-8">No students found</TableCell></TableRow>
-                ) : filtered.map(s => {
+                ) : sorted.map(s => {
                   const parent = getParentName(s.parent_user_id);
                   return (
                     <TableRow key={s.id} data-state={bulk.selectedIds.has(s.id) ? "selected" : undefined}>

@@ -36,9 +36,10 @@ const SignedupParents = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "linked" | "unlinked">("all");
 
-  // Link dialog
+  // Link dialog - supports multiple student selection
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkParent, setLinkParent] = useState<ParentProfile | null>(null);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState("");
 
   // Delete dialog
@@ -76,16 +77,32 @@ const SignedupParents = () => {
   const allStudentsForLink = useMemo(() => students, [students]);
 
   const handleLink = async () => {
-    if (!linkParent || !selectedStudentId) return;
-    const { error } = await supabase.from("students").update({ parent_user_id: linkParent.user_id }).eq("id", selectedStudentId);
-    if (error) {
-      toast.error("Failed to link student: " + error.message);
+    if (!linkParent || selectedStudentIds.length === 0) return;
+    const results = await Promise.all(
+      selectedStudentIds.map(sid =>
+        supabase.from("students").update({ parent_user_id: linkParent.user_id }).eq("id", sid)
+      )
+    );
+    const hasError = results.some(r => r.error);
+    if (hasError) {
+      toast.error("Some students failed to link.");
     } else {
-      toast.success("Student linked successfully!");
+      toast.success(`${selectedStudentIds.length} student(s) linked successfully!`);
       setLinkDialogOpen(false);
-      setSelectedStudentId("");
+      setSelectedStudentIds([]);
       fetchData();
     }
+  };
+
+  const addStudentToSelection = () => {
+    if (selectedStudentId && !selectedStudentIds.includes(selectedStudentId)) {
+      setSelectedStudentIds(prev => [...prev, selectedStudentId]);
+      setSelectedStudentId("");
+    }
+  };
+
+  const removeStudentFromSelection = (id: string) => {
+    setSelectedStudentIds(prev => prev.filter(sid => sid !== id));
   };
 
   const handleUnlink = async (studentId: string) => {
@@ -235,8 +252,8 @@ const SignedupParents = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="outline" onClick={() => { setLinkParent(parent); setSelectedStudentId(""); setLinkDialogOpen(true); }}>
-                            <Link2 className="mr-1 h-3 w-3" /> Link
+                          <Button size="sm" variant="outline" onClick={() => { setLinkParent(parent); setSelectedStudentIds([]); setSelectedStudentId(""); setLinkDialogOpen(true); }}>
+                            <Link2 className="mr-1 h-3 w-3" /> Link Students
                           </Button>
                           <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { setDeleteParent(parent); setDeleteDialogOpen(true); }}>
                             <Trash2 className="h-4 w-4" />
@@ -256,24 +273,51 @@ const SignedupParents = () => {
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Link Student to {linkParent?.full_name}</DialogTitle>
-            <DialogDescription>Select a student to link to this parent account.</DialogDescription>
+            <DialogTitle>Link Students to {linkParent?.full_name}</DialogTitle>
+            <DialogDescription>Select one or more students to link to this parent account.</DialogDescription>
           </DialogHeader>
-          <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a student..." />
-            </SelectTrigger>
-            <SelectContent>
-              {allStudentsForLink.map(s => (
-                <SelectItem key={s.id} value={s.id}>
-                  {s.student_id} — {s.name} ({s.class}{s.section ? `-${s.section}` : ""}) {s.parent_user_id ? "⚠️ Already linked" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          {/* Student selector */}
+          <div className="flex gap-2">
+            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select a student..." />
+              </SelectTrigger>
+              <SelectContent>
+                {allStudentsForLink.filter(s => !selectedStudentIds.includes(s.id)).map(s => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.student_id} — {s.name} ({s.class}{s.section ? `-${s.section}` : ""}) {s.parent_user_id ? "⚠️ Linked" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={addStudentToSelection} disabled={!selectedStudentId}>Add</Button>
+          </div>
+
+          {/* Selected students list */}
+          {selectedStudentIds.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">Students to link ({selectedStudentIds.length}):</p>
+              <div className="flex flex-wrap gap-2">
+                {selectedStudentIds.map(sid => {
+                  const s = allStudentsForLink.find(st => st.id === sid);
+                  if (!s) return null;
+                  return (
+                    <span key={sid} className="inline-flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs font-medium">
+                      {s.name} ({s.class})
+                      <button onClick={() => removeStudentFromSelection(sid)} className="ml-1 text-destructive hover:text-destructive/80">×</button>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleLink} disabled={!selectedStudentId}>Link Student</Button>
+            <Button onClick={handleLink} disabled={selectedStudentIds.length === 0}>
+              Link {selectedStudentIds.length} Student(s)
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

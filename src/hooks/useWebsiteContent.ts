@@ -24,6 +24,11 @@ export interface SocialLinks {
   tiktok: { url: string; handle: string };
 }
 
+export interface BannerSettings {
+  text: string;
+  enabled: boolean;
+}
+
 export interface WebsiteContent {
   hero: { tagline: string };
   stats: StatItem[];
@@ -31,10 +36,12 @@ export interface WebsiteContent {
   about: { heading: string; subheading: string };
   gallery: GalleryItem[];
   social_links: SocialLinks;
+  banner: BannerSettings;
 }
 
 const defaults: WebsiteContent = {
   hero: { tagline: "Empowering young minds with quality education, strong values, and a nurturing environment since day one." },
+  banner: { text: "The Country School, a Project of Bloomfield Hall (Since 1984), Model Town Fahad Campus, Bahawalpur. Contact No. 0322-6107000, 0305-7457171.", enabled: true },
   stats: [
     { value: "500+", label: "Students Enrolled" },
     { value: "35+", label: "Expert Teachers" },
@@ -80,8 +87,7 @@ export const useWebsiteContent = () => {
   const updateSection = async (key: string, value: any) => {
     const { error } = await supabase
       .from("website_content")
-      .update({ content: value, updated_at: new Date().toISOString() })
-      .eq("section_key", key);
+      .upsert({ section_key: key, content: value, updated_at: new Date().toISOString() }, { onConflict: "section_key" });
     if (!error) {
       setContent(prev => ({ ...prev, [key]: value }));
     }

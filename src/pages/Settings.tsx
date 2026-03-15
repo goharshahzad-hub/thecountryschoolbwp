@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useWebsiteContent, StatItem, FeatureItem, GalleryItem, SocialLinks } from "@/hooks/useWebsiteContent";
+import { useWebsiteContent, StatItem, FeatureItem, GalleryItem, SocialLinks, BannerSettings } from "@/hooks/useWebsiteContent";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import GalleryManager from "@/components/GalleryManager";
 import logo from "@/assets/logo.jpg";
@@ -27,6 +27,7 @@ const SettingsPage = () => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [banner, setBanner] = useState<BannerSettings>({ text: "", enabled: true });
   const [socialLinks, setSocialLinks] = useState<SocialLinks>({
     facebook: { url: "", handle: "" },
     instagram: { url: "", handle: "" },
@@ -43,6 +44,7 @@ const SettingsPage = () => {
       setStats([...content.stats]);
       setFeatures([...content.features]);
       setGallery([...content.gallery]);
+      setBanner(content.banner ? { ...content.banner } : { text: "", enabled: true });
       setSocialLinks({ ...content.social_links });
     }
   }, [contentLoading, content]);
@@ -82,6 +84,7 @@ const SettingsPage = () => {
       updateSection("features", features),
       updateSection("gallery", gallery),
       updateSection("social_links", socialLinks),
+      updateSection("banner", banner),
     ]);
     setSavingContent(false);
     if (results.some(e => e)) toast.error("Failed to save some content");
@@ -139,6 +142,21 @@ const SettingsPage = () => {
             <Button onClick={handleSave} disabled={saving} className="gradient-primary text-primary-foreground">
               {saving ? "Saving..." : "Save School Info"}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Scrolling Banner */}
+        <Card className="shadow-card">
+          <CardHeader><CardTitle className="font-display">Scrolling Banner</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Label className="text-sm">Enabled</Label>
+              <input type="checkbox" checked={banner.enabled} onChange={e => setBanner(prev => ({ ...prev, enabled: e.target.checked }))} className="h-4 w-4 rounded border-input accent-primary" />
+            </div>
+            <div className="space-y-2">
+              <Label>Banner Text</Label>
+              <Textarea value={banner.text} onChange={e => setBanner(prev => ({ ...prev, text: e.target.value }))} rows={3} placeholder="Scrolling text that appears at the top of the website" />
+            </div>
           </CardContent>
         </Card>
 
