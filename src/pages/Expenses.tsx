@@ -12,59 +12,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Filter, DollarSign, TrendingDown, Download, Printer } from "lucide-react";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import SortableTableHead, { useTableSort } from "@/components/SortableTableHead";
 
 const EXPENSE_HEADS = [
-  "Teaching Staff Salaries",
-  "Non-Teaching Staff Salaries",
-  "Electricity",
-  "Gas",
-  "Water",
-  "Internet & Phone",
-  "Rent",
-  "Building Maintenance",
-  "Furniture & Equipment",
-  "Stationery & Supplies",
-  "Books & Learning Materials",
-  "Transport / Fuel",
-  "Examination Expenses",
-  "Events & Functions",
-  "Sports & Activities",
-  "Cleaning & Janitorial",
-  "Security",
-  "Insurance",
-  "Marketing & Advertising",
-  "Miscellaneous",
+  "Teaching Staff Salaries", "Non-Teaching Staff Salaries", "Electricity", "Gas", "Water",
+  "Internet & Phone", "Rent", "Building Maintenance", "Furniture & Equipment",
+  "Stationery & Supplies", "Books & Learning Materials", "Transport / Fuel",
+  "Examination Expenses", "Events & Functions", "Sports & Activities",
+  "Cleaning & Janitorial", "Security", "Insurance", "Marketing & Advertising", "Miscellaneous",
 ];
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Cheque", "Online"];
 
 interface Expense {
-  id: string;
-  expense_head: string;
-  description: string;
-  amount: number;
-  expense_date: string;
-  month: string;
-  year: number;
-  paid_to: string;
-  payment_method: string;
-  receipt_no: string;
-  remarks: string;
-  created_at: string;
+  id: string; expense_head: string; description: string; amount: number;
+  expense_date: string; month: string; year: number; paid_to: string;
+  payment_method: string; receipt_no: string; remarks: string; created_at: string;
 }
 
 const defaultForm = {
-  expense_head: "",
-  description: "",
-  amount: "",
+  expense_head: "", description: "", amount: "",
   expense_date: new Date().toISOString().split("T")[0],
   month: MONTHS[new Date().getMonth()],
   year: new Date().getFullYear().toString(),
-  paid_to: "",
-  payment_method: "Cash",
-  receipt_no: "",
-  remarks: "",
+  paid_to: "", payment_method: "Cash", receipt_no: "", remarks: "",
 };
 
 const Expenses = () => {
@@ -79,10 +51,7 @@ const Expenses = () => {
   const [search, setSearch] = useState("");
 
   const fetchExpenses = async () => {
-    const { data, error } = await supabase
-      .from("expenses")
-      .select("*")
-      .order("expense_date", { ascending: false });
+    const { data, error } = await supabase.from("expenses").select("*").order("expense_date", { ascending: false });
     if (!error) setExpenses(data || []);
     setLoading(false);
   };
@@ -107,13 +76,14 @@ const Expenses = () => {
     });
   }, [expenses, filterMonth, filterYear, filterHead, search]);
 
+  const { sortKey, sortDir, handleSort, sortData } = useTableSort<Expense>("expense_date", "desc");
+  const sorted = sortData(filtered);
+
   const totalFiltered = filtered.reduce((s, e) => s + Number(e.amount), 0);
 
   const headwiseTotals = useMemo(() => {
     const map: Record<string, number> = {};
-    filtered.forEach(e => {
-      map[e.expense_head] = (map[e.expense_head] || 0) + Number(e.amount);
-    });
+    filtered.forEach(e => { map[e.expense_head] = (map[e.expense_head] || 0) + Number(e.amount); });
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [filtered]);
 
@@ -123,16 +93,9 @@ const Expenses = () => {
       return;
     }
     const payload = {
-      expense_head: form.expense_head,
-      description: form.description,
-      amount: Number(form.amount),
-      expense_date: form.expense_date,
-      month: form.month,
-      year: Number(form.year),
-      paid_to: form.paid_to,
-      payment_method: form.payment_method,
-      receipt_no: form.receipt_no,
-      remarks: form.remarks,
+      expense_head: form.expense_head, description: form.description, amount: Number(form.amount),
+      expense_date: form.expense_date, month: form.month, year: Number(form.year),
+      paid_to: form.paid_to, payment_method: form.payment_method, receipt_no: form.receipt_no, remarks: form.remarks,
     };
 
     if (editingId) {
@@ -144,25 +107,15 @@ const Expenses = () => {
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
       toast({ title: "Expense added" });
     }
-    setDialogOpen(false);
-    setEditingId(null);
-    setForm(defaultForm);
-    fetchExpenses();
+    setDialogOpen(false); setEditingId(null); setForm(defaultForm); fetchExpenses();
   };
 
   const handleEdit = (e: Expense) => {
     setEditingId(e.id);
     setForm({
-      expense_head: e.expense_head,
-      description: e.description || "",
-      amount: e.amount.toString(),
-      expense_date: e.expense_date,
-      month: e.month,
-      year: e.year.toString(),
-      paid_to: e.paid_to || "",
-      payment_method: e.payment_method,
-      receipt_no: e.receipt_no || "",
-      remarks: e.remarks || "",
+      expense_head: e.expense_head, description: e.description || "", amount: e.amount.toString(),
+      expense_date: e.expense_date, month: e.month, year: e.year.toString(),
+      paid_to: e.paid_to || "", payment_method: e.payment_method, receipt_no: e.receipt_no || "", remarks: e.remarks || "",
     });
     setDialogOpen(true);
   };
@@ -170,8 +123,7 @@ const Expenses = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this expense?")) return;
     await supabase.from("expenses").delete().eq("id", id);
-    toast({ title: "Expense deleted" });
-    fetchExpenses();
+    toast({ title: "Expense deleted" }); fetchExpenses();
   };
 
   return (
@@ -181,14 +133,14 @@ const Expenses = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Expense Sheet</h1>
           <p className="text-sm text-muted-foreground">Track and manage all school expenses</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const rows = filtered.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
-            downloadA4Pdf(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${filtered.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expenses");
+            const rows = sorted.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${sorted.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expenses");
           }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
-            const rows = filtered.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
-            printA4(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${filtered.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expense Report");
+            const rows = sorted.map(e => `<tr><td>${e.expense_date}</td><td>${e.expense_head}</td><td>${e.description}</td><td>${e.paid_to}</td><td>${e.payment_method}</td><td>₨ ${Number(e.amount).toLocaleString("en-PK")}</td></tr>`).join("");
+            printA4(`<div class="print-page">${schoolHeader("EXPENSE REPORT")}<div class="print-info"><div>Total Expenses: <span>₨ ${totalFiltered.toLocaleString("en-PK")}</span></div><div>Entries: <span>${sorted.length}</span></div></div><table><thead><tr><th>Date</th><th>Head</th><th>Description</th><th>Paid To</th><th>Method</th><th>Amount</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Expense Report");
           }}><Printer className="mr-2 h-4 w-4" />Print</Button>
           <Button onClick={() => { setEditingId(null); setForm(defaultForm); setDialogOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> Add Expense
@@ -274,22 +226,22 @@ const Expenses = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Expense Head</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Paid To</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <SortableTableHead label="Date" sortKey="expense_date" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Expense Head" sortKey="expense_head" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Description" sortKey="description" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Paid To" sortKey="paid_to" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Method" sortKey="payment_method" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Amount" sortKey="amount" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} className="text-right" />
+                <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading...</TableCell></TableRow>
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No expenses found</TableCell></TableRow>
               ) : (
-                filtered.map(e => (
+                sorted.map(e => (
                   <TableRow key={e.id}>
                     <TableCell className="whitespace-nowrap">{e.expense_date}</TableCell>
                     <TableCell className="font-medium">{e.expense_head}</TableCell>
@@ -328,14 +280,8 @@ const Expenses = () => {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Amount (₨) *</Label>
-                <Input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
-              </div>
-              <div>
-                <Label>Date</Label>
-                <Input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} />
-              </div>
+              <div><Label>Amount (₨) *</Label><Input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} /></div>
+              <div><Label>Date</Label><Input type="date" value={form.expense_date} onChange={e => setForm(f => ({ ...f, expense_date: e.target.value }))} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -345,20 +291,11 @@ const Expenses = () => {
                   <SelectContent>{MONTHS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Year</Label>
-                <Input type="number" value={form.year} onChange={e => setForm(f => ({ ...f, year: e.target.value }))} />
-              </div>
+              <div><Label>Year</Label><Input type="number" value={form.year} onChange={e => setForm(f => ({ ...f, year: e.target.value }))} /></div>
             </div>
-            <div>
-              <Label>Description</Label>
-              <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-            </div>
+            <div><Label>Description</Label><Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Paid To</Label>
-                <Input value={form.paid_to} onChange={e => setForm(f => ({ ...f, paid_to: e.target.value }))} />
-              </div>
+              <div><Label>Paid To</Label><Input value={form.paid_to} onChange={e => setForm(f => ({ ...f, paid_to: e.target.value }))} /></div>
               <div>
                 <Label>Payment Method</Label>
                 <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>
@@ -367,14 +304,8 @@ const Expenses = () => {
                 </Select>
               </div>
             </div>
-            <div>
-              <Label>Receipt No.</Label>
-              <Input value={form.receipt_no} onChange={e => setForm(f => ({ ...f, receipt_no: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Remarks</Label>
-              <Textarea value={form.remarks} onChange={e => setForm(f => ({ ...f, remarks: e.target.value }))} />
-            </div>
+            <div><Label>Receipt No.</Label><Input value={form.receipt_no} onChange={e => setForm(f => ({ ...f, receipt_no: e.target.value }))} /></div>
+            <div><Label>Remarks</Label><Textarea value={form.remarks} onChange={e => setForm(f => ({ ...f, remarks: e.target.value }))} /></div>
             <Button onClick={handleSubmit} className="w-full">{editingId ? "Update" : "Add"} Expense</Button>
           </div>
         </DialogContent>

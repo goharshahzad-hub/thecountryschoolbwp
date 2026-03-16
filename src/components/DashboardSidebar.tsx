@@ -2,13 +2,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "next-themes";
+import { useIsMobile } from "@/hooks/use-mobile";
 import logo from "@/assets/logo.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
   FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
-  BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck
+  BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck, X
 } from "lucide-react";
 
 const navItems = [
@@ -32,11 +33,17 @@ const navItems = [
   { to: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
-const DashboardSidebar = () => {
+interface DashboardSidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+const DashboardSidebar = ({ mobileOpen, onClose }: DashboardSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const isMobile = useIsMobile();
   const [pendingRequests, setPendingRequests] = useState(0);
   const [pendingQueries, setPendingQueries] = useState(0);
 
@@ -57,15 +64,29 @@ const DashboardSidebar = () => {
     navigate("/admin-login");
   };
 
+  const handleNavClick = () => {
+    if (isMobile && onClose) onClose();
+  };
+
+  // On mobile, hide unless open
+  if (isMobile && !mobileOpen) return null;
+
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar">
+    <aside className={`fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar ${isMobile ? "shadow-elevated" : ""}`}>
       {/* Logo */}
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-        <img src={logo} alt="Logo" className="h-10 w-10 rounded-full object-cover" />
-        <div>
-          <p className="font-display text-sm font-bold text-sidebar-foreground">The Country School</p>
-          <p className="text-[10px] text-sidebar-foreground/50">Fahad Campus — Admin</p>
+      <div className="flex items-center justify-between border-b border-sidebar-border px-5 py-4">
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="Logo" className="h-10 w-10 rounded-full object-cover" />
+          <div>
+            <p className="font-display text-sm font-bold text-sidebar-foreground">The Country School</p>
+            <p className="text-[10px] text-sidebar-foreground/50">Fahad Campus — Admin</p>
+          </div>
         </div>
+        {isMobile && (
+          <button onClick={onClose} className="text-sidebar-foreground/70 hover:text-sidebar-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -81,6 +102,7 @@ const DashboardSidebar = () => {
             <Link
               key={item.to}
               to={item.to}
+              onClick={handleNavClick}
               className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-sidebar-primary text-sidebar-primary-foreground"
@@ -109,6 +131,7 @@ const DashboardSidebar = () => {
         </button>
         <Link
           to="/"
+          onClick={handleNavClick}
           className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <LogOut className="h-4 w-4" />

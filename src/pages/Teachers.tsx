@@ -13,7 +13,7 @@ import { Search, Plus, Download, Pencil, Trash2, Printer } from "lucide-react";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
+import SortableTableHead, { useTableSort } from "@/components/SortableTableHead";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
 
@@ -62,7 +62,9 @@ const Teachers = () => {
     t.subject.toLowerCase().includes(search.toLowerCase())
   );
 
-  const bulk = useBulkSelect(filtered);
+  const { sortKey, sortDir, handleSort, sortData } = useTableSort<Teacher>("name");
+  const sorted = sortData(filtered);
+  const bulk = useBulkSelect(sorted);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +122,7 @@ const Teachers = () => {
   };
 
   const handleBulkPrint = () => {
-    const selected = filtered.filter(t => bulk.selectedIds.has(t.id));
+    const selected = sorted.filter(t => bulk.selectedIds.has(t.id));
     const rows = selected.map(t => `
       <tr>
         <td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td>
@@ -143,13 +145,13 @@ const Teachers = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Teachers</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage faculty members ({teachers.length} total)</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const rows = filtered.map(t => `<tr><td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td><td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td><td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td></tr>`).join("");
-            downloadA4Pdf(`<div class="print-page">${schoolHeader("TEACHING STAFF LIST")}<p class="list-subtitle">Total: ${filtered.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Teachers");
+            const rows = sorted.map(t => `<tr><td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td><td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td><td>${t.qualification || "—"}</td><td>${t.salary ? `₨ ${Number(t.salary).toLocaleString("en-PK")}` : "—"}</td><td>${t.status}</td></tr>`).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("TEACHING STAFF LIST")}<p class="list-subtitle">Total: ${sorted.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Teachers");
           }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
           <Button variant="outline" size="sm" onClick={() => {
-            const rows = filtered.map(t => `
+            const rows = sorted.map(t => `
               <tr>
                 <td>${t.teacher_id}</td><td style="text-align:left">${t.name}</td>
                 <td>${t.subject}</td><td>${t.classes}</td><td>${t.phone || "—"}</td>
@@ -157,7 +159,7 @@ const Teachers = () => {
               </tr>`).join("");
             printA4(`<div class="print-page">
               ${schoolHeader("TEACHER STAFF LIST")}
-              <p class="list-subtitle">Total Teachers: ${filtered.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
+              <p class="list-subtitle">Total Teachers: ${sorted.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p>
               <table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead>
               <tbody>${rows}</tbody></table>
               ${schoolFooter()}
@@ -167,7 +169,7 @@ const Teachers = () => {
             <DialogTrigger asChild>
               <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, teacher_id: generateTeacherId(teachers.length) })}><Plus className="mr-2 h-4 w-4" />Add Teacher</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Teacher" : "Add New Teacher"}</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Teacher ID *</Label><Input value={form.teacher_id} onChange={e => setForm({ ...form, teacher_id: e.target.value })} readOnly={!editingId} className={!editingId ? "bg-muted" : ""} required /></div>
@@ -210,12 +212,19 @@ const Teachers = () => {
           {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> : (
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></TableHead>
-                <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Subject</TableHead><TableHead>Classes</TableHead><TableHead>Phone</TableHead><TableHead>Qualification</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-10"><Checkbox checked={bulk.allSelected} onCheckedChange={bulk.toggleAll} aria-label="Select all" /></th>
+                <SortableTableHead label="ID" sortKey="teacher_id" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Name" sortKey="name" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Subject" sortKey="subject" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Classes" sortKey="classes" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Phone" sortKey="phone" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Qualification" sortKey="qualification" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <SortableTableHead label="Status" sortKey="status" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
               </TableRow></TableHeader>
               <TableBody>
-                {filtered.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
-                filtered.map(t => (
+                {sorted.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
+                sorted.map(t => (
                   <TableRow key={t.id} data-state={bulk.selectedIds.has(t.id) ? "selected" : undefined}>
                     <TableCell><Checkbox checked={bulk.selectedIds.has(t.id)} onCheckedChange={() => bulk.toggle(t.id)} /></TableCell>
                     <TableCell className="font-mono text-xs">{t.teacher_id}</TableCell>
