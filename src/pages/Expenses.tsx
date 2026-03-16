@@ -315,5 +315,3 @@ const Expenses = () => {
 };
 
 export default Expenses;
-
-import { TableCell, TableRow } from "@/components/ui/table";
