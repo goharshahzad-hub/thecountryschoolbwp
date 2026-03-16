@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, Trash2, Printer } from "lucide-react";
@@ -10,26 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import StudentwiseFeeMetrics from "@/components/StudentwiseFeeMetrics";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import SortableTableHead, { useTableSort } from "@/components/SortableTableHead";
 
 interface FeeRecord {
-  id: string;
-  voucher_no: string;
-  student_id: string;
-  amount: number;
-  fee_type: string;
-  month: string;
-  year: number;
-  due_date: string;
-  paid_date: string | null;
-  status: string;
+  id: string; voucher_no: string; student_id: string; amount: number;
+  fee_type: string; month: string; year: number; due_date: string;
+  paid_date: string | null; status: string;
 }
 
 interface Student {
-  id: string;
-  student_id: string;
-  name: string;
-  class: string;
-  section: string | null;
+  id: string; student_id: string; name: string; class: string; section: string | null;
 }
 
 const Fees = () => {
@@ -75,6 +65,16 @@ const Fees = () => {
 
   const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Pending" ? "border-warning/30 text-warning" : "border-destructive/30 text-destructive";
 
+  // Add sorting - augment fees with student name for sorting
+  const feesWithName = fees.map(f => ({
+    ...f,
+    studentName: getStudent(f.student_id)?.name || "",
+    className: getStudent(f.student_id) ? `${getStudent(f.student_id)!.class}-${getStudent(f.student_id)!.section}` : "",
+  }));
+
+  const { sortKey, sortDir, handleSort, sortData } = useTableSort<typeof feesWithName[0]>("voucher_no", "desc");
+  const sorted = sortData(feesWithName);
+
   return (
     <DashboardLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -82,32 +82,22 @@ const Fees = () => {
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Management</h1>
           <p className="mt-1 text-sm text-muted-foreground">Track and manage student fee payments</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => {
-          const rows = fees.map(f => {
-            const student = students.find(s => s.id === f.student_id);
-            return `<tr><td>${f.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>₨ ${Number(f.amount).toLocaleString("en-PK")}</td><td>${f.due_date}</td><td>${f.paid_date || "—"}</td><td>${f.status}</td></tr>`;
-          }).join("");
-          downloadA4Pdf(`<div class="print-page">${schoolHeader("FEE REPORT")}<table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee_Report");
-        }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
-        <Button variant="outline" size="sm" onClick={() => {
-          const rows = fees.map(f => {
-            const student = students.find(s => s.id === f.student_id);
-            return `<tr>
-              <td>${f.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td>
-              <td>${student ? `${student.class}-${student.section}` : "—"}</td>
-              <td>₨ ${Number(f.amount).toLocaleString("en-PK")}</td><td>${f.due_date}</td>
-              <td>${f.paid_date || "—"}</td><td>${f.status}</td>
-            </tr>`;
-          }).join("");
-          printA4(`<div class="print-page">
-            ${schoolHeader("FEE COLLECTION REPORT")}
-            <div class="print-info"><div>Generated: <span>${new Date().toLocaleDateString("en-PK")}</span></div><div>Total Records: <span>${fees.length}</span></div>
-            <div>Total Collected: <span>₨ ${paidAmount.toLocaleString("en-PK")}</span></div><div>Total Pending: <span>₨ ${(pendingAmount + overdueAmount).toLocaleString("en-PK")}</span></div></div>
-            <table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead>
-            <tbody>${rows}</tbody></table>
-            ${schoolFooter()}
-          </div>`, "Fee Report");
-        }}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = fees.map(f => {
+              const student = students.find(s => s.id === f.student_id);
+              return `<tr><td>${f.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>₨ ${Number(f.amount).toLocaleString("en-PK")}</td><td>${f.due_date}</td><td>${f.paid_date || "—"}</td><td>${f.status}</td></tr>`;
+            }).join("");
+            downloadA4Pdf(`<div class="print-page">${schoolHeader("FEE REPORT")}<table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee_Report");
+          }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            const rows = fees.map(f => {
+              const student = students.find(s => s.id === f.student_id);
+              return `<tr><td>${f.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>₨ ${Number(f.amount).toLocaleString("en-PK")}</td><td>${f.due_date}</td><td>${f.paid_date || "—"}</td><td>${f.status}</td></tr>`;
+            }).join("");
+            printA4(`<div class="print-page">${schoolHeader("FEE COLLECTION REPORT")}<div class="print-info"><div>Generated: <span>${new Date().toLocaleDateString("en-PK")}</span></div><div>Total Records: <span>${fees.length}</span></div><div>Total Collected: <span>₨ ${paidAmount.toLocaleString("en-PK")}</span></div><div>Total Pending: <span>₨ ${(pendingAmount + overdueAmount).toLocaleString("en-PK")}</span></div></div><table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee Report");
+          }}><Printer className="mr-2 h-4 w-4" />Print Report</Button>
+        </div>
       </div>
 
       <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -126,13 +116,8 @@ const Fees = () => {
         ))}
       </div>
 
-      <div className="mb-6">
-        <ClasswiseFeeMetrics vouchers={fees} students={students} />
-      </div>
-
-      <div className="mb-6">
-        <StudentwiseFeeMetrics vouchers={fees} students={students} />
-      </div>
+      <div className="mb-6"><ClasswiseFeeMetrics vouchers={fees} students={students} /></div>
+      <div className="mb-6"><StudentwiseFeeMetrics vouchers={fees} students={students} /></div>
 
       <Card className="shadow-card">
         <CardContent className="p-0">
@@ -144,41 +129,38 @@ const Fees = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Voucher</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Paid Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <SortableTableHead label="Voucher" sortKey="voucher_no" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <SortableTableHead label="Student" sortKey="studentName" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <SortableTableHead label="Class" sortKey="className" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <SortableTableHead label="Amount" sortKey="amount" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <SortableTableHead label="Due Date" sortKey="due_date" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <SortableTableHead label="Paid Date" sortKey="paid_date" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <SortableTableHead label="Status" sortKey="status" currentSort={sortKey} currentDirection={sortDir} onSort={handleSort} />
+                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {fees.map(f => {
-                  const student = getStudent(f.student_id);
-                  return (
-                    <TableRow key={f.id}>
-                      <TableCell className="font-mono text-xs">{f.voucher_no}</TableCell>
-                      <TableCell className="font-medium">{student?.name || "—"}</TableCell>
-                      <TableCell>{student ? `${student.class}-${student.section}` : "—"}</TableCell>
-                      <TableCell className="font-medium">₨ {Number(f.amount).toLocaleString("en-PK")}</TableCell>
-                      <TableCell className="text-muted-foreground">{f.due_date}</TableCell>
-                      <TableCell className="text-muted-foreground">{f.paid_date || "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={statusColor(f.status)}>{f.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {f.status !== "Paid" && (
-                          <Button variant="outline" size="sm" className="mr-1" onClick={() => markPaid(f.id)}>Mark Paid</Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(f.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {sorted.map(f => (
+                  <TableRow key={f.id}>
+                    <TableCell className="font-mono text-xs">{f.voucher_no}</TableCell>
+                    <TableCell className="font-medium">{f.studentName || "—"}</TableCell>
+                    <TableCell>{f.className || "—"}</TableCell>
+                    <TableCell className="font-medium">₨ {Number(f.amount).toLocaleString("en-PK")}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.due_date}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.paid_date || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={statusColor(f.status)}>{f.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {f.status !== "Paid" && (
+                        <Button variant="outline" size="sm" className="mr-1" onClick={() => markPaid(f.id)}>Mark Paid</Button>
+                      )}
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(f.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           )}
@@ -189,3 +171,5 @@ const Fees = () => {
 };
 
 export default Fees;
+
+import { TableCell, TableRow } from "@/components/ui/table";
