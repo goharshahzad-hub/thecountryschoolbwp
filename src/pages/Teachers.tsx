@@ -250,6 +250,3 @@ const Teachers = () => {
 };
 
 export default Teachers;
-
-// Need TableCell and TableRow for JSX
-import { TableCell, TableRow } from "@/components/ui/table";
