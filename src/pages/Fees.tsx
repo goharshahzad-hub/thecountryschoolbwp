@@ -171,5 +171,3 @@ const Fees = () => {
 };
 
 export default Fees;
-
-import { TableCell, TableRow } from "@/components/ui/table";
