@@ -286,12 +286,12 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={enrollmentByClass} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <BarChart data={enrollmentByClass} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" height={60} />
                       <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                       <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
-                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600 }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
