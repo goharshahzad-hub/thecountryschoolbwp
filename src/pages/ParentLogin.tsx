@@ -29,6 +29,7 @@ const ParentLogin = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
+  const [childrenNames, setChildrenNames] = useState<string[]>([""]);
   const [signupPhone, setSignupPhone] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
