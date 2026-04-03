@@ -88,11 +88,12 @@ const ParentLogin = () => {
       return;
     }
     setLoading(true);
+    const validChildren = childrenNames.map(n => n.trim()).filter(Boolean);
     const { error } = await supabase.auth.signUp({
       email: signupEmail.trim(),
       password: signupPassword,
       options: {
-        data: { full_name: signupName.trim(), phone: signupPhone.trim() },
+        data: { full_name: signupName.trim(), phone: signupPhone.trim(), children_names: validChildren },
         emailRedirectTo: window.location.origin,
       },
     });
