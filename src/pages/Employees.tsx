@@ -489,7 +489,14 @@ const Employees = () => {
                 <Table>
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={sBulk.allSelected} onCheckedChange={sBulk.toggleAll} aria-label="Select all" /></TableHead>
-                    <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Designation</TableHead><TableHead>Department</TableHead><TableHead>Phone</TableHead><TableHead>Salary</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                    <SortableTableHead label="ID" sortKey="staff_id" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Name" sortKey="name" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Designation" sortKey="designation" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Department" sortKey="department" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <TableHead>Phone</TableHead>
+                    <SortableTableHead label="Salary" sortKey="salary" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Status" sortKey="status" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {filteredStaff.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No staff found</TableCell></TableRow> :

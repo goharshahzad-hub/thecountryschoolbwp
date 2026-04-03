@@ -315,9 +315,9 @@ const Dashboard = () => {
                           { name: "Present", value: attendanceSummary.present },
                           { name: "Absent", value: attendanceSummary.absent },
                           { name: "Late", value: attendanceSummary.late },
-                        ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent, x, y, textAnchor }) => (
+                         ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value, percent, x, y, textAnchor }) => (
                           <text x={x} y={y} textAnchor={textAnchor} dominantBaseline="central" className="fill-foreground text-xs font-medium">
-                            {`${name} ${(percent * 100).toFixed(0)}%`}
+                            {`${name} ${value} (${(percent * 100).toFixed(0)}%)`}
                           </text>
                         )}>
                           {[0, 1, 2].map(i => <Cell key={i} fill={COLORS[i]} />)}

@@ -1151,7 +1151,7 @@ const FeeVouchers = () => {
                 {defaulters.length} unpaid voucher{defaulters.length !== 1 ? "s" : ""} past due date
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Select value={defaulterClassFilter} onValueChange={setDefaulterClassFilter}>
                 <SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by class" /></SelectTrigger>
                 <SelectContent>
@@ -1163,6 +1163,27 @@ const FeeVouchers = () => {
               </Select>
               <Button variant="outline" size="sm" onClick={() => printDefaulterList()}>
                 <Printer className="mr-2 h-4 w-4" /> Print Defaulter List
+              </Button>
+              <Button
+                size="sm"
+                className="bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
+                onClick={() => {
+                  const allDefaulterItems = filteredDefaulterClasses.flatMap(([, items]) => items);
+                  const withPhone = allDefaulterItems.filter(item => item.student.whatsapp || item.student.phone);
+                  if (withPhone.length === 0) {
+                    toast({ title: "No Phone Numbers", description: "No defaulters have phone numbers.", variant: "destructive" });
+                    return;
+                  }
+                  if (!confirm(`Send WhatsApp reminders to ${withPhone.length} defaulters? This will open multiple tabs.`)) return;
+                  withPhone.forEach((item, i) => {
+                    const phone = item.student.whatsapp || item.student.phone || "";
+                    const url = buildWhatsAppUrl(phone, item.student.name, Number(item.voucher.amount), item.voucher.due_date, item.voucher.month);
+                    setTimeout(() => window.open(url, "_blank"), i * 800);
+                  });
+                  toast({ title: "Opening WhatsApp", description: `Sending ${withPhone.length} reminders. Allow popups if blocked.` });
+                }}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" /> Remind All Defaulters
               </Button>
             </div>
           </div>
