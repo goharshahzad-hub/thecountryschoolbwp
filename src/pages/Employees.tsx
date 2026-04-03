@@ -299,7 +299,13 @@ const Employees = () => {
                 <Table>
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={tBulk.allSelected} onCheckedChange={tBulk.toggleAll} aria-label="Select all" /></TableHead>
-                    <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Subject</TableHead><TableHead>Classes</TableHead><TableHead>Phone</TableHead><TableHead>Qualification</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                    <SortableTableHead label="ID" sortKey="teacher_id" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <SortableTableHead label="Name" sortKey="name" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <SortableTableHead label="Subject" sortKey="subject" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <TableHead>Classes</TableHead><TableHead>Phone</TableHead>
+                    <SortableTableHead label="Qualification" sortKey="qualification" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <SortableTableHead label="Status" sortKey="status" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {filteredTeachers.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
