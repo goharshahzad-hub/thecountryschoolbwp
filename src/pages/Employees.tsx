@@ -75,11 +75,17 @@ const Employees = () => {
 
   useEffect(() => { fetchTeachers(); fetchStaff(); }, []);
 
-  const filteredTeachers = teachers.filter(t =>
-    t.name.toLowerCase().includes(tSearch.toLowerCase()) ||
-    t.teacher_id.toLowerCase().includes(tSearch.toLowerCase()) ||
-    t.subject.toLowerCase().includes(tSearch.toLowerCase())
-  );
+  const tSort = useTableSort<Teacher>("name");
+  const sSort = useTableSort<NonTeachingStaff>("name");
+
+  const filteredTeachers = useMemo(() => {
+    const filtered = teachers.filter(t =>
+      t.name.toLowerCase().includes(tSearch.toLowerCase()) ||
+      t.teacher_id.toLowerCase().includes(tSearch.toLowerCase()) ||
+      t.subject.toLowerCase().includes(tSearch.toLowerCase())
+    );
+    return tSort.sortData(filtered);
+  }, [teachers, tSearch, tSort.sortKey, tSort.sortDir]);
 
   const tBulk = useBulkSelect(filteredTeachers);
 
