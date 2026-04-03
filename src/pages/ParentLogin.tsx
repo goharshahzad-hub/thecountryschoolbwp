@@ -29,6 +29,7 @@ const ParentLogin = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
+  const [childrenNames, setChildrenNames] = useState<string[]>([""]);
   const [signupPhone, setSignupPhone] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -87,11 +88,12 @@ const ParentLogin = () => {
       return;
     }
     setLoading(true);
+    const validChildren = childrenNames.map(n => n.trim()).filter(Boolean);
     const { error } = await supabase.auth.signUp({
       email: signupEmail.trim(),
       password: signupPassword,
       options: {
-        data: { full_name: signupName.trim(), phone: signupPhone.trim() },
+        data: { full_name: signupName.trim(), phone: signupPhone.trim(), children_names: validChildren },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -239,6 +241,28 @@ const ParentLogin = () => {
                   <div className="space-y-2">
                     <Label htmlFor="signup-phone">Phone</Label>
                     <Input id="signup-phone" placeholder="+92 3XX XXXXXXX" value={signupPhone} onChange={e => setSignupPhone(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Children Names</Label>
+                    {childrenNames.map((name, i) => (
+                      <div key={i} className="flex gap-2 mb-1">
+                        <Input
+                          placeholder={`Child ${i + 1} name`}
+                          value={name}
+                          onChange={e => {
+                            const updated = [...childrenNames];
+                            updated[i] = e.target.value;
+                            setChildrenNames(updated);
+                          }}
+                        />
+                        {childrenNames.length > 1 && (
+                          <Button type="button" variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => setChildrenNames(childrenNames.filter((_, j) => j !== i))}>×</Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" className="w-full text-xs" onClick={() => setChildrenNames([...childrenNames, ""])}>
+                      + Add Another Child
+                    </Button>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password *</Label>

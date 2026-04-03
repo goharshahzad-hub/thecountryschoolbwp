@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
+import SortableTableHead, { useTableSort } from "@/components/SortableTableHead";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
 
@@ -75,11 +75,17 @@ const Employees = () => {
 
   useEffect(() => { fetchTeachers(); fetchStaff(); }, []);
 
-  const filteredTeachers = teachers.filter(t =>
-    t.name.toLowerCase().includes(tSearch.toLowerCase()) ||
-    t.teacher_id.toLowerCase().includes(tSearch.toLowerCase()) ||
-    t.subject.toLowerCase().includes(tSearch.toLowerCase())
-  );
+  const tSort = useTableSort<Teacher>("name");
+  const sSort = useTableSort<NonTeachingStaff>("name");
+
+  const filteredTeachers = useMemo(() => {
+    const filtered = teachers.filter(t =>
+      t.name.toLowerCase().includes(tSearch.toLowerCase()) ||
+      t.teacher_id.toLowerCase().includes(tSearch.toLowerCase()) ||
+      t.subject.toLowerCase().includes(tSearch.toLowerCase())
+    );
+    return tSort.sortData(filtered);
+  }, [teachers, tSearch, tSort.sortKey, tSort.sortDir]);
 
   const tBulk = useBulkSelect(filteredTeachers);
 
@@ -137,11 +143,14 @@ const Employees = () => {
     printA4(`<div class="print-page">${schoolHeader("TEACHING STAFF LIST")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Teaching Staff List");
   };
 
-  const filteredStaff = staff.filter(s =>
-    s.name.toLowerCase().includes(sSearch.toLowerCase()) ||
-    s.staff_id.toLowerCase().includes(sSearch.toLowerCase()) ||
-    s.designation.toLowerCase().includes(sSearch.toLowerCase())
-  );
+  const filteredStaff = useMemo(() => {
+    const filtered = staff.filter(s =>
+      s.name.toLowerCase().includes(sSearch.toLowerCase()) ||
+      s.staff_id.toLowerCase().includes(sSearch.toLowerCase()) ||
+      s.designation.toLowerCase().includes(sSearch.toLowerCase())
+    );
+    return sSort.sortData(filtered);
+  }, [staff, sSearch, sSort.sortKey, sSort.sortDir]);
 
   const sBulk = useBulkSelect(filteredStaff);
 
@@ -290,7 +299,13 @@ const Employees = () => {
                 <Table>
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={tBulk.allSelected} onCheckedChange={tBulk.toggleAll} aria-label="Select all" /></TableHead>
-                    <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Subject</TableHead><TableHead>Classes</TableHead><TableHead>Phone</TableHead><TableHead>Qualification</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                    <SortableTableHead label="ID" sortKey="teacher_id" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <SortableTableHead label="Name" sortKey="name" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <SortableTableHead label="Subject" sortKey="subject" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <TableHead>Classes</TableHead><TableHead>Phone</TableHead>
+                    <SortableTableHead label="Qualification" sortKey="qualification" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <SortableTableHead label="Status" sortKey="status" currentSort={tSort.sortKey} currentDirection={tSort.sortDir} onSort={tSort.handleSort} />
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {filteredTeachers.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No teachers found</TableCell></TableRow> :
@@ -474,7 +489,14 @@ const Employees = () => {
                 <Table>
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={sBulk.allSelected} onCheckedChange={sBulk.toggleAll} aria-label="Select all" /></TableHead>
-                    <TableHead>ID</TableHead><TableHead>Name</TableHead><TableHead>Designation</TableHead><TableHead>Department</TableHead><TableHead>Phone</TableHead><TableHead>Salary</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+                    <SortableTableHead label="ID" sortKey="staff_id" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Name" sortKey="name" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Designation" sortKey="designation" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Department" sortKey="department" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <TableHead>Phone</TableHead>
+                    <SortableTableHead label="Salary" sortKey="salary" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <SortableTableHead label="Status" sortKey="status" currentSort={sSort.sortKey} currentDirection={sSort.sortDir} onSort={sSort.handleSort} />
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {filteredStaff.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No staff found</TableCell></TableRow> :

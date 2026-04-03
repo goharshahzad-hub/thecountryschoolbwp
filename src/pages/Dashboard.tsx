@@ -262,15 +262,15 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <BarChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <YAxis tickFormatter={(v) => `₨${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <Tooltip formatter={(value: number) => `₨ ${value.toLocaleString("en-PK")}`} contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
                     <Legend />
-                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -286,12 +286,12 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={enrollmentByClass} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <BarChart data={enrollmentByClass} margin={{ top: 20, right: 10, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" height={60} />
                       <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                       <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
-                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600 }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -315,9 +315,9 @@ const Dashboard = () => {
                           { name: "Present", value: attendanceSummary.present },
                           { name: "Absent", value: attendanceSummary.absent },
                           { name: "Late", value: attendanceSummary.late },
-                        ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent, x, y, textAnchor }) => (
+                         ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value, percent, x, y, textAnchor }) => (
                           <text x={x} y={y} textAnchor={textAnchor} dominantBaseline="central" className="fill-foreground text-xs font-medium">
-                            {`${name} ${(percent * 100).toFixed(0)}%`}
+                            {`${name} ${value} (${(percent * 100).toFixed(0)}%)`}
                           </text>
                         )}>
                           {[0, 1, 2].map(i => <Cell key={i} fill={COLORS[i]} />)}
