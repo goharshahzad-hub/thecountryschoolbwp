@@ -143,11 +143,14 @@ const Employees = () => {
     printA4(`<div class="print-page">${schoolHeader("TEACHING STAFF LIST")}<p class="list-subtitle">Selected: ${selected.length} | Generated: ${new Date().toLocaleDateString("en-PK")}</p><table><thead><tr><th>ID</th><th>Name</th><th>Subject</th><th>Classes</th><th>Phone</th><th>Qualification</th><th>Salary</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Teaching Staff List");
   };
 
-  const filteredStaff = staff.filter(s =>
-    s.name.toLowerCase().includes(sSearch.toLowerCase()) ||
-    s.staff_id.toLowerCase().includes(sSearch.toLowerCase()) ||
-    s.designation.toLowerCase().includes(sSearch.toLowerCase())
-  );
+  const filteredStaff = useMemo(() => {
+    const filtered = staff.filter(s =>
+      s.name.toLowerCase().includes(sSearch.toLowerCase()) ||
+      s.staff_id.toLowerCase().includes(sSearch.toLowerCase()) ||
+      s.designation.toLowerCase().includes(sSearch.toLowerCase())
+    );
+    return sSort.sortData(filtered);
+  }, [staff, sSearch, sSort.sortKey, sSort.sortDir]);
 
   const sBulk = useBulkSelect(filteredStaff);
 
