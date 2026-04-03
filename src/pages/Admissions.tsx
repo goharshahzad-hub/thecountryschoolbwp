@@ -81,8 +81,14 @@ const Admissions = () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = (now.getMonth() + 1).toString().padStart(2, "0");
-    const count = admissions.length + 1;
-    return `ADM-${year}-${month}-${count.toString().padStart(4, "0")}`;
+    // Find highest existing number for this year-month prefix
+    const prefix = `ADM-${year}-${month}-`;
+    const existingNums = admissions
+      .filter(a => a.application_no.startsWith(prefix))
+      .map(a => parseInt(a.application_no.replace(prefix, ""), 10))
+      .filter(n => !isNaN(n));
+    const nextNum = existingNums.length > 0 ? Math.max(...existingNums) + 1 : 1;
+    return `${prefix}${nextNum.toString().padStart(4, "0")}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
