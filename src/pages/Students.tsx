@@ -230,7 +230,7 @@ const Students = () => {
           }}><Printer className="mr-2 h-4 w-4" />Print List</Button>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, student_id: generateStudentId(students.length) })}><Plus className="mr-2 h-4 w-4" />Add Student</Button>
+              <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, student_id: generateStudentId(students) })}><Plus className="mr-2 h-4 w-4" />Add Student</Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Student" : "Add New Student"}</DialogTitle></DialogHeader>
