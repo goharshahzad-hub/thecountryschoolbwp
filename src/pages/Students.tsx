@@ -42,9 +42,15 @@ interface ParentProfile {
 
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "", date_of_birth: "" };
 
-const generateStudentId = (count: number) => {
+const generateStudentId = (existingStudents: { student_id: string }[]) => {
   const year = new Date().getFullYear();
-  return `TCS-${year}-${(count + 1).toString().padStart(4, "0")}`;
+  const prefix = `TCS-${year}-`;
+  const existingNums = existingStudents
+    .filter(s => s.student_id.startsWith(prefix))
+    .map(s => parseInt(s.student_id.replace(prefix, ""), 10))
+    .filter(n => !isNaN(n));
+  const nextNum = existingNums.length > 0 ? Math.max(...existingNums) + 1 : 1;
+  return `${prefix}${nextNum.toString().padStart(4, "0")}`;
 };
 
 const Students = () => {
