@@ -42,9 +42,15 @@ interface ParentProfile {
 
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "", date_of_birth: "" };
 
-const generateStudentId = (count: number) => {
+const generateStudentId = (existingStudents: { student_id: string }[]) => {
   const year = new Date().getFullYear();
-  return `TCS-${year}-${(count + 1).toString().padStart(4, "0")}`;
+  const prefix = `TCS-${year}-`;
+  const existingNums = existingStudents
+    .filter(s => s.student_id.startsWith(prefix))
+    .map(s => parseInt(s.student_id.replace(prefix, ""), 10))
+    .filter(n => !isNaN(n));
+  const nextNum = existingNums.length > 0 ? Math.max(...existingNums) + 1 : 1;
+  return `${prefix}${nextNum.toString().padStart(4, "0")}`;
 };
 
 const Students = () => {
@@ -224,7 +230,7 @@ const Students = () => {
           }}><Printer className="mr-2 h-4 w-4" />Print List</Button>
           <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setForm(emptyForm); setEditingId(null); } }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, student_id: generateStudentId(students.length) })}><Plus className="mr-2 h-4 w-4" />Add Student</Button>
+              <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => setForm({ ...emptyForm, student_id: generateStudentId(students) })}><Plus className="mr-2 h-4 w-4" />Add Student</Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle className="font-display">{editingId ? "Edit Student" : "Add New Student"}</DialogTitle></DialogHeader>
