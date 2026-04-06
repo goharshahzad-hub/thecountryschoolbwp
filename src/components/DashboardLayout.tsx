@@ -1,7 +1,8 @@
 import { ReactNode, useState } from "react";
 import DashboardSidebar from "./DashboardSidebar";
 import AdminGuard from "./AdminGuard";
-import { Menu, X } from "lucide-react";
+import DateTimeFooter from "./DateTimeFooter";
+import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
@@ -10,7 +11,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-background">
+      <div className="flex min-h-screen flex-col bg-background">
         {/* Mobile header */}
         {isMobile && (
           <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-card px-4">
@@ -29,9 +30,13 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
         <DashboardSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className={`min-h-screen p-4 ${isMobile ? "" : "ml-64 lg:p-8"}`}>
+        <main className={`flex-1 p-4 ${isMobile ? "" : "ml-64 lg:p-8"}`}>
           {children}
         </main>
+
+        <div className={isMobile ? "" : "ml-64"}>
+          <DateTimeFooter />
+        </div>
       </div>
     </AdminGuard>
   );
