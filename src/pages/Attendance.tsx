@@ -2,7 +2,11 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Save, Printer, MessageCircle, Download } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Save, Printer, MessageCircle, Download, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useAttendance } from "@/hooks/useAttendance";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
@@ -20,10 +24,10 @@ const Attendance = () => {
     setEditingId, today, counts, absentStudents, lateStudents, students,
     toggleStatus, setStatusForStudent, toggleSelect, toggleSelectAll,
     handleSave, handleDeleteSingle, handleEditSave, handleBulkDelete, handleBulkSetStatus,
-    setSelectedIds,
+    setSelectedIds, selectedDate, setSelectedDate, isToday,
   } = useAttendance();
 
-  const dateStr = new Date().toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const dateStr = selectedDate.toLocaleDateString("en-PK", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   const formatPhone = (phone: string) => {
     let cleaned = phone.replace(/[^0-9+]/g, "");
@@ -48,9 +52,6 @@ const Attendance = () => {
       }, i * 800);
       opened++;
     });
-    if (opened === 0) {
-      // No contacts found — handled silently
-    }
   };
 
   const buildPrintHtml = () => {
@@ -69,9 +70,31 @@ const Attendance = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Attendance</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Mark daily attendance — {dateStr}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {isToday ? "Mark daily attendance" : "Viewing past attendance"} — {dateStr}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {/* Date Picker */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("w-44 justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(selectedDate, "PPP")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(d) => d && setSelectedDate(d)}
+                disabled={(date) => date > new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+
           {classOptions.length > 0 && (
             <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
@@ -121,7 +144,7 @@ const Attendance = () => {
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="font-display text-lg">
-            {selectedClass ? `Class ${selectedClass}` : "Select a class"}
+            {selectedClass ? `Class ${selectedClass} — ${format(selectedDate, "dd MMM yyyy")}` : "Select a class"}
           </CardTitle>
         </CardHeader>
         <CardContent>

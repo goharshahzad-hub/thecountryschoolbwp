@@ -32,7 +32,11 @@ export function useAttendance() {
   const [saved, setSaved] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  const dateString = selectedDate.toISOString().split("T")[0];
   const today = new Date().toISOString().split("T")[0];
+  const isToday = dateString === today;
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -65,7 +69,7 @@ export function useAttendance() {
       const { data } = await supabase
         .from("attendance_records")
         .select("id, student_id, status")
-        .eq("date", today)
+        .eq("date", dateString)
         .in("student_id", ids);
       const existing: Record<string, string> = {};
       const att: Record<string, Status> = {};
@@ -77,9 +81,10 @@ export function useAttendance() {
       setExistingRecords(existing);
       setSelectedIds(new Set());
       setEditingId(null);
+      setSaved(Object.keys(existing).length > 0);
     };
     fetchAttendance();
-  }, [selectedClass, students]);
+  }, [selectedClass, students, dateString]);
 
   const toggleStatus = useCallback((studentId: string) => {
     setAttendance(prev => {
@@ -114,13 +119,12 @@ export function useAttendance() {
       if (existingRecords[s.id]) {
         return supabase.from("attendance_records").update({ status }).eq("id", existingRecords[s.id]);
       } else {
-        return supabase.from("attendance_records").insert({ student_id: s.id, date: today, status });
+        return supabase.from("attendance_records").insert({ student_id: s.id, date: dateString, status });
       }
     });
     await Promise.all(updates);
-    // Re-fetch to get new record IDs
     const ids = filteredStudents.map(s => s.id);
-    const { data } = await supabase.from("attendance_records").select("id, student_id, status").eq("date", today).in("student_id", ids);
+    const { data } = await supabase.from("attendance_records").select("id, student_id, status").eq("date", dateString).in("student_id", ids);
     if (data) {
       const existing: Record<string, string> = {};
       data.forEach(r => { existing[r.student_id] = r.id; });
@@ -128,13 +132,13 @@ export function useAttendance() {
     }
     setSaving(false);
     setSaved(true);
-    toast({ title: "Saved", description: "Attendance saved successfully." });
-  }, [filteredStudents, attendance, existingRecords, today, toast]);
+    toast({ title: "Saved", description: `Attendance saved for ${dateString}.` });
+  }, [filteredStudents, attendance, existingRecords, dateString, toast]);
 
   const handleDeleteSingle = useCallback(async (studentId: string) => {
     const recordId = existingRecords[studentId];
     if (!recordId) {
-      toast({ title: "No Record", description: "No saved attendance record for this student today.", variant: "destructive" });
+      toast({ title: "No Record", description: "No saved attendance record for this student.", variant: "destructive" });
       return;
     }
     if (!confirm("Delete this attendance record?")) return;
@@ -207,9 +211,9 @@ export function useAttendance() {
   return {
     students, filteredStudents, classOptions, selectedClass, setSelectedClass,
     attendance, existingRecords, loading, saving, saved, selectedIds, editingId,
-    setEditingId, today, counts, absentStudents, lateStudents,
+    setEditingId, today: dateString, counts, absentStudents, lateStudents,
     toggleStatus, setStatusForStudent, toggleSelect, toggleSelectAll,
     handleSave, handleDeleteSingle, handleEditSave, handleBulkDelete, handleBulkSetStatus,
-    setSelectedIds,
+    setSelectedIds, selectedDate, setSelectedDate, isToday,
   };
 }

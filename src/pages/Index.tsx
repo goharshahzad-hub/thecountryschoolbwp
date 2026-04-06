@@ -1,6 +1,7 @@
 import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import DateTimeFooter from "@/components/DateTimeFooter";
 import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon, ZoomIn, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -306,6 +307,8 @@ const Index = () => {
           onNavigate={setLightboxIndex}
         />
       )}
+
+      <DateTimeFooter />
     </div>
   );
 };
