@@ -403,9 +403,25 @@ const Students = () => {
 
       <Card className="shadow-card">
         <CardHeader className="pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search by name, ID, or class..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Search by name, ID, or guardian..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <Select value={classFilter} onValueChange={setClassFilter}>
+              <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Classes</SelectItem>
+                {uniqueClasses.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={parentFilter} onValueChange={setParentFilter}>
+              <SelectTrigger className="w-44"><SelectValue placeholder="All Parents" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Parents</SelectItem>
+                {linkedParents.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unnamed"}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">
