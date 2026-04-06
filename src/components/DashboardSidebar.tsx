@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Users, GraduationCap, BookOpen, 
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
   FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
-  BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck, X
+  BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck, X, FileBarChart
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +18,7 @@ const navItems = [
   { to: "/dashboard/employees", icon: GraduationCap, label: "Employees" },
   { to: "/dashboard/classes", icon: BookOpen, label: "Classes" },
   { to: "/dashboard/attendance", icon: ClipboardCheck, label: "Attendance" },
+  { to: "/dashboard/attendance-report", icon: FileBarChart, label: "Attendance Report" },
   { to: "/dashboard/diary", icon: BookMarked, label: "Diary / Homework" },
   { to: "/dashboard/announcements", icon: Megaphone, label: "Announcements" },
   { to: "/dashboard/fees", icon: DollarSign, label: "Fees" },
