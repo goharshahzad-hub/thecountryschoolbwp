@@ -34,6 +34,11 @@ import AboutUs from "./pages/AboutUs";
 import Curriculum from "./pages/Curriculum";
 import FAQ from "./pages/FAQ";
 import SignedupParents from "./pages/SignedupParents";
+import AttendanceReport from "./pages/AttendanceReport";
+import TeacherLogin from "./pages/TeacherLogin";
+import TeacherPortal from "./pages/TeacherPortal";
+import TeacherAttendance from "./pages/TeacherAttendance";
+import TeacherResults from "./pages/TeacherResults";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +77,12 @@ const App = () => (
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/dashboard/attendance-report" element={<AttendanceReport />} />
+            <Route path="/teacher-login" element={<TeacherLogin />} />
+            <Route path="/teacher-portal" element={<TeacherPortal />} />
+            <Route path="/teacher-portal/attendance" element={<TeacherAttendance />} />
+            <Route path="/teacher-portal/results" element={<TeacherResults />} />
+            <Route path="/teacher-portal/attendance-report" element={<AttendanceReport />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/curriculum" element={<Curriculum />} />
             <Route path="/faq" element={<FAQ />} />

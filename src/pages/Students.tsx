@@ -58,6 +58,8 @@ const Students = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [parents, setParents] = useState<ParentProfile[]>([]);
   const [search, setSearch] = useState("");
+  const [classFilter, setClassFilter] = useState("all");
+  const [parentFilter, setParentFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -86,11 +88,21 @@ const Students = () => {
     return parents.find(p => p.user_id === userId);
   };
 
-  const filtered = students.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.student_id.toLowerCase().includes(search.toLowerCase()) ||
-    s.class.toLowerCase().includes(search.toLowerCase())
-  );
+  // Unique class options from data
+  const uniqueClasses = [...new Set(students.map(s => `${s.class}-${s.section || "A"}`))].sort();
+
+  // Linked parents for filter
+  const linkedParentIds = [...new Set(students.filter(s => s.parent_user_id).map(s => s.parent_user_id!))];
+  const linkedParents = parents.filter(p => linkedParentIds.includes(p.user_id));
+
+  const filtered = students.filter(s => {
+    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.student_id.toLowerCase().includes(search.toLowerCase()) ||
+      s.father_name.toLowerCase().includes(search.toLowerCase());
+    const matchesClass = classFilter === "all" || `${s.class}-${s.section || "A"}` === classFilter;
+    const matchesParent = parentFilter === "all" || s.parent_user_id === parentFilter;
+    return matchesSearch && matchesClass && matchesParent;
+  });
 
   const sort = useTableSort<Student>("student_id");
   const sorted = sort.sortData(filtered);
@@ -391,9 +403,25 @@ const Students = () => {
 
       <Card className="shadow-card">
         <CardHeader className="pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search by name, ID, or class..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input placeholder="Search by name, ID, or guardian..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <Select value={classFilter} onValueChange={setClassFilter}>
+              <SelectTrigger className="w-40"><SelectValue placeholder="All Classes" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Classes</SelectItem>
+                {uniqueClasses.map(c => <SelectItem key={c} value={c}>Class {c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={parentFilter} onValueChange={setParentFilter}>
+              <SelectTrigger className="w-44"><SelectValue placeholder="All Parents" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Parents</SelectItem>
+                {linkedParents.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unnamed"}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">
