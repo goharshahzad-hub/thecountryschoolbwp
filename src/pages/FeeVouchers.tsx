@@ -18,6 +18,7 @@ import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { getPreloadedLogo } from "@/lib/logoBase64";
 
 interface FeeVoucher {
   id: string;
@@ -421,9 +422,13 @@ const FeeVouchers = () => {
       { label: "Discount", amount: -((v as any).discount || 0) },
     ];
 
+    const logo = getPreloadedLogo();
+    const logoImg = logo ? `<img src="${logo}" alt="Logo" style="width:40px;height:40px;border-radius:50%;margin:0 auto 4px;display:block;" />` : "";
+
     const slipContent = (title: string) => `
       <div class="slip">
         <div class="slip-title">${title}</div>
+        ${logoImg}
         <div class="slip-school">${settings.school_name}</div>
         <div class="slip-campus">${settings.campus}, ${settings.city}</div>
         <div class="slip-heading">FEE CHALLAN</div>
