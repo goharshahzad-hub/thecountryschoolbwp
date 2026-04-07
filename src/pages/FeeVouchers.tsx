@@ -670,19 +670,13 @@ const FeeVouchers = () => {
     ? defaultersByClass
     : defaultersByClass.filter(([cls]) => cls === defaulterClassFilter);
 
-  // Upcoming due: vouchers with due date = tomorrow, not yet paid
-  const tomorrow = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split("T")[0];
-  }, []);
-
-  const upcomingDue = useMemo(() => {
-    return vouchers.filter(v => v.status !== "Paid" && v.due_date === tomorrow).map(v => {
+  // All unpaid vouchers (Pending or Overdue) - available for reminders anytime
+  const unpaidVouchers = useMemo(() => {
+    return vouchers.filter(v => v.status !== "Paid").map(v => {
       const student = getStudent(v.student_id);
       return student ? { student, voucher: v } : null;
     }).filter(Boolean) as { student: Student; voucher: FeeVoucher }[];
-  }, [vouchers, tomorrow, students]);
+  }, [vouchers, students]);
 
   const buildWhatsAppUrl = (phone: string, studentName: string, amount: number, dueDate: string, month: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
