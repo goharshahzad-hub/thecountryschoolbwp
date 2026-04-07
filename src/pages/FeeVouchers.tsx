@@ -957,9 +957,9 @@ const FeeVouchers = () => {
           <TabsTrigger value="reminders" className="flex items-center gap-1.5">
             <Bell className="h-3.5 w-3.5" />
             WhatsApp Reminders
-            {upcomingDue.length > 0 && (
+            {unpaidVouchers.length > 0 && (
               <span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[hsl(142,70%,45%)] px-1.5 text-[10px] font-bold text-white">
-                {upcomingDue.length}
+                {unpaidVouchers.length}
               </span>
             )}
           </TabsTrigger>
@@ -1077,18 +1077,42 @@ const FeeVouchers = () => {
         </TabsContent>
         {/* WhatsApp Reminders Tab */}
         <TabsContent value="reminders">
-          <div className="mb-4 flex items-center gap-2">
-            <MessageCircle className="h-4 w-4 text-[hsl(142,70%,45%)]" />
-            <span className="text-sm font-medium text-muted-foreground">
-              {upcomingDue.length} pending fee{upcomingDue.length !== 1 ? "s" : ""} due tomorrow — Send WhatsApp reminders to parents
-            </span>
+          <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 text-[hsl(142,70%,45%)]" />
+              <span className="text-sm font-medium text-muted-foreground">
+                {unpaidVouchers.length} unpaid fee{unpaidVouchers.length !== 1 ? "s" : ""} — Send WhatsApp reminders to parents anytime
+              </span>
+            </div>
+            {unpaidVouchers.length > 0 && (
+              <Button
+                size="sm"
+                className="bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
+                onClick={() => {
+                  const withPhone = unpaidVouchers.filter(item => item.student.whatsapp || item.student.phone);
+                  if (withPhone.length === 0) {
+                    toast({ title: "No Phone Numbers", description: "No unpaid students have phone numbers.", variant: "destructive" });
+                    return;
+                  }
+                  if (!confirm(`Send WhatsApp reminders to ${withPhone.length} students? This will open multiple tabs.`)) return;
+                  withPhone.forEach((item, i) => {
+                    const phone = item.student.whatsapp || item.student.phone || "";
+                    const url = buildWhatsAppUrl(phone, item.student.name, Number(item.voucher.amount), item.voucher.due_date, item.voucher.month);
+                    setTimeout(() => window.open(url, "_blank"), i * 800);
+                  });
+                  toast({ title: "Opening WhatsApp", description: `Sending ${withPhone.length} reminders. Allow popups if blocked.` });
+                }}
+              >
+                <MessageCircle className="mr-2 h-4 w-4" /> Remind All Unpaid
+              </Button>
+            )}
           </div>
 
-          {upcomingDue.length === 0 ? (
+          {unpaidVouchers.length === 0 ? (
             <Card className="shadow-card">
               <CardContent className="p-8 text-center text-muted-foreground">
                 <CheckCircle className="mx-auto mb-2 h-8 w-8 text-success" />
-                <p>No fees due tomorrow. No reminders needed!</p>
+                <p>No unpaid fees. All fees are cleared!</p>
               </CardContent>
             </Card>
           ) : (
@@ -1104,12 +1128,13 @@ const FeeVouchers = () => {
                       <TableHead>Class</TableHead>
                       <TableHead>Month</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
-                      <TableHead>WhatsApp</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {upcomingDue.map((item, i) => {
+                    {unpaidVouchers.map((item, i) => {
                       const phone = item.student.whatsapp || item.student.phone || "";
                       return (
                         <TableRow key={item.voucher.id}>
@@ -1120,12 +1145,17 @@ const FeeVouchers = () => {
                           <TableCell>{item.student.class}-{item.student.section}</TableCell>
                           <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
                           <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
-                          <TableCell className="text-muted-foreground">{phone || "—"}</TableCell>
+                          <TableCell className="text-muted-foreground">{item.voucher.due_date}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={item.voucher.status === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning"}>
+                              {item.voucher.status}
+                            </Badge>
+                          </TableCell>
                           <TableCell>
                             {phone ? (
                               <a href={buildWhatsAppUrl(phone, item.student.name, Number(item.voucher.amount), item.voucher.due_date, item.voucher.month)} target="_blank" rel="noopener noreferrer">
                                 <Button size="sm" className="bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white">
-                                  <MessageCircle className="mr-1 h-3.5 w-3.5" /> Send Reminder
+                                  <MessageCircle className="mr-1 h-3.5 w-3.5" /> Send
                                 </Button>
                               </a>
                             ) : (
