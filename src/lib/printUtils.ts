@@ -3,6 +3,8 @@
  * Opens a new window with A4 page settings and prints/saves as PDF
  */
 
+import { getPreloadedLogo } from "./logoBase64";
+
 const A4_STYLES = `
   @page {
     size: A4;
@@ -185,13 +187,20 @@ export const printFromRef = (ref: React.RefObject<HTMLDivElement>, title: string
   printA4(content.innerHTML, title);
 };
 
-export const schoolHeader = (subtitle: string = "") => `
+export const schoolHeader = (subtitle: string = "") => {
+  const logo = getPreloadedLogo();
+  const logoHtml = logo
+    ? `<img src="${logo}" alt="TCS Logo" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin:0 auto 6px;" />`
+    : "";
+  return `
   <div class="print-header">
+    ${logoHtml}
     <h1>The Country School — Fahad Campus</h1>
     ${subtitle ? `<h2>${subtitle}</h2>` : ""}
     <p>Model Town, Bahawalpur | 📞 +92 322 6107000 | 📧 thecountryschoolbwp@gmail.com</p>
   </div>
 `;
+};
 
 export const schoolFooter = () => `
   <div class="print-footer">
