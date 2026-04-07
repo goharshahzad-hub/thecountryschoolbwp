@@ -39,6 +39,8 @@ import TeacherLogin from "./pages/TeacherLogin";
 import TeacherPortal from "./pages/TeacherPortal";
 import TeacherAttendance from "./pages/TeacherAttendance";
 import TeacherResults from "./pages/TeacherResults";
+import TeacherAccounts from "./pages/TeacherAccounts";
+import TimetableGenerator from "./pages/TimetableGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +69,8 @@ const App = () => (
             <Route path="/dashboard/fee-vouchers" element={<FeeVouchers />} />
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/timetable" element={<Timetable />} />
+            <Route path="/dashboard/timetable-generator" element={<TimetableGenerator />} />
+            <Route path="/dashboard/teacher-accounts" element={<TeacherAccounts />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
             <Route path="/dashboard/expenses" element={<ExpensesPage />} />
             <Route path="/dashboard/diary" element={<Diary />} />
