@@ -556,12 +556,11 @@ const ParentPortal = () => {
                       <div className="overflow-x-auto">
                         <Table>
                           <TableHeader>
-                            <TableRow>
+                             <TableRow>
                               <TableHead>Voucher #</TableHead>
                               <TableHead>Student</TableHead>
                               <TableHead>Month</TableHead>
                               <TableHead>Tuition</TableHead>
-                              <TableHead>Discount</TableHead>
                               <TableHead>Arrears</TableHead>
                               <TableHead>Late Fee</TableHead>
                               <TableHead>Total</TableHead>
@@ -576,7 +575,6 @@ const ParentPortal = () => {
                                 <TableCell className="font-medium">{getStudentName(v.student_id)}</TableCell>
                                 <TableCell>{v.month} {v.year}</TableCell>
                                 <TableCell>Rs. {v.tuition_fee.toLocaleString()}</TableCell>
-                                <TableCell className="text-success">-Rs. {v.discount.toLocaleString()}</TableCell>
                                 <TableCell>Rs. {v.arrears.toLocaleString()}</TableCell>
                                 <TableCell>Rs. {v.late_fee.toLocaleString()}</TableCell>
                                 <TableCell className="font-semibold">Rs. {v.amount.toLocaleString()}</TableCell>
