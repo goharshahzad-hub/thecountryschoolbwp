@@ -201,33 +201,27 @@ const ParentPortal = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="h-9 w-9 rounded-full object-cover" />
+        <div className="container flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img src={logo} alt="Logo" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
             <div>
-              <p className="font-display text-sm font-bold text-foreground">Parent Portal</p>
+              <p className="font-display text-xs sm:text-sm font-bold text-foreground">Parent Portal</p>
               <p className="text-[10px] text-muted-foreground">The Country School</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium text-foreground">{profileName}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={handleSignOut} className="h-8 text-xs sm:text-sm px-2 sm:px-3">
+            <LogOut className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Logout
+          </Button>
         </div>
       </header>
 
-      <main className="container py-8">
-        <div className="mb-8">
-          <h1 className="font-display text-2xl font-bold text-foreground">
+      <main className="container py-4 sm:py-8 px-3 sm:px-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">
             Welcome, {profileName || "Parent"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">View your children's complete academic information</p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">View your children's complete academic information</p>
         </div>
 
         {students.length === 0 ? (
