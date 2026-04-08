@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     if (action === "create") {
-      const { email, password, full_name, teacher_id } = body;
+      const { email, password, full_name, phone, teacher_id } = body;
       if (!email || !password || !full_name) {
         return new Response(JSON.stringify({ error: "Email, password, and name are required" }), {
           status: 400,
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         email,
         password,
         email_confirm: true,
-        user_metadata: { full_name },
+        user_metadata: { full_name, phone: phone || "" },
       });
 
       if (createError) {
@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
         user_id: newUser.user.id,
         full_name,
         role: "teacher",
+        phone: phone || "",
       }, { onConflict: "user_id" });
 
       // Link to teachers table if teacher_id provided

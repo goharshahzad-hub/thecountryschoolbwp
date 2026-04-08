@@ -187,13 +187,17 @@ export const printFromRef = (ref: React.RefObject<HTMLDivElement>, title: string
   printA4(content.innerHTML, title);
 };
 
-export const schoolHeader = (subtitle: string = "") => {
+export const schoolHeader = (subtitle: string = "", qrData?: string) => {
   const logo = getPreloadedLogo();
   const logoHtml = logo
     ? `<img src="${logo}" alt="TCS Logo" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin:0 auto 6px;" />`
     : "";
+  const qrHtml = qrData
+    ? `<div style="position:absolute;right:0;top:0;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}" alt="QR" style="width:70px;height:70px;" /></div>`
+    : "";
   return `
-  <div class="print-header">
+  <div class="print-header" style="position:relative;">
+    ${qrHtml}
     ${logoHtml}
     <h1>The Country School — Fahad Campus</h1>
     ${subtitle ? `<h2>${subtitle}</h2>` : ""}
@@ -213,3 +217,10 @@ export const signatureBlock = (labels: string[] = ["Class Teacher", "Principal",
     ${labels.map(l => `<div>${l}</div>`).join("")}
   </div>
 `;
+
+export const generateQRData = (reportType: string, details: Record<string, string>) => {
+  const id = Math.random().toString(36).substring(2, 10).toUpperCase();
+  const parts = [`Report:${reportType}`, `ID:${id}`, `Date:${new Date().toISOString().split("T")[0]}`];
+  Object.entries(details).forEach(([k, v]) => parts.push(`${k}:${v}`));
+  return parts.join("|");
+};

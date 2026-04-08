@@ -201,33 +201,27 @@ const ParentPortal = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Logo" className="h-9 w-9 rounded-full object-cover" />
+        <div className="container flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img src={logo} alt="Logo" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
             <div>
-              <p className="font-display text-sm font-bold text-foreground">Parent Portal</p>
+              <p className="font-display text-xs sm:text-sm font-bold text-foreground">Parent Portal</p>
               <p className="text-[10px] text-muted-foreground">The Country School</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium text-foreground">{profileName}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={handleSignOut} className="h-8 text-xs sm:text-sm px-2 sm:px-3">
+            <LogOut className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Logout
+          </Button>
         </div>
       </header>
 
-      <main className="container py-8">
-        <div className="mb-8">
-          <h1 className="font-display text-2xl font-bold text-foreground">
+      <main className="container py-4 sm:py-8 px-3 sm:px-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground">
             Welcome, {profileName || "Parent"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">View your children's complete academic information</p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">View your children's complete academic information</p>
         </div>
 
         {students.length === 0 ? (
@@ -247,9 +241,9 @@ const ParentPortal = () => {
         ) : (
           <>
             {/* Stats */}
-            <div className="mb-6 grid gap-4 grid-cols-2 sm:grid-cols-4">
+            <div className="mb-4 sm:mb-6 grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
               <Card className="shadow-card">
-                <CardContent className="flex items-center gap-3 p-4">
+                <CardContent className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <User className="h-5 w-5 text-primary" />
                   </div>
@@ -302,15 +296,17 @@ const ParentPortal = () => {
 
             {/* Tabs for all sections */}
             <Tabs defaultValue="children" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-7">
-                <TabsTrigger value="children">Children</TabsTrigger>
-                <TabsTrigger value="announcements">Notices</TabsTrigger>
-                <TabsTrigger value="diary">Diary</TabsTrigger>
-                <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                <TabsTrigger value="fees">Fees</TabsTrigger>
-                <TabsTrigger value="results">Results</TabsTrigger>
-                <TabsTrigger value="timetable">Timetable</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <TabsList className="inline-flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-1">
+                  <TabsTrigger value="children" className="text-xs sm:text-sm px-3">Children</TabsTrigger>
+                  <TabsTrigger value="announcements" className="text-xs sm:text-sm px-3">Notices</TabsTrigger>
+                  <TabsTrigger value="diary" className="text-xs sm:text-sm px-3">Diary</TabsTrigger>
+                  <TabsTrigger value="attendance" className="text-xs sm:text-sm px-3">Attendance</TabsTrigger>
+                  <TabsTrigger value="fees" className="text-xs sm:text-sm px-3">Fees</TabsTrigger>
+                  <TabsTrigger value="results" className="text-xs sm:text-sm px-3">Results</TabsTrigger>
+                  <TabsTrigger value="timetable" className="text-xs sm:text-sm px-3">Timetable</TabsTrigger>
+                </TabsList>
+              </div>
 
               {/* Children Tab */}
               <TabsContent value="children">
@@ -560,12 +556,11 @@ const ParentPortal = () => {
                       <div className="overflow-x-auto">
                         <Table>
                           <TableHeader>
-                            <TableRow>
+                             <TableRow>
                               <TableHead>Voucher #</TableHead>
                               <TableHead>Student</TableHead>
                               <TableHead>Month</TableHead>
                               <TableHead>Tuition</TableHead>
-                              <TableHead>Discount</TableHead>
                               <TableHead>Arrears</TableHead>
                               <TableHead>Late Fee</TableHead>
                               <TableHead>Total</TableHead>
@@ -580,7 +575,6 @@ const ParentPortal = () => {
                                 <TableCell className="font-medium">{getStudentName(v.student_id)}</TableCell>
                                 <TableCell>{v.month} {v.year}</TableCell>
                                 <TableCell>Rs. {v.tuition_fee.toLocaleString()}</TableCell>
-                                <TableCell className="text-success">-Rs. {v.discount.toLocaleString()}</TableCell>
                                 <TableCell>Rs. {v.arrears.toLocaleString()}</TableCell>
                                 <TableCell>Rs. {v.late_fee.toLocaleString()}</TableCell>
                                 <TableCell className="font-semibold">Rs. {v.amount.toLocaleString()}</TableCell>

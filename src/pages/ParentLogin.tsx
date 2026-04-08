@@ -79,8 +79,8 @@ const ParentLogin = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupEmail.trim() || !signupPassword.trim() || !signupName.trim()) {
-      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
+    if (!signupEmail.trim() || !signupPassword.trim() || !signupName.trim() || !signupPhone.trim()) {
+      toast({ title: "Error", description: "Please fill in all required fields including WhatsApp number", variant: "destructive" });
       return;
     }
     if (signupPassword.length < 6) {
@@ -239,8 +239,8 @@ const ParentLogin = () => {
                     <Input id="signup-email" type="email" placeholder="parent@example.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-phone">Phone</Label>
-                    <Input id="signup-phone" placeholder="+92 3XX XXXXXXX" value={signupPhone} onChange={e => setSignupPhone(e.target.value)} />
+                    <Label htmlFor="signup-phone">WhatsApp Number <span className="text-destructive">*</span></Label>
+                    <Input id="signup-phone" placeholder="+92 3XX XXXXXXX" value={signupPhone} onChange={e => setSignupPhone(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                     <Label>Children Names</Label>
