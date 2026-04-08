@@ -302,15 +302,17 @@ const ParentPortal = () => {
 
             {/* Tabs for all sections */}
             <Tabs defaultValue="children" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-7">
-                <TabsTrigger value="children">Children</TabsTrigger>
-                <TabsTrigger value="announcements">Notices</TabsTrigger>
-                <TabsTrigger value="diary">Diary</TabsTrigger>
-                <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                <TabsTrigger value="fees">Fees</TabsTrigger>
-                <TabsTrigger value="results">Results</TabsTrigger>
-                <TabsTrigger value="timetable">Timetable</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <TabsList className="inline-flex w-max sm:grid sm:w-full sm:grid-cols-7 gap-1">
+                  <TabsTrigger value="children" className="text-xs sm:text-sm px-3">Children</TabsTrigger>
+                  <TabsTrigger value="announcements" className="text-xs sm:text-sm px-3">Notices</TabsTrigger>
+                  <TabsTrigger value="diary" className="text-xs sm:text-sm px-3">Diary</TabsTrigger>
+                  <TabsTrigger value="attendance" className="text-xs sm:text-sm px-3">Attendance</TabsTrigger>
+                  <TabsTrigger value="fees" className="text-xs sm:text-sm px-3">Fees</TabsTrigger>
+                  <TabsTrigger value="results" className="text-xs sm:text-sm px-3">Results</TabsTrigger>
+                  <TabsTrigger value="timetable" className="text-xs sm:text-sm px-3">Timetable</TabsTrigger>
+                </TabsList>
+              </div>
 
               {/* Children Tab */}
               <TabsContent value="children">
