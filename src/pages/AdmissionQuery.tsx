@@ -147,7 +147,7 @@ const AdmissionQuery = () => {
       ].filter(Boolean).join("\n"),
     };
 
-    await supabase.from("admissions").insert([admPayload]).catch(() => {});
+    await supabase.from("admissions").insert([admPayload]);
 
     // Send notifications
     supabase.functions.invoke("notify-admission-query", { body: queryPayload }).catch(() => {});
