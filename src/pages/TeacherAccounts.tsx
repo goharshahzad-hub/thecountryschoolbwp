@@ -25,7 +25,7 @@ const TeacherAccounts = () => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<TeacherAccount | null>(null);
-  const [form, setForm] = useState({ email: "", password: "", full_name: "" });
+  const [form, setForm] = useState({ email: "", password: "", full_name: "", phone: "" });
   const [newPassword, setNewPassword] = useState("");
 
   const fetchTeachers = async () => {
@@ -55,7 +55,7 @@ const TeacherAccounts = () => {
     }
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("manage-teacher", {
-      body: { action: "create", ...form },
+      body: { action: "create", email: form.email, password: form.password, full_name: form.full_name, phone: form.phone },
     });
     setSaving(false);
     if (error || data?.error) {
@@ -63,7 +63,7 @@ const TeacherAccounts = () => {
     } else {
       toast({ title: "Teacher Account Created", description: `${form.full_name} can now login at /teacher-login` });
       setDialogOpen(false);
-      setForm({ email: "", password: "", full_name: "" });
+      setForm({ email: "", password: "", full_name: "", phone: "" });
       fetchTeachers();
     }
   };
@@ -126,6 +126,10 @@ const TeacherAccounts = () => {
               <div className="space-y-2">
                 <Label>Email *</Label>
                 <Input type="email" placeholder="teacher@school.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Mobile Number</Label>
+                <Input type="tel" placeholder="03XX-XXXXXXX" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Password *</Label>
