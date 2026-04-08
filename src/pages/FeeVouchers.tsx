@@ -419,11 +419,13 @@ const FeeVouchers = () => {
       { label: "Books/Summer Pack", amount: v.books_charges || 0 },
       { label: "Arrears", amount: v.arrears || 0 },
       { label: "Last Month Late Fee", amount: v.late_fee || 0 },
-      { label: "Discount", amount: -((v as any).discount || 0) },
     ];
 
     const logo = getPreloadedLogo();
     const logoImg = logo ? `<img src="${logo}" alt="Logo" style="width:40px;height:40px;border-radius:50%;margin:0 auto 4px;display:block;" />` : "";
+
+    const qrData = `TCS|${v.voucher_no}|${student?.name || ""}|Rs${Number(v.amount)}|${v.month} ${v.year}|${new Date().toISOString().split("T")[0]}`;
+    const qrImg = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(qrData)}" alt="QR" style="width:50px;height:50px;margin:0 auto;display:block;" />`;
 
     const slipContent = (title: string) => `
       <div class="slip">
@@ -451,9 +453,12 @@ const FeeVouchers = () => {
           <tr class="highlight-yellow"><td>Late Fee Charges</td><td class="amt">₨ ${lateFeeCharges.toLocaleString("en-PK")}</td></tr>
           <tr class="highlight-red"><td>Payable after Due Date</td><td class="amt">₨ ${payableAfterDue.toLocaleString("en-PK")}</td></tr>
         </table>
-        <div class="slip-sign">
-          <div>Accountant</div>
-          <div>Stamp</div>
+        <div class="slip-footer-row">
+          <div class="slip-sign">
+            <div>e-Signature<br/><span style="font-size:7px;color:#888;">Verified Digitally</span></div>
+            <div>Stamp</div>
+          </div>
+          <div class="slip-qr">${qrImg}</div>
         </div>
       </div>`;
 
