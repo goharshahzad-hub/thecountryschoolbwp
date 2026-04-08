@@ -241,9 +241,9 @@ const ParentPortal = () => {
         ) : (
           <>
             {/* Stats */}
-            <div className="mb-6 grid gap-4 grid-cols-2 sm:grid-cols-4">
+            <div className="mb-4 sm:mb-6 grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4">
               <Card className="shadow-card">
-                <CardContent className="flex items-center gap-3 p-4">
+                <CardContent className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <User className="h-5 w-5 text-primary" />
                   </div>
