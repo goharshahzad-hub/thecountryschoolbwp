@@ -207,6 +207,7 @@ const SignedupParents = () => {
                   <TableHead>#</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
+                  <TableHead>Children</TableHead>
                   <TableHead>Signed Up</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Linked Students</TableHead>
@@ -222,6 +223,12 @@ const SignedupParents = () => {
                       <TableCell className="font-medium text-muted-foreground">{idx + 1}</TableCell>
                       <TableCell className="font-medium">{parent.full_name || "—"}</TableCell>
                       <TableCell>{parent.phone || "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {linked.length > 0
+                          ? linked.map(s => s.name).join(", ")
+                          : <span className="italic">—</span>
+                        }
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-xs">{getTimeAgo(parent.created_at)}</TableCell>
                       <TableCell>
                         {isLinked ? (
