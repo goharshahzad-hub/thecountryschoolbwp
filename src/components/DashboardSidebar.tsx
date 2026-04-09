@@ -30,6 +30,7 @@ const navItems = [
   { to: "/dashboard/timetable", icon: Calendar, label: "Timetable" },
   { to: "/dashboard/timetable-generator", icon: Wand2, label: "Timetable Generator" },
   { to: "/dashboard/expenses", icon: Wallet, label: "Expenses" },
+  { to: "/dashboard/receipt", icon: Receipt, label: "Receipt Generator" },
   { to: "/dashboard/teacher-accounts", icon: TeacherIcon, label: "Teacher Accounts" },
   { to: "/dashboard/signedup-parents", icon: UserCheck, label: "Signedup Parents" },
   { to: "/dashboard/admin-requests", icon: ShieldCheck, label: "Admin Requests" },

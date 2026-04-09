@@ -47,36 +47,51 @@ const Index = () => {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={logo} alt={`${settings.school_name} Logo`} className="h-10 w-10 rounded-full object-cover" />
-            <div>
+            <div className="hidden sm:block">
               <h1 className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</h1>
               <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall (Since 1984) — {settings.campus}, {settings.city}</p>
             </div>
+            <div className="sm:hidden">
+              <h1 className="font-display text-sm font-bold leading-tight text-foreground">{settings.school_name}</h1>
+            </div>
           </div>
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-4 lg:flex">
             <Link to="/about" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">About</Link>
             <Link to="/curriculum" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Curriculum</Link>
             <a href="#gallery" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Gallery</a>
-            <Link to="/admission-query" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Admission Inquiry</Link>
+            <Link to="/admission-query" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Admission</Link>
             <Link to="/blog" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Blog</Link>
             <Link to="/faq" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">FAQ</Link>
             <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">Contact</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Link to="/parent-login">
-              <Button variant="outline" size="sm">Parent Login</Button>
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">Parent</Button>
             </Link>
             <Link to="/teacher-login">
-              <Button variant="outline" size="sm"><GraduationCap className="mr-1 h-3 w-3" />Teacher Login</Button>
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm"><GraduationCap className="mr-1 h-3 w-3 hidden sm:inline" />Teacher</Button>
             </Link>
             {isAdmin ? (
               <Link to="/dashboard">
-                <Button size="sm" className="gradient-primary border-0 text-primary-foreground">Admin Portal</Button>
+                <Button size="sm" className="gradient-primary border-0 text-primary-foreground text-xs sm:text-sm">Admin</Button>
               </Link>
             ) : (
               <Link to="/admin-login">
-                <Button variant="outline" size="sm"><Shield className="mr-1 h-3 w-3" />Admin Login</Button>
+                <Button variant="outline" size="sm" className="text-xs sm:text-sm"><Shield className="mr-1 h-3 w-3 hidden sm:inline" />Admin</Button>
               </Link>
             )}
+          </div>
+        </div>
+        {/* Mobile nav */}
+        <div className="lg:hidden border-t border-border overflow-x-auto">
+          <div className="container flex gap-3 py-2 text-xs whitespace-nowrap">
+            <Link to="/about" className="text-muted-foreground hover:text-primary">About</Link>
+            <Link to="/curriculum" className="text-muted-foreground hover:text-primary">Curriculum</Link>
+            <a href="#gallery" className="text-muted-foreground hover:text-primary">Gallery</a>
+            <Link to="/admission-query" className="text-muted-foreground hover:text-primary font-semibold text-primary">Apply Now</Link>
+            <Link to="/blog" className="text-muted-foreground hover:text-primary">Blog</Link>
+            <Link to="/faq" className="text-muted-foreground hover:text-primary">FAQ</Link>
+            <a href="#contact" className="text-muted-foreground hover:text-primary">Contact</a>
           </div>
         </div>
       </header>

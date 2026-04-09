@@ -305,12 +305,12 @@ const AdmissionQuery = () => {
                         <Input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} placeholder="03XX-XXXXXXX" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs">Mother's Phone</Label>
-                        <Input value={form.mother_phone} onChange={(e) => handleChange("mother_phone", e.target.value)} placeholder="03XX-XXXXXXX" />
+                        <Label className="text-xs">Mother's WhatsApp <span className="text-destructive">*</span></Label>
+                        <Input value={form.mother_phone} onChange={(e) => handleChange("mother_phone", e.target.value)} placeholder="03XX-XXXXXXX" required />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs">WhatsApp Number</Label>
-                        <Input value={form.whatsapp} onChange={(e) => handleChange("whatsapp", e.target.value)} placeholder="03XX-XXXXXXX" />
+                        <Label className="text-xs">Father's WhatsApp <span className="text-destructive">*</span></Label>
+                        <Input value={form.whatsapp} onChange={(e) => handleChange("whatsapp", e.target.value)} placeholder="03XX-XXXXXXX" required />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Email</Label>
