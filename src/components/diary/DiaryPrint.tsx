@@ -26,17 +26,21 @@ const buildDiarySlipsHtml = (entries: DiaryEntry[]) => {
       font-family: Arial, sans-serif;
       overflow: hidden;
     ">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #c0392b;padding-bottom:3px;margin-bottom:4px;">
-        <strong style="font-size:10px;color:#c0392b;">The Country School</strong>
-        <span style="font-size:8px;color:#666;">${format(new Date(entry.date), "dd MMM yyyy")}</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #c0392b;padding-bottom:4px;margin-bottom:4px;">
+        <div>
+          <strong style="font-size:11px;color:#c0392b;">The Country School</strong>
+          <div style="font-size:7px;color:#666;">A Project of Bloomfield Hall (Since 1984)</div>
+          <div style="font-size:7px;color:#666;">Model Town Fahad Campus, Bahawalpur | 📞 0322-6107000</div>
+        </div>
+        <span style="font-size:9px;color:#333;font-weight:bold;">${format(new Date(entry.date), "dd MMM yyyy")}</span>
       </div>
-      <div style="font-size:9px;margin-bottom:3px;color:#333;">
+      <div style="font-size:10px;margin-bottom:3px;color:#333;">
         <strong>Class:</strong> ${entry.class_name}-${entry.section} &nbsp;|&nbsp; <strong>Subject:</strong> ${entry.subject}
       </div>
-      <div style="font-size:9px;color:#222;flex:1;overflow:hidden;line-height:1.35;">
+      <div style="font-size:10px;color:#222;flex:1;overflow:hidden;line-height:1.4;font-weight:500;">
         ${entry.homework_text.replace(/\n/g, "<br>")}
       </div>
-      <div style="font-size:7px;color:#aaa;text-align:right;margin-top:2px;">Parent Sign: ____________</div>
+      <div style="font-size:8px;color:#888;text-align:right;margin-top:3px;border-top:1px dotted #ccc;padding-top:2px;">Parent Sign: ____________</div>
     </div>
   `;
 
