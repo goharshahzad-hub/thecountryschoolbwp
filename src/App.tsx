@@ -39,8 +39,11 @@ import TeacherLogin from "./pages/TeacherLogin";
 import TeacherPortal from "./pages/TeacherPortal";
 import TeacherAttendance from "./pages/TeacherAttendance";
 import TeacherResults from "./pages/TeacherResults";
+import TeacherProfile from "./pages/TeacherProfile";
+import TeacherDiary from "./pages/TeacherDiary";
 import TeacherAccounts from "./pages/TeacherAccounts";
 import TimetableGenerator from "./pages/TimetableGenerator";
+import ReceiptGenerator from "./pages/ReceiptGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -78,6 +81,7 @@ const App = () => (
             <Route path="/dashboard/whatsapp-broadcast" element={<WhatsAppBroadcast />} />
             <Route path="/dashboard/admin-requests" element={<AdminRequests />} />
             <Route path="/dashboard/signedup-parents" element={<SignedupParents />} />
+            <Route path="/dashboard/receipt" element={<ReceiptGenerator />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -86,6 +90,8 @@ const App = () => (
             <Route path="/teacher-portal" element={<TeacherPortal />} />
             <Route path="/teacher-portal/attendance" element={<TeacherAttendance />} />
             <Route path="/teacher-portal/results" element={<TeacherResults />} />
+            <Route path="/teacher-portal/profile" element={<TeacherProfile />} />
+            <Route path="/teacher-portal/diary" element={<TeacherDiary />} />
             <Route path="/teacher-portal/attendance-report" element={<AttendanceReport />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/curriculum" element={<Curriculum />} />
