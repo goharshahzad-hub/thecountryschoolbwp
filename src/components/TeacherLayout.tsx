@@ -12,8 +12,10 @@ import {
 
 const navItems = [
   { to: "/teacher-portal", icon: LayoutDashboard, label: "Overview" },
+  { to: "/teacher-portal/profile", icon: ClipboardCheck, label: "My Profile" },
   { to: "/teacher-portal/attendance", icon: ClipboardCheck, label: "Attendance" },
   { to: "/teacher-portal/results", icon: BarChart3, label: "Results" },
+  { to: "/teacher-portal/diary", icon: FileBarChart, label: "Diary / Homework" },
   { to: "/teacher-portal/attendance-report", icon: FileBarChart, label: "Attendance Report" },
 ];
 

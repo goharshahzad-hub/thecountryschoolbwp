@@ -3,9 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardCheck, BarChart3, FileBarChart } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { User } from "lucide-react";
+
 const cards = [
+  { to: "/teacher-portal/profile", icon: User, label: "My Profile", desc: "View and update your profile & biodata" },
   { to: "/teacher-portal/attendance", icon: ClipboardCheck, label: "Mark Attendance", desc: "Record daily attendance for your classes" },
   { to: "/teacher-portal/results", icon: BarChart3, label: "Enter Results", desc: "Add monthly, term and annual results" },
+  { to: "/teacher-portal/diary", icon: FileBarChart, label: "Diary / Homework", desc: "Add homework entries for your classes" },
   { to: "/teacher-portal/attendance-report", icon: FileBarChart, label: "Attendance Report", desc: "View monthly attendance percentages" },
 ];
 
