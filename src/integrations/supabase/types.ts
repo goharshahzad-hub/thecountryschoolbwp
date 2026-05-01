@@ -509,6 +509,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_records: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string
+          fee_head: string
+          id: string
+          parent_user_id: string | null
+          payment_date: string
+          payment_method: string
+          receipt_no: string
+          remarks: string | null
+          student_id: string | null
+          voucher_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          fee_head?: string
+          id?: string
+          parent_user_id?: string | null
+          payment_date?: string
+          payment_method?: string
+          receipt_no: string
+          remarks?: string | null
+          student_id?: string | null
+          voucher_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          fee_head?: string
+          id?: string
+          parent_user_id?: string | null
+          payment_date?: string
+          payment_method?: string
+          receipt_no?: string
+          remarks?: string | null
+          student_id?: string | null
+          voucher_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -656,6 +704,60 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      teacher_permissions: {
+        Row: {
+          can_enter_attendance: boolean
+          can_enter_diary: boolean
+          can_enter_results: boolean
+          can_view_all_classes: boolean
+          can_view_attendance: boolean
+          can_view_diary: boolean
+          can_view_fees: boolean
+          can_view_results: boolean
+          can_view_students: boolean
+          can_view_timetable: boolean
+          created_at: string
+          id: string
+          is_global_default: boolean
+          teacher_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          can_enter_attendance?: boolean
+          can_enter_diary?: boolean
+          can_enter_results?: boolean
+          can_view_all_classes?: boolean
+          can_view_attendance?: boolean
+          can_view_diary?: boolean
+          can_view_fees?: boolean
+          can_view_results?: boolean
+          can_view_students?: boolean
+          can_view_timetable?: boolean
+          created_at?: string
+          id?: string
+          is_global_default?: boolean
+          teacher_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          can_enter_attendance?: boolean
+          can_enter_diary?: boolean
+          can_enter_results?: boolean
+          can_view_all_classes?: boolean
+          can_view_attendance?: boolean
+          can_view_diary?: boolean
+          can_view_fees?: boolean
+          can_view_results?: boolean
+          can_view_students?: boolean
+          can_view_timetable?: boolean
+          created_at?: string
+          id?: string
+          is_global_default?: boolean
+          teacher_user_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
