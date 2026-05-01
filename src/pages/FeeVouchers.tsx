@@ -19,6 +19,7 @@ import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { getPreloadedLogo } from "@/lib/logoBase64";
+import { buildVoucherFilename } from "@/lib/voucherFilename";
 
 interface FeeVoucher {
   id: string;
@@ -571,6 +572,15 @@ const FeeVouchers = () => {
 
   const savePdfVoucher = async (v: FeeVoucher) => {
     const { slipContent, voucherNo } = handlePrint(v);
+    const student = getStudent(v.student_id);
+    const filename = buildVoucherFilename({
+      studentName: student?.name,
+      fatherName: student?.father_name,
+      className: student?.class,
+      section: student?.section,
+      month: v.month,
+      year: v.year,
+    });
     const voucherStyles = `
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
@@ -606,7 +616,7 @@ const FeeVouchers = () => {
       const html2pdf = (await import("html2pdf.js")).default;
       await html2pdf().set({
         margin: 5,
-        filename: `Fee_Challan_${voucherNo}.pdf`,
+        filename: filename,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },

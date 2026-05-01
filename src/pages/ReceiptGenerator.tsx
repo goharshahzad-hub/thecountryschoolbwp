@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,32 +6,112 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Printer, Download, Plus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Printer, Plus, Trash2, Link as LinkIcon } from "lucide-react";
 import { printA4, schoolHeader, schoolFooter, generateQRData } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import SearchableCombobox from "@/components/SearchableCombobox";
 
-const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Cheque", "Online"];
+const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Cheque", "Online", "Easypaisa", "JazzCash"];
+
+const FEE_HEADS = [
+  "Tuition Fee",
+  "Registration Fee",
+  "Admission Fee",
+  "Security Deposit",
+  "Annual Charges",
+  "Trip Charges",
+  "Books / Summer Pack",
+  "Late Fee",
+  "Arrears",
+  "Donation",
+  "Examination Fee",
+  "Custom",
+];
 
 interface LineItem {
+  fee_head: string;
+  custom_head: string;
   description: string;
   amount: string;
 }
 
+interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; parent_user_id: string | null; }
+interface Voucher { id: string; voucher_no: string; student_id: string; month: string; year: number; amount: number; status: string; }
+interface ParentProfile { user_id: string; full_name: string; phone: string | null; }
+
 const ReceiptGenerator = () => {
   const { settings } = useSchoolSettings();
+  const { toast } = useToast();
+
+  const [students, setStudents] = useState<Student[]>([]);
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [parents, setParents] = useState<ParentProfile[]>([]);
+
   const [form, setForm] = useState({
     receipt_no: `REC-${Date.now().toString().slice(-6)}`,
     date: new Date().toISOString().split("T")[0],
     received_from: "",
-    purpose: "",
     payment_method: "Cash",
     remarks: "",
+    student_id: "",
+    parent_id: "",
+    voucher_id: "",
+    auto_mark_paid: true,
   });
-  const [items, setItems] = useState<LineItem[]>([{ description: "", amount: "" }]);
+  const [items, setItems] = useState<LineItem[]>([
+    { fee_head: "Tuition Fee", custom_head: "", description: "", amount: "" },
+  ]);
+
+  useEffect(() => {
+    (async () => {
+      const [s, v, p] = await Promise.all([
+        supabase.from("students").select("id, student_id, name, class, section, father_name, parent_user_id").order("name"),
+        supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
+      ]);
+      setStudents((s.data as any) || []);
+      setVouchers((v.data as any) || []);
+      setParents((p.data as any) || []);
+    })();
+  }, []);
 
   const total = items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
 
-  const addItem = () => setItems([...items, { description: "", amount: "" }]);
+  // When a student is picked, auto-fill received_from with father name + parent if linked
+  const handleStudentChange = (sid: string) => {
+    const st = students.find((x) => x.id === sid);
+    setForm((f) => ({
+      ...f,
+      student_id: sid,
+      voucher_id: "",
+      parent_id: st?.parent_user_id || "",
+      received_from: st ? `${st.father_name} (Father of ${st.name})` : f.received_from,
+    }));
+  };
+
+  const handleParentChange = (pid: string) => {
+    const par = parents.find((p) => p.user_id === pid);
+    setForm((f) => ({ ...f, parent_id: pid, received_from: par ? par.full_name : f.received_from }));
+  };
+
+  const handleVoucherChange = (vid: string) => {
+    const v = vouchers.find((x) => x.id === vid);
+    setForm((f) => ({ ...f, voucher_id: vid }));
+    if (v) {
+      // Pre-fill a single line item with voucher amount
+      setItems([{ fee_head: "Tuition Fee", custom_head: "", description: `Voucher ${v.voucher_no} — ${v.month} ${v.year}`, amount: String(v.amount) }]);
+    }
+  };
+
+  const studentVouchers = useMemo(
+    () => (form.student_id ? vouchers.filter((v) => v.student_id === form.student_id) : []),
+    [form.student_id, vouchers]
+  );
+
+  const addItem = () => setItems([...items, { fee_head: "Custom", custom_head: "", description: "", amount: "" }]);
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
   const updateItem = (idx: number, field: keyof LineItem, value: string) => {
     const next = [...items];
@@ -42,10 +122,13 @@ const ReceiptGenerator = () => {
   const buildReceiptHtml = () => {
     const qrData = generateQRData("Receipt", { No: form.receipt_no, From: form.received_from, Amount: `Rs${total}` });
     const qrImg = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}" alt="QR" style="width:70px;height:70px;" />`;
+    const rows = items.filter((i) => (i.fee_head || i.custom_head) && i.amount).map((item, idx) => {
+      const head = item.fee_head === "Custom" ? (item.custom_head || "Custom") : item.fee_head;
+      return `<tr><td style="text-align:center">${idx + 1}</td><td><strong>${head}</strong>${item.description ? `<br/><span style="font-size:10px;color:#666">${item.description}</span>` : ""}</td><td style="text-align:right;font-weight:bold">₨ ${parseFloat(item.amount).toLocaleString("en-PK")}</td></tr>`;
+    }).join("");
 
-    const rows = items.filter(i => i.description && i.amount).map((item, idx) =>
-      `<tr><td style="text-align:center">${idx + 1}</td><td>${item.description}</td><td style="text-align:right;font-weight:bold">₨ ${parseFloat(item.amount).toLocaleString("en-PK")}</td></tr>`
-    ).join("");
+    const linkedV = vouchers.find((v) => v.id === form.voucher_id);
+    const linkedSt = students.find((s) => s.id === form.student_id);
 
     return `
       <div class="print-page">
@@ -56,40 +139,73 @@ const ReceiptGenerator = () => {
           <div><span>Payment Method:</span> ${form.payment_method}</div>
         </div>
         <div class="print-info">
-          <div><span>Received From:</span> ${form.received_from}</div>
-          <div><span>Purpose:</span> ${form.purpose}</div>
+          <div><span>Received From:</span> ${form.received_from || "—"}</div>
+          ${linkedSt ? `<div><span>Student:</span> ${linkedSt.name} (${linkedSt.class}-${linkedSt.section || ""})</div>` : ""}
+          ${linkedV ? `<div><span>Voucher:</span> ${linkedV.voucher_no}</div>` : ""}
         </div>
         <table>
-          <thead><tr><th style="width:40px">#</th><th style="text-align:left">Description</th><th style="text-align:right;width:120px">Amount</th></tr></thead>
+          <thead><tr><th style="width:40px">#</th><th style="text-align:left">Particulars</th><th style="text-align:right;width:120px">Amount</th></tr></thead>
           <tbody>
             ${rows}
-            <tr class="total-row">
-              <td colspan="2" style="text-align:right"><strong>Total Amount</strong></td>
-              <td style="text-align:right"><strong>₨ ${total.toLocaleString("en-PK")}</strong></td>
-            </tr>
+            <tr class="total-row"><td colspan="2" style="text-align:right"><strong>Total Amount</strong></td><td style="text-align:right"><strong>₨ ${total.toLocaleString("en-PK")}</strong></td></tr>
           </tbody>
         </table>
         <div style="margin-top:12px;font-size:12px;padding:8px;border:1px solid #ddd;background:#f9f9f9;">
           <strong>Amount in words:</strong> ${numberToWords(total)} Rupees Only
         </div>
         ${form.remarks ? `<div style="margin-top:8px;font-size:11px;"><strong>Remarks:</strong> ${form.remarks}</div>` : ""}
-        <div class="signatures">
-          <div>Received By</div>
-          <div>Authorized Signature</div>
-          <div>Stamp</div>
-        </div>
+        <div class="signatures"><div>Received By</div><div>Authorized Signature</div><div>Stamp</div></div>
         ${schoolFooter()}
       </div>
     `;
   };
 
-  const handlePrint = () => printA4(buildReceiptHtml(), `Receipt ${form.receipt_no}`);
+  const savePaymentRecord = async () => {
+    // Save one payment_records row per line item for full per-head history
+    const rows = items
+      .filter((i) => i.amount)
+      .map((i) => ({
+        receipt_no: form.receipt_no,
+        payment_date: form.date,
+        student_id: form.student_id || null,
+        voucher_id: form.voucher_id || null,
+        parent_user_id: form.parent_id || null,
+        fee_head: i.fee_head === "Custom" ? (i.custom_head || "Custom") : i.fee_head,
+        description: i.description,
+        amount: parseFloat(i.amount) || 0,
+        payment_method: form.payment_method,
+        remarks: form.remarks,
+      }));
+    if (rows.length === 0) return;
+    const { error } = await supabase.from("payment_records" as any).insert(rows);
+    if (error) {
+      toast({ title: "Save Error", description: error.message, variant: "destructive" });
+      return false;
+    }
+    // Auto-mark voucher as Paid
+    if (form.auto_mark_paid && form.voucher_id) {
+      await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: form.date }).eq("id", form.voucher_id);
+    }
+    toast({ title: "Receipt Saved", description: "Payment recorded in history" + (form.auto_mark_paid && form.voucher_id ? " and voucher marked Paid" : "") });
+    return true;
+  };
+
+  const handlePrint = async () => {
+    if (!form.received_from.trim() && !form.student_id) {
+      toast({ title: "Missing Info", description: "Add a student or 'Received from' name", variant: "destructive" });
+      return;
+    }
+    const ok = await savePaymentRecord();
+    if (ok !== false) {
+      printA4(buildReceiptHtml(), `Receipt ${form.receipt_no}`);
+    }
+  };
 
   return (
     <DashboardLayout>
       <div className="mb-6">
         <h1 className="font-display text-2xl font-bold text-foreground">Receipt Generator</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Generate general payment receipts with school branding</p>
+        <p className="mt-1 text-sm text-muted-foreground">Generate receipts linked to students, parents and fee vouchers — full history is saved automatically.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -99,58 +215,107 @@ const ReceiptGenerator = () => {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label className="text-xs">Receipt No.</Label>
-                <Input value={form.receipt_no} onChange={e => setForm(f => ({ ...f, receipt_no: e.target.value }))} />
+                <Input value={form.receipt_no} onChange={(e) => setForm((f) => ({ ...f, receipt_no: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Date</Label>
-                <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                <Input type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
               </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-xs">Received From *</Label>
-                <Input value={form.received_from} onChange={e => setForm(f => ({ ...f, received_from: e.target.value }))} placeholder="Name of payer" />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link Student</Label>
+                <SearchableCombobox
+                  options={[{ value: "", label: "(no student)" }, ...students.map((s) => ({ value: s.id, label: s.name, sublabel: `${s.student_id} • ${s.class}-${s.section || ""}` }))]}
+                  value={form.student_id}
+                  onChange={handleStudentChange}
+                  placeholder="Search student..."
+                />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Purpose</Label>
-                <Input value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))} placeholder="e.g. Admission Fee, Donation" />
+                <Label className="text-xs">Link Parent</Label>
+                <SearchableCombobox
+                  options={[{ value: "", label: "(no parent)" }, ...parents.map((p) => ({ value: p.user_id, label: p.full_name || "(no name)", sublabel: p.phone || "" }))]}
+                  value={form.parent_id}
+                  onChange={handleParentChange}
+                  placeholder="Search parent..."
+                />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Payment Method</Label>
-                <Select value={form.payment_method} onValueChange={v => setForm(f => ({ ...f, payment_method: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{PAYMENT_METHODS.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><LinkIcon className="h-3 w-3" />Link Existing Voucher (optional)</Label>
+              <SearchableCombobox
+                options={[{ value: "", label: "(no voucher — general payment)" }, ...studentVouchers.map((v) => ({ value: v.id, label: v.voucher_no, sublabel: `${v.month} ${v.year} — ₨${Number(v.amount).toLocaleString("en-PK")} • ${v.status}` }))]}
+                value={form.voucher_id}
+                onChange={handleVoucherChange}
+                placeholder={form.student_id ? "Select unpaid voucher..." : "Pick a student first"}
+                disabled={!form.student_id}
+              />
+              {form.voucher_id && (
+                <label className="flex items-center gap-2 text-xs text-muted-foreground mt-1 cursor-pointer">
+                  <input type="checkbox" checked={form.auto_mark_paid} onChange={(e) => setForm((f) => ({ ...f, auto_mark_paid: e.target.checked }))} />
+                  Auto-mark voucher as Paid after printing
+                </label>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Received From *</Label>
+              <Input value={form.received_from} onChange={(e) => setForm((f) => ({ ...f, received_from: e.target.value }))} placeholder="Name of payer" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Payment Method</Label>
+              <Select value={form.payment_method} onValueChange={(v) => setForm((f) => ({ ...f, payment_method: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label className="text-xs font-semibold">Line Items</Label>
+                <Label className="text-xs font-semibold">Line Items (with Fee Head)</Label>
                 <Button variant="outline" size="sm" onClick={addItem}><Plus className="mr-1 h-3 w-3" />Add Item</Button>
               </div>
-              {items.map((item, idx) => (
-                <div key={idx} className="flex gap-2 mb-2">
-                  <Input placeholder="Description" value={item.description} onChange={e => updateItem(idx, "description", e.target.value)} className="flex-1" />
-                  <Input type="number" placeholder="Amount" value={item.amount} onChange={e => updateItem(idx, "amount", e.target.value)} className="w-28" />
-                  {items.length > 1 && (
-                    <Button variant="ghost" size="icon" onClick={() => removeItem(idx)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  )}
-                </div>
-              ))}
-              <div className="mt-2 text-right font-display text-lg font-bold text-foreground">
+              <div className="space-y-2">
+                {items.map((item, idx) => (
+                  <div key={idx} className="rounded-md border border-border p-2 space-y-2">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <SearchableCombobox
+                          options={FEE_HEADS.map((h) => ({ value: h, label: h }))}
+                          value={item.fee_head}
+                          onChange={(v) => updateItem(idx, "fee_head", v)}
+                          placeholder="Fee head..."
+                        />
+                      </div>
+                      <Input type="number" placeholder="Amount" value={item.amount} onChange={(e) => updateItem(idx, "amount", e.target.value)} className="w-28" />
+                      {items.length > 1 && (
+                        <Button variant="ghost" size="icon" onClick={() => removeItem(idx)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      )}
+                    </div>
+                    {item.fee_head === "Custom" && (
+                      <Input placeholder="Custom head name" value={item.custom_head} onChange={(e) => updateItem(idx, "custom_head", e.target.value)} />
+                    )}
+                    <Input placeholder="Description (optional)" value={item.description} onChange={(e) => updateItem(idx, "description", e.target.value)} className="text-xs" />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 text-right font-display text-lg font-bold text-foreground">
                 Total: ₨ {total.toLocaleString("en-PK")}
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs">Remarks</Label>
-              <Textarea value={form.remarks} onChange={e => setForm(f => ({ ...f, remarks: e.target.value }))} placeholder="Optional notes" rows={2} />
+              <Textarea value={form.remarks} onChange={(e) => setForm((f) => ({ ...f, remarks: e.target.value }))} placeholder="Optional notes" rows={2} />
             </div>
 
-            <div className="flex gap-2">
-              <Button onClick={handlePrint} className="gradient-primary text-primary-foreground flex-1">
-                <Printer className="mr-2 h-4 w-4" />Print Receipt
-              </Button>
-            </div>
+            <Button onClick={handlePrint} className="gradient-primary text-primary-foreground w-full">
+              <Printer className="mr-2 h-4 w-4" />Save & Print Receipt
+            </Button>
           </CardContent>
         </Card>
 
@@ -167,12 +332,13 @@ const ReceiptGenerator = () => {
               <div className="grid grid-cols-2 gap-1 text-xs">
                 <p><strong>Receipt No:</strong> {form.receipt_no}</p>
                 <p><strong>Date:</strong> {form.date}</p>
-                <p><strong>From:</strong> {form.received_from || "—"}</p>
+                <p className="col-span-2"><strong>From:</strong> {form.received_from || "—"}</p>
                 <p><strong>Method:</strong> {form.payment_method}</p>
+                {form.voucher_id && <p><strong>Voucher:</strong> {vouchers.find((v) => v.id === form.voucher_id)?.voucher_no}</p>}
               </div>
-              {items.filter(i => i.description).map((item, idx) => (
+              {items.filter((i) => i.amount).map((item, idx) => (
                 <div key={idx} className="flex justify-between text-xs border-b border-dashed border-border pb-1">
-                  <span>{item.description}</span>
+                  <span><Badge variant="outline" className="mr-1 text-[10px]">{item.fee_head === "Custom" ? item.custom_head || "Custom" : item.fee_head}</Badge>{item.description}</span>
                   <span className="font-semibold">₨ {(parseFloat(item.amount) || 0).toLocaleString("en-PK")}</span>
                 </div>
               ))}
@@ -190,9 +356,8 @@ const ReceiptGenerator = () => {
 
 function numberToWords(num: number): string {
   if (num === 0) return "Zero";
-  const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-    "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-  const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
   const convert = (n: number): string => {
     if (n < 20) return ones[n];
     if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "");

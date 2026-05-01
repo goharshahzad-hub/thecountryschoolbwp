@@ -87,8 +87,12 @@ const ParentLogin = () => {
       toast({ title: "Error", description: "Password must be at least 6 characters", variant: "destructive" });
       return;
     }
-    setLoading(true);
     const validChildren = childrenNames.map(n => n.trim()).filter(Boolean);
+    if (validChildren.length === 0) {
+      toast({ title: "Children Required", description: "Please add at least one child name", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
     const { error } = await supabase.auth.signUp({
       email: signupEmail.trim(),
       password: signupPassword,
@@ -243,7 +247,7 @@ const ParentLogin = () => {
                     <Input id="signup-phone" placeholder="+92 3XX XXXXXXX" value={signupPhone} onChange={e => setSignupPhone(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label>Children Names</Label>
+                    <Label>Children Names <span className="text-destructive">*</span></Label>
                     {childrenNames.map((name, i) => (
                       <div key={i} className="flex gap-2 mb-1">
                         <Input
