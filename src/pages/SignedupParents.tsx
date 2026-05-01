@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Search, Trash2, Link2, Unlink, UserCheck, UserX, Users } from "lucide-react";
+import SearchableCombobox from "@/components/SearchableCombobox";
 
 interface ParentProfile {
   id: string;
@@ -284,20 +285,23 @@ const SignedupParents = () => {
             <DialogDescription>Select one or more students to link to this parent account.</DialogDescription>
           </DialogHeader>
 
-          {/* Student selector */}
+          {/* Searchable student selector */}
           <div className="flex gap-2">
-            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder="Select a student..." />
-              </SelectTrigger>
-              <SelectContent>
-                {allStudentsForLink.filter(s => !selectedStudentIds.includes(s.id)).map(s => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.student_id} — {s.name} ({s.class}{s.section ? `-${s.section}` : ""}) {s.parent_user_id ? "⚠️ Linked" : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex-1">
+              <SearchableCombobox
+                options={allStudentsForLink
+                  .filter(s => !selectedStudentIds.includes(s.id))
+                  .map(s => ({
+                    value: s.id,
+                    label: `${s.name} ${s.parent_user_id ? "⚠️" : ""}`,
+                    sublabel: `${s.student_id} • ${s.class}${s.section ? `-${s.section}` : ""} • ${s.father_name}`,
+                  }))}
+                value={selectedStudentId}
+                onChange={setSelectedStudentId}
+                placeholder="Search by name, ID, class or father..."
+                emptyMessage="No matching students"
+              />
+            </div>
             <Button variant="outline" onClick={addStudentToSelection} disabled={!selectedStudentId}>Add</Button>
           </div>
 
