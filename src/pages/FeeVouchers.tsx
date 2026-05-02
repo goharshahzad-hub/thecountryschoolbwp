@@ -106,6 +106,10 @@ const FeeVouchers = () => {
   const [inlineForm, setInlineForm] = useState<Record<string, string>>({});
   const [inlineSaving, setInlineSaving] = useState(false);
 
+  // Print preview modal state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<{ html: string; styles: string; title: string; filename: string; voucher?: FeeVoucher } | null>(null);
+
   const [bulkForm, setBulkForm] = useState({
     class_name: "",
     month: MONTHS[new Date().getMonth()],
