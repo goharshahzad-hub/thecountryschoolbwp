@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { subjectOptions } from "@/lib/constants";
+import { subjectOptions, sortClasses } from "@/lib/constants";
 
 const examTypes = ["Monthly Test", "Term 1", "Term 2", "Annual"];
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -33,7 +33,7 @@ const TeacherResults = () => {
   useEffect(() => {
     supabase.from("students").select("class, section").eq("status", "Active").then(({ data }) => {
       if (data) {
-        const unique = [...new Set(data.map(s => `${s.class}-${s.section || "A"}`))].sort();
+        const unique = sortClasses([...new Set(data.map(s => `${s.class}-${s.section || "A"}`))]);
         setClassOptions(unique);
         if (unique.length > 0) setSelectedClass(unique[0]);
       }

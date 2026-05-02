@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { classOptions } from "@/lib/constants";
+import { classOptions, sortClasses } from "@/lib/constants";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,7 +89,7 @@ const Students = () => {
   };
 
   // Unique class options from data
-  const uniqueClasses = [...new Set(students.map(s => `${s.class}-${s.section || "A"}`))].sort();
+  const uniqueClasses = sortClasses([...new Set(students.map(s => `${s.class}-${s.section || "A"}`))]);
 
   // Linked parents for filter
   const linkedParentIds = [...new Set(students.filter(s => s.parent_user_id).map(s => s.parent_user_id!))];
