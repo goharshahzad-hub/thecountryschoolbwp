@@ -262,7 +262,7 @@ const TimetableGenerator = () => {
       toast({ title: "Timetable Generated!", description: `${slots.length} periods scheduled across ${[...new Set(assignments.map(a => `${a.className}-${a.section}`))].length} class(es)` });
     }
     // Auto-select first class/teacher view
-    const classes = [...new Set(slots.map(s => `${s.className}-${s.section}`))].sort();
+    const classes = [...new Set(slots.map(s => `${s.className}-${s.section}`))], (x: string) => x);
     if (classes.length > 0) setSelectedView(classes[0]);
   };
 
@@ -298,7 +298,7 @@ const TimetableGenerator = () => {
 
   const viewOptions = useMemo(() => {
     if (viewMode === "class") {
-      return [...new Set(generated.map(s => `${s.className}-${s.section}`))].sort();
+      return [...new Set(generated.map(s => `${s.className}-${s.section}`))], (x: string) => x);
     }
     return [...new Set(generated.map(s => s.teacherName))].sort();
   }, [generated, viewMode]);
