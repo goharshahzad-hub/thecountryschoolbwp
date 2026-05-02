@@ -8,8 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import SearchableCombobox from "@/components/SearchableCombobox";
-import { History, Filter, Download, Printer } from "lucide-react";
+import { History, Filter, Download, Printer, Pencil, Trash2, Save, X } from "lucide-react";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { sortClasses } from "@/lib/constants";
+import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PaymentRow {
   id: string;
@@ -21,6 +24,7 @@ interface PaymentRow {
   description: string;
   amount: number;
   payment_method: string;
+  transaction_no?: string;
   remarks: string;
   created_at: string;
 }
@@ -68,7 +72,7 @@ const PaymentHistory = () => {
   const sMap = useMemo(() => new Map(students.map((s) => [s.id, s])), [students]);
   const vMap = useMemo(() => new Map(vouchers.map((v) => [v.id, v])), [vouchers]);
 
-  const classes = useMemo(() => Array.from(new Set(students.map((s) => s.class))).sort(), [students]);
+  const classes = useMemo(() => sortClasses(Array.from(new Set(students.map((s) => s.class)))), [students]);
 
   const matchesStudent = (sid: string | null) => {
     if (!sid) return !studentId && !parentId && !classFilter;
