@@ -384,9 +384,25 @@ const ReceiptGenerator = () => {
               <Textarea value={form.remarks} onChange={(e) => setForm((f) => ({ ...f, remarks: e.target.value }))} placeholder="Optional notes" rows={2} />
             </div>
 
-            <Button onClick={handlePrint} className="gradient-primary text-primary-foreground w-full">
-              <Printer className="mr-2 h-4 w-4" />Save & Print Receipt
-            </Button>
+            {savedReceiptNo === form.receipt_no && (
+              <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/10 p-2 text-xs text-success">
+                <CheckCircle2 className="h-4 w-4" />
+                Receipt <span className="font-mono">{savedReceiptNo}</span> saved to student account.
+                <Button variant="link" size="sm" className="ml-auto h-auto p-0 text-xs" onClick={resetForReceipt}>Start new receipt</Button>
+              </div>
+            )}
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Button onClick={handleSaveOnly} disabled={saving} variant="outline" className="w-full">
+                <Save className="mr-2 h-4 w-4" />{saving ? "Saving..." : "Save Only"}
+              </Button>
+              <Button onClick={handlePreview} variant="outline" className="w-full">
+                <Printer className="mr-2 h-4 w-4" />Preview / Print
+              </Button>
+              <Button onClick={handleSaveAndPrint} disabled={saving} className="gradient-primary text-primary-foreground w-full">
+                <Printer className="mr-2 h-4 w-4" />Save & Print
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
