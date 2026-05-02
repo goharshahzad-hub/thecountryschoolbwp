@@ -327,12 +327,22 @@ const ReceiptGenerator = () => {
               <Input value={form.received_from} onChange={(e) => setForm((f) => ({ ...f, received_from: e.target.value }))} placeholder="Name of payer" />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs">Payment Method</Label>
-              <Select value={form.payment_method} onValueChange={(v) => setForm((f) => ({ ...f, payment_method: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-              </Select>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Payment Method</Label>
+                <Select value={form.payment_method} onValueChange={(v) => setForm((f) => ({ ...f, payment_method: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Transaction # <span className="text-muted-foreground">(optional)</span></Label>
+                <Input
+                  value={form.transaction_no}
+                  onChange={(e) => setForm((f) => ({ ...f, transaction_no: e.target.value }))}
+                  placeholder="Bank ref / cheque / TID"
+                />
+              </div>
             </div>
 
             <div>
