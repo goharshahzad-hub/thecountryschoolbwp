@@ -166,6 +166,18 @@ const ReceiptGenerator = () => {
     `;
   };
 
+  const validateForm = () => {
+    if (!form.received_from.trim() && !form.student_id) {
+      toast({ title: "Missing Info", description: "Add a student or 'Received from' name", variant: "destructive" });
+      return false;
+    }
+    if (items.filter((i) => i.amount && parseFloat(i.amount) > 0).length === 0) {
+      toast({ title: "No Line Items", description: "Add at least one line item with an amount", variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+
   const savePaymentRecord = async () => {
     // Save one payment_records row per line item for full per-head history
     const rows = items
@@ -180,9 +192,10 @@ const ReceiptGenerator = () => {
         description: i.description,
         amount: parseFloat(i.amount) || 0,
         payment_method: form.payment_method,
+        transaction_no: form.transaction_no || "",
         remarks: form.remarks,
       }));
-    if (rows.length === 0) return;
+    if (rows.length === 0) return false;
     const { error } = await supabase.from("payment_records" as any).insert(rows);
     if (error) {
       toast({ title: "Save Error", description: error.message, variant: "destructive" });
@@ -192,19 +205,61 @@ const ReceiptGenerator = () => {
     if (form.auto_mark_paid && form.voucher_id) {
       await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: form.date }).eq("id", form.voucher_id);
     }
-    toast({ title: "Receipt Saved", description: "Payment recorded in history" + (form.auto_mark_paid && form.voucher_id ? " and voucher marked Paid" : "") });
     return true;
   };
 
-  const handlePrint = async () => {
-    if (!form.received_from.trim() && !form.student_id) {
-      toast({ title: "Missing Info", description: "Add a student or 'Received from' name", variant: "destructive" });
-      return;
-    }
+  /** Save only — record payment in DB and reflect in student account, no print */
+  const handleSaveOnly = async () => {
+    if (!validateForm()) return;
+    setSaving(true);
     const ok = await savePaymentRecord();
-    if (ok !== false) {
-      printA4(buildReceiptHtml(), `Receipt ${form.receipt_no}`);
+    setSaving(false);
+    if (ok) {
+      setSavedReceiptNo(form.receipt_no);
+      toast({
+        title: "✓ Receipt Saved",
+        description: `Receipt ${form.receipt_no} recorded in student account` + (form.auto_mark_paid && form.voucher_id ? " and voucher marked Paid" : ""),
+      });
+      // Refresh unpaid vouchers list so the just-paid voucher disappears
+      const { data: v } = await supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false });
+      setVouchers((v as any) || []);
     }
+  };
+
+  /** Open the print preview modal — does NOT save automatically (user can save first) */
+  const handlePreview = () => {
+    if (!validateForm()) return;
+    setPreviewOpen(true);
+  };
+
+  /** Save (if not already) and then immediately print */
+  const handleSaveAndPrint = async () => {
+    if (!validateForm()) return;
+    if (savedReceiptNo !== form.receipt_no) {
+      setSaving(true);
+      const ok = await savePaymentRecord();
+      setSaving(false);
+      if (!ok) return;
+      setSavedReceiptNo(form.receipt_no);
+      const { data: v } = await supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false });
+      setVouchers((v as any) || []);
+    }
+    setPreviewOpen(true);
+  };
+
+  const resetForReceipt = () => {
+    setForm((f) => ({
+      ...f,
+      receipt_no: `REC-${Date.now().toString().slice(-6)}`,
+      received_from: "",
+      transaction_no: "",
+      remarks: "",
+      student_id: "",
+      parent_id: "",
+      voucher_id: "",
+    }));
+    setItems([{ fee_head: "Tuition Fee", custom_head: "", description: "", amount: "" }]);
+    setSavedReceiptNo(null);
   };
 
   return (
