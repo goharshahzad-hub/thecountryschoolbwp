@@ -1322,6 +1322,19 @@ const FeeVouchers = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {previewData && (
+        <PrintPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          html={previewData.html}
+          styles={previewData.styles}
+          title={previewData.title}
+          filename={previewData.filename}
+          orientation="landscape"
+          onSavePdf={previewData.voucher ? () => savePdfVoucher(previewData.voucher!) : undefined}
+        />
+      )}
     </DashboardLayout>
   );
 };
