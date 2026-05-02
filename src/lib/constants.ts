@@ -13,12 +13,26 @@ const CLASS_ORDER: Record<string, number> = classOptions.reduce((acc, c, i) => {
   return acc;
 }, {} as Record<string, number>);
 
+/** Resolve a class index from a string that may include a section suffix (e.g. "Class-1-A"). */
+const resolveClassIndex = (raw: string): number => {
+  const name = raw.trim().toLowerCase();
+  if (CLASS_ORDER[name] !== undefined) return CLASS_ORDER[name];
+  // Try stripping a trailing "-X" section
+  const withoutSection = name.replace(/-[a-z0-9]+$/i, "");
+  if (CLASS_ORDER[withoutSection] !== undefined) return CLASS_ORDER[withoutSection];
+  // Try matching the longest known prefix
+  for (const key of Object.keys(CLASS_ORDER)) {
+    if (name.startsWith(key)) return CLASS_ORDER[key];
+  }
+  return 999;
+};
+
 export const sortClasses = <T,>(items: T[], getName: (t: T) => string = (t) => String(t)): T[] => {
   return [...items].sort((a, b) => {
-    const an = getName(a).trim().toLowerCase();
-    const bn = getName(b).trim().toLowerCase();
-    const ai = CLASS_ORDER[an] ?? 999;
-    const bi = CLASS_ORDER[bn] ?? 999;
+    const an = getName(a);
+    const bn = getName(b);
+    const ai = resolveClassIndex(an);
+    const bi = resolveClassIndex(bn);
     if (ai !== bi) return ai - bi;
     return an.localeCompare(bn);
   });
