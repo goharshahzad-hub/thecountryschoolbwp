@@ -34,6 +34,7 @@ interface ResultRow { id: string; student_id: string; subject_id: string; obtain
 interface Attendance { id: string; student_id: string; date: string; status: string; }
 
 const PaymentHistory = () => {
+  const { toast } = useToast();
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -41,6 +42,11 @@ const PaymentHistory = () => {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [parents, setParents] = useState<{ user_id: string; full_name: string; phone: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Inline edit state for payment row
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<PaymentRow>>({});
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // filters
   const [studentId, setStudentId] = useState("");
