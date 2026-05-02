@@ -145,6 +145,7 @@ const ReceiptGenerator = () => {
         </div>
         <div class="print-info">
           <div><span>Received From:</span> ${form.received_from || "—"}</div>
+          ${form.transaction_no ? `<div><span>Transaction #:</span> ${form.transaction_no}</div>` : ""}
           ${linkedSt ? `<div><span>Student:</span> ${linkedSt.name} (${linkedSt.class}-${linkedSt.section || ""})</div>` : ""}
           ${linkedV ? `<div><span>Voucher:</span> ${linkedV.voucher_no}</div>` : ""}
         </div>
