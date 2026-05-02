@@ -427,8 +427,19 @@ const FeeVouchers = () => {
     const logo = getPreloadedLogo();
     const logoImg = logo ? `<img src="${logo}" alt="Logo" style="width:40px;height:40px;border-radius:50%;margin:0 auto 4px;display:block;" />` : "";
 
-    const qrData = `TCS|${v.voucher_no}|${student?.name || ""}|Rs${Number(v.amount)}|${v.month} ${v.year}|${new Date().toISOString().split("T")[0]}`;
-    const qrImg = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(qrData)}" alt="QR" style="width:50px;height:50px;margin:0 auto;display:block;" />`;
+    // QR encodes a verifiable validity payload — scanner sees voucher#, student, amount, period & issue date
+    const validityCode = `TCS-${v.voucher_no}-${v.year}${(MONTHS.indexOf(v.month)+1).toString().padStart(2,"0")}`;
+    const qrPayload = [
+      `Voucher: ${v.voucher_no}`,
+      `Student: ${student?.name || ""} (${student?.student_id || ""})`,
+      `Class: ${student?.class}-${student?.section || ""}`,
+      `Period: ${v.month} ${v.year}`,
+      `Amount: PKR ${Number(v.amount)}`,
+      `Issued: ${(v as any).issue_date || new Date().toISOString().split("T")[0]}`,
+      `Validity: ${validityCode}`,
+      `Verify: ${window.location.origin}/verify/${validityCode}`,
+    ].join("\n");
+    const qrImg = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&ecc=M&data=${encodeURIComponent(qrPayload)}" alt="QR" style="width:55px;height:55px;margin:0 auto;display:block;" />`;
 
     const slipContent = (title: string) => `
       <div class="slip">
