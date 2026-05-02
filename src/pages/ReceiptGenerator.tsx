@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Printer, Plus, Trash2, Link as LinkIcon } from "lucide-react";
+import { Printer, Plus, Trash2, Link as LinkIcon, Save, CheckCircle2 } from "lucide-react";
 import { printA4, schoolHeader, schoolFooter, generateQRData } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SearchableCombobox from "@/components/SearchableCombobox";
+import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
 const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Cheque", "Online", "Easypaisa", "JazzCash"];
 
@@ -55,6 +56,7 @@ const ReceiptGenerator = () => {
     date: new Date().toISOString().split("T")[0],
     received_from: "",
     payment_method: "Cash",
+    transaction_no: "",
     remarks: "",
     student_id: "",
     parent_id: "",
@@ -64,6 +66,9 @@ const ReceiptGenerator = () => {
   const [items, setItems] = useState<LineItem[]>([
     { fee_head: "Tuition Fee", custom_head: "", description: "", amount: "" },
   ]);
+  const [saving, setSaving] = useState(false);
+  const [savedReceiptNo, setSavedReceiptNo] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
