@@ -299,7 +299,7 @@ const TimetableGenerator = () => {
 
   const viewOptions = useMemo(() => {
     if (viewMode === "class") {
-      return [...new Set(generated.map(s => `${s.className}-${s.section}`))], (x: string) => x);
+      return sortClasses([...new Set(generated.map(s => `${s.className}-${s.section}`))]);
     }
     return [...new Set(generated.map(s => s.teacherName))].sort();
   }, [generated, viewMode]);
