@@ -485,12 +485,21 @@ const FeeVouchers = () => {
 
   const printSingleVoucher = (v: FeeVoucher) => {
     const { slipContent, voucherNo } = handlePrint(v);
+    const student = getStudent(v.student_id);
+    const filename = buildVoucherFilename({
+      studentName: student?.name,
+      fatherName: student?.father_name,
+      className: student?.class,
+      section: student?.section,
+      month: v.month,
+      year: v.year,
+    });
     const voucherStyles = `
       @page { size: A4 landscape; margin: 5mm; }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
-      .voucher-container { display: flex; width: 100%; height: 100vh; gap: 0; }
-      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden; }
+      .a4-page { width: 287mm !important; min-height: 200mm !important; padding: 4mm !important; }
+      * { box-sizing: border-box; }
+      .voucher-container { display: flex; width: 100%; gap: 0; }
+      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden; min-height: 195mm; }
       .slip + .slip { border-left: 2px dashed #999; }
       .slip-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
       .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
@@ -513,23 +522,10 @@ const FeeVouchers = () => {
       .slip-sign { display: flex; gap: 10px; font-size: 8px; }
       .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 65px; text-align: center; }
       .slip-qr { text-align: right; }
-      @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
     `;
-
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>Fee Challan - ${voucherNo}</title><style>${voucherStyles}
-      .print-preview-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #c0392b; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; font-family: Arial, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-      .print-preview-bar span { font-size: 14px; font-weight: bold; }
-      .print-preview-bar button { background: #fff; color: #c0392b; border: none; padding: 8px 24px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; }
-      .print-preview-bar button:hover { background: #f0f0f0; }
-      .print-preview-bar .close-btn { background: transparent; color: #fff; font-size: 13px; border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 4px; margin-left: 8px; }
-      body { padding-top: 50px; }
-    </style></head><body>
-      <div class="print-preview-bar"><span>📄 Fee Challan ${voucherNo} — Print Preview</span><div><button onclick="window.print()">🖨️ Print</button><button class="close-btn" onclick="window.close()">✕ Close</button></div></div>
-      <div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>
-    </body></html>`);
-    win.document.close();
+    const html = `<div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>`;
+    setPreviewData({ html, styles: voucherStyles, title: `Fee Challan ${voucherNo}`, filename, voucher: v });
+    setPreviewOpen(true);
   };
 
   const printMultipleVouchers = (vouchersToPrint: FeeVoucher[]) => {
