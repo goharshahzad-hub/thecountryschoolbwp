@@ -437,6 +437,15 @@ const ReceiptGenerator = () => {
           </CardContent>
         </Card>
       </div>
+
+      <PrintPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        html={buildReceiptHtml()}
+        title={`Receipt ${form.receipt_no}`}
+        filename={`Receipt_${form.receipt_no}_${form.date}.pdf`}
+        orientation="portrait"
+      />
     </DashboardLayout>
   );
 };
