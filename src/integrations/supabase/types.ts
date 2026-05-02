@@ -523,6 +523,7 @@ export type Database = {
           receipt_no: string
           remarks: string | null
           student_id: string | null
+          transaction_no: string | null
           voucher_id: string | null
         }
         Insert: {
@@ -538,6 +539,7 @@ export type Database = {
           receipt_no: string
           remarks?: string | null
           student_id?: string | null
+          transaction_no?: string | null
           voucher_id?: string | null
         }
         Update: {
@@ -553,6 +555,7 @@ export type Database = {
           receipt_no?: string
           remarks?: string | null
           student_id?: string | null
+          transaction_no?: string | null
           voucher_id?: string | null
         }
         Relationships: []
