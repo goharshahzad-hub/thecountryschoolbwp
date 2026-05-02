@@ -3,6 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { sortClasses } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download, Printer } from "lucide-react";
@@ -36,7 +37,7 @@ const AttendanceReport = () => {
   useEffect(() => {
     supabase.from("students").select("class, section").eq("status", "Active").then(({ data }) => {
       if (data) {
-        const unique = [...new Set(data.map(s => `${s.class}-${s.section || "A"}`))].sort();
+        const unique = sortClasses([...new Set(data.map(s => `${s.class}-${s.section || "A"}`))]);
         setClassOptions(unique);
         if (unique.length > 0) setSelectedClass(unique[0]);
       }

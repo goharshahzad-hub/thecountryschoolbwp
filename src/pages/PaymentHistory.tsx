@@ -8,8 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import SearchableCombobox from "@/components/SearchableCombobox";
-import { History, Filter, Download, Printer } from "lucide-react";
+import { History, Filter, Download, Printer, Pencil, Trash2, Save, X } from "lucide-react";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { sortClasses } from "@/lib/constants";
+import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PaymentRow {
   id: string;
@@ -21,6 +24,7 @@ interface PaymentRow {
   description: string;
   amount: number;
   payment_method: string;
+  transaction_no?: string;
   remarks: string;
   created_at: string;
 }
@@ -30,6 +34,7 @@ interface ResultRow { id: string; student_id: string; subject_id: string; obtain
 interface Attendance { id: string; student_id: string; date: string; status: string; }
 
 const PaymentHistory = () => {
+  const { toast } = useToast();
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -37,6 +42,11 @@ const PaymentHistory = () => {
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [parents, setParents] = useState<{ user_id: string; full_name: string; phone: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Inline edit state for payment row
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<PaymentRow>>({});
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // filters
   const [studentId, setStudentId] = useState("");
@@ -68,7 +78,7 @@ const PaymentHistory = () => {
   const sMap = useMemo(() => new Map(students.map((s) => [s.id, s])), [students]);
   const vMap = useMemo(() => new Map(vouchers.map((v) => [v.id, v])), [vouchers]);
 
-  const classes = useMemo(() => Array.from(new Set(students.map((s) => s.class))).sort(), [students]);
+  const classes = useMemo(() => sortClasses(Array.from(new Set(students.map((s) => s.class)))), [students]);
 
   const matchesStudent = (sid: string | null) => {
     if (!sid) return !studentId && !parentId && !classFilter;
@@ -174,11 +184,74 @@ const PaymentHistory = () => {
             {loading ? <p className="p-8 text-center text-muted-foreground">Loading...</p> :
             filteredPayments.length === 0 ? <p className="p-8 text-center text-muted-foreground">No payments match your filters.</p> :
             <Table>
-              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Receipt</TableHead><TableHead>Student</TableHead><TableHead>Head</TableHead><TableHead>Voucher</TableHead><TableHead className="text-right">Amount</TableHead><TableHead>Method</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Receipt</TableHead><TableHead>Student</TableHead><TableHead>Head</TableHead><TableHead>Voucher</TableHead><TableHead className="text-right">Amount</TableHead><TableHead>Method</TableHead><TableHead>Txn #</TableHead><TableHead className="text-right w-32">Actions</TableHead></TableRow></TableHeader>
               <TableBody>{filteredPayments.map((p) => {
                 const st = p.student_id ? sMap.get(p.student_id) : null;
                 const v = p.voucher_id ? vMap.get(p.voucher_id) : null;
-                return <TableRow key={p.id}><TableCell>{p.payment_date}</TableCell><TableCell className="font-mono text-xs">{p.receipt_no}</TableCell><TableCell>{st?.name || "—"}{st && <span className="text-xs text-muted-foreground"> • {st.class}-{st.section || ""}</span>}</TableCell><TableCell><Badge variant="outline">{p.fee_head}</Badge></TableCell><TableCell className="font-mono text-xs">{v?.voucher_no || "—"}</TableCell><TableCell className="text-right font-bold">₨ {Number(p.amount).toLocaleString("en-PK")}</TableCell><TableCell>{p.payment_method}</TableCell></TableRow>;
+                const isEditing = editId === p.id;
+                if (isEditing) {
+                  return (
+                    <TableRow key={p.id} className="bg-accent/30">
+                      <TableCell><Input type="date" value={editForm.payment_date || ""} onChange={(e) => setEditForm((f) => ({ ...f, payment_date: e.target.value }))} className="h-8" /></TableCell>
+                      <TableCell><Input value={editForm.receipt_no || ""} onChange={(e) => setEditForm((f) => ({ ...f, receipt_no: e.target.value }))} className="h-8 font-mono text-xs" /></TableCell>
+                      <TableCell>{st?.name || "—"}</TableCell>
+                      <TableCell><Input value={editForm.fee_head || ""} onChange={(e) => setEditForm((f) => ({ ...f, fee_head: e.target.value }))} className="h-8 text-xs" /></TableCell>
+                      <TableCell className="font-mono text-xs">{v?.voucher_no || "—"}</TableCell>
+                      <TableCell className="text-right"><Input type="number" value={String(editForm.amount ?? "")} onChange={(e) => setEditForm((f) => ({ ...f, amount: parseFloat(e.target.value) || 0 }))} className="h-8 text-right" /></TableCell>
+                      <TableCell>
+                        <Select value={editForm.payment_method || "Cash"} onValueChange={(val) => setEditForm((f) => ({ ...f, payment_method: val }))}>
+                          <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                          <SelectContent>{["Cash","Bank Transfer","Cheque","Online","Easypaisa","JazzCash"].map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell><Input value={editForm.transaction_no || ""} onChange={(e) => setEditForm((f) => ({ ...f, transaction_no: e.target.value }))} className="h-8 text-xs" placeholder="—" /></TableCell>
+                      <TableCell className="text-right">
+                        <Button size="icon" variant="ghost" disabled={savingEdit} onClick={async () => {
+                          if (!editId) return;
+                          setSavingEdit(true);
+                          const { error } = await supabase.from("payment_records" as any).update({
+                            payment_date: editForm.payment_date,
+                            receipt_no: editForm.receipt_no,
+                            fee_head: editForm.fee_head,
+                            amount: editForm.amount,
+                            payment_method: editForm.payment_method,
+                            transaction_no: editForm.transaction_no || "",
+                          }).eq("id", editId);
+                          setSavingEdit(false);
+                          if (error) { toast({ title: "Update Failed", description: error.message, variant: "destructive" }); return; }
+                          setPayments((prev) => prev.map((row) => row.id === editId ? { ...row, ...editForm } as PaymentRow : row));
+                          toast({ title: "Updated" });
+                          setEditId(null);
+                        }}><Save className="h-4 w-4 text-success" /></Button>
+                        <Button size="icon" variant="ghost" onClick={() => { setEditId(null); setEditForm({}); }}><X className="h-4 w-4" /></Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+                return (
+                  <TableRow key={p.id}>
+                    <TableCell>{p.payment_date}</TableCell>
+                    <TableCell className="font-mono text-xs">{p.receipt_no}</TableCell>
+                    <TableCell>{st?.name || "—"}{st && <span className="text-xs text-muted-foreground"> • {st.class}-{st.section || ""}</span>}</TableCell>
+                    <TableCell><Badge variant="outline">{p.fee_head}</Badge></TableCell>
+                    <TableCell className="font-mono text-xs">{v?.voucher_no || "—"}</TableCell>
+                    <TableCell className="text-right font-bold">₨ {Number(p.amount).toLocaleString("en-PK")}</TableCell>
+                    <TableCell>{p.payment_method}</TableCell>
+                    <TableCell className="font-mono text-xs">{p.transaction_no || "—"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditId(p.id); setEditForm({ payment_date: p.payment_date, receipt_no: p.receipt_no, fee_head: p.fee_head, amount: p.amount, payment_method: p.payment_method, transaction_no: p.transaction_no || "" }); }} title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={async () => {
+                        if (!confirm(`Delete payment ${p.receipt_no} (₨ ${Number(p.amount).toLocaleString("en-PK")})? This cannot be undone.`)) return;
+                        const { error } = await supabase.from("payment_records" as any).delete().eq("id", p.id);
+                        if (error) { toast({ title: "Delete Failed", description: error.message, variant: "destructive" }); return; }
+                        setPayments((prev) => prev.filter((r) => r.id !== p.id));
+                        toast({ title: "Payment Deleted" });
+                      }} title="Delete"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </TableCell>
+                  </TableRow>
+                );
               })}</TableBody>
             </Table>}
           </CardContent></Card>

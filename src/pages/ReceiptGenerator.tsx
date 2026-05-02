@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Printer, Plus, Trash2, Link as LinkIcon } from "lucide-react";
+import { Printer, Plus, Trash2, Link as LinkIcon, Save, CheckCircle2 } from "lucide-react";
 import { printA4, schoolHeader, schoolFooter, generateQRData } from "@/lib/printUtils";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SearchableCombobox from "@/components/SearchableCombobox";
+import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
 const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Cheque", "Online", "Easypaisa", "JazzCash"];
 
@@ -55,6 +56,7 @@ const ReceiptGenerator = () => {
     date: new Date().toISOString().split("T")[0],
     received_from: "",
     payment_method: "Cash",
+    transaction_no: "",
     remarks: "",
     student_id: "",
     parent_id: "",
@@ -64,6 +66,9 @@ const ReceiptGenerator = () => {
   const [items, setItems] = useState<LineItem[]>([
     { fee_head: "Tuition Fee", custom_head: "", description: "", amount: "" },
   ]);
+  const [saving, setSaving] = useState(false);
+  const [savedReceiptNo, setSavedReceiptNo] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -140,6 +145,7 @@ const ReceiptGenerator = () => {
         </div>
         <div class="print-info">
           <div><span>Received From:</span> ${form.received_from || "—"}</div>
+          ${form.transaction_no ? `<div><span>Transaction #:</span> ${form.transaction_no}</div>` : ""}
           ${linkedSt ? `<div><span>Student:</span> ${linkedSt.name} (${linkedSt.class}-${linkedSt.section || ""})</div>` : ""}
           ${linkedV ? `<div><span>Voucher:</span> ${linkedV.voucher_no}</div>` : ""}
         </div>
@@ -160,6 +166,18 @@ const ReceiptGenerator = () => {
     `;
   };
 
+  const validateForm = () => {
+    if (!form.received_from.trim() && !form.student_id) {
+      toast({ title: "Missing Info", description: "Add a student or 'Received from' name", variant: "destructive" });
+      return false;
+    }
+    if (items.filter((i) => i.amount && parseFloat(i.amount) > 0).length === 0) {
+      toast({ title: "No Line Items", description: "Add at least one line item with an amount", variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+
   const savePaymentRecord = async () => {
     // Save one payment_records row per line item for full per-head history
     const rows = items
@@ -174,9 +192,10 @@ const ReceiptGenerator = () => {
         description: i.description,
         amount: parseFloat(i.amount) || 0,
         payment_method: form.payment_method,
+        transaction_no: form.transaction_no || "",
         remarks: form.remarks,
       }));
-    if (rows.length === 0) return;
+    if (rows.length === 0) return false;
     const { error } = await supabase.from("payment_records" as any).insert(rows);
     if (error) {
       toast({ title: "Save Error", description: error.message, variant: "destructive" });
@@ -186,19 +205,61 @@ const ReceiptGenerator = () => {
     if (form.auto_mark_paid && form.voucher_id) {
       await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: form.date }).eq("id", form.voucher_id);
     }
-    toast({ title: "Receipt Saved", description: "Payment recorded in history" + (form.auto_mark_paid && form.voucher_id ? " and voucher marked Paid" : "") });
     return true;
   };
 
-  const handlePrint = async () => {
-    if (!form.received_from.trim() && !form.student_id) {
-      toast({ title: "Missing Info", description: "Add a student or 'Received from' name", variant: "destructive" });
-      return;
-    }
+  /** Save only — record payment in DB and reflect in student account, no print */
+  const handleSaveOnly = async () => {
+    if (!validateForm()) return;
+    setSaving(true);
     const ok = await savePaymentRecord();
-    if (ok !== false) {
-      printA4(buildReceiptHtml(), `Receipt ${form.receipt_no}`);
+    setSaving(false);
+    if (ok) {
+      setSavedReceiptNo(form.receipt_no);
+      toast({
+        title: "✓ Receipt Saved",
+        description: `Receipt ${form.receipt_no} recorded in student account` + (form.auto_mark_paid && form.voucher_id ? " and voucher marked Paid" : ""),
+      });
+      // Refresh unpaid vouchers list so the just-paid voucher disappears
+      const { data: v } = await supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false });
+      setVouchers((v as any) || []);
     }
+  };
+
+  /** Open the print preview modal — does NOT save automatically (user can save first) */
+  const handlePreview = () => {
+    if (!validateForm()) return;
+    setPreviewOpen(true);
+  };
+
+  /** Save (if not already) and then immediately print */
+  const handleSaveAndPrint = async () => {
+    if (!validateForm()) return;
+    if (savedReceiptNo !== form.receipt_no) {
+      setSaving(true);
+      const ok = await savePaymentRecord();
+      setSaving(false);
+      if (!ok) return;
+      setSavedReceiptNo(form.receipt_no);
+      const { data: v } = await supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false });
+      setVouchers((v as any) || []);
+    }
+    setPreviewOpen(true);
+  };
+
+  const resetForReceipt = () => {
+    setForm((f) => ({
+      ...f,
+      receipt_no: `REC-${Date.now().toString().slice(-6)}`,
+      received_from: "",
+      transaction_no: "",
+      remarks: "",
+      student_id: "",
+      parent_id: "",
+      voucher_id: "",
+    }));
+    setItems([{ fee_head: "Tuition Fee", custom_head: "", description: "", amount: "" }]);
+    setSavedReceiptNo(null);
   };
 
   return (
@@ -266,12 +327,22 @@ const ReceiptGenerator = () => {
               <Input value={form.received_from} onChange={(e) => setForm((f) => ({ ...f, received_from: e.target.value }))} placeholder="Name of payer" />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs">Payment Method</Label>
-              <Select value={form.payment_method} onValueChange={(v) => setForm((f) => ({ ...f, payment_method: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-              </Select>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Payment Method</Label>
+                <Select value={form.payment_method} onValueChange={(v) => setForm((f) => ({ ...f, payment_method: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Transaction # <span className="text-muted-foreground">(optional)</span></Label>
+                <Input
+                  value={form.transaction_no}
+                  onChange={(e) => setForm((f) => ({ ...f, transaction_no: e.target.value }))}
+                  placeholder="Bank ref / cheque / TID"
+                />
+              </div>
             </div>
 
             <div>
@@ -313,9 +384,25 @@ const ReceiptGenerator = () => {
               <Textarea value={form.remarks} onChange={(e) => setForm((f) => ({ ...f, remarks: e.target.value }))} placeholder="Optional notes" rows={2} />
             </div>
 
-            <Button onClick={handlePrint} className="gradient-primary text-primary-foreground w-full">
-              <Printer className="mr-2 h-4 w-4" />Save & Print Receipt
-            </Button>
+            {savedReceiptNo === form.receipt_no && (
+              <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/10 p-2 text-xs text-success">
+                <CheckCircle2 className="h-4 w-4" />
+                Receipt <span className="font-mono">{savedReceiptNo}</span> saved to student account.
+                <Button variant="link" size="sm" className="ml-auto h-auto p-0 text-xs" onClick={resetForReceipt}>Start new receipt</Button>
+              </div>
+            )}
+
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Button onClick={handleSaveOnly} disabled={saving} variant="outline" className="w-full">
+                <Save className="mr-2 h-4 w-4" />{saving ? "Saving..." : "Save Only"}
+              </Button>
+              <Button onClick={handlePreview} variant="outline" className="w-full">
+                <Printer className="mr-2 h-4 w-4" />Preview / Print
+              </Button>
+              <Button onClick={handleSaveAndPrint} disabled={saving} className="gradient-primary text-primary-foreground w-full">
+                <Printer className="mr-2 h-4 w-4" />Save & Print
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -350,6 +437,15 @@ const ReceiptGenerator = () => {
           </CardContent>
         </Card>
       </div>
+
+      <PrintPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        html={buildReceiptHtml()}
+        title={`Receipt ${form.receipt_no}`}
+        filename={`Receipt_${form.receipt_no}_${form.date}.pdf`}
+        orientation="portrait"
+      />
     </DashboardLayout>
   );
 };

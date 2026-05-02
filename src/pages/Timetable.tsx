@@ -3,6 +3,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { sortClasses } from "@/lib/constants";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -38,7 +39,7 @@ const Timetable = () => {
     const { data } = await supabase.from("timetable_entries").select("*").order("time_slot");
     if (data) {
       setEntries(data);
-      const classes = [...new Set(data.map(e => `${e.class_name}-${e.section}`))].sort();
+      const classes = sortClasses([...new Set(data.map(e => `${e.class_name}-${e.section}`))]);
       setClassOptions(classes);
       if (!selectedClass && classes.length > 0) setSelectedClass(classes[0]);
     }

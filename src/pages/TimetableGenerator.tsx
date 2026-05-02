@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { sortClasses } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -262,7 +263,7 @@ const TimetableGenerator = () => {
       toast({ title: "Timetable Generated!", description: `${slots.length} periods scheduled across ${[...new Set(assignments.map(a => `${a.className}-${a.section}`))].length} class(es)` });
     }
     // Auto-select first class/teacher view
-    const classes = [...new Set(slots.map(s => `${s.className}-${s.section}`))].sort();
+    const classes = sortClasses([...new Set(slots.map(s => `${s.className}-${s.section}`))]);
     if (classes.length > 0) setSelectedView(classes[0]);
   };
 
@@ -298,7 +299,7 @@ const TimetableGenerator = () => {
 
   const viewOptions = useMemo(() => {
     if (viewMode === "class") {
-      return [...new Set(generated.map(s => `${s.className}-${s.section}`))].sort();
+      return sortClasses([...new Set(generated.map(s => `${s.className}-${s.section}`))]);
     }
     return [...new Set(generated.map(s => s.teacherName))].sort();
   }, [generated, viewMode]);

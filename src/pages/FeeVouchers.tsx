@@ -20,6 +20,8 @@ import BulkActionBar from "@/components/BulkActionBar";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { getPreloadedLogo } from "@/lib/logoBase64";
 import { buildVoucherFilename } from "@/lib/voucherFilename";
+import { sortClasses } from "@/lib/constants";
+import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
 interface FeeVoucher {
   id: string;
@@ -64,8 +66,8 @@ const LATE_FEE = 300;
 const getDueDate = (month: string, year: number) => {
   const monthIdx = MONTHS.indexOf(month);
   if (monthIdx === -1) return "";
-  const d = new Date(year, monthIdx, 7);
-  if (d.getDay() === 0) d.setDate(8);
+  // Fees are due on the 10th of every month
+  const d = new Date(year, monthIdx, 10);
   return d.toISOString().split("T")[0];
 };
 
@@ -103,6 +105,10 @@ const FeeVouchers = () => {
   const [inlineEditId, setInlineEditId] = useState<string | null>(null);
   const [inlineForm, setInlineForm] = useState<Record<string, string>>({});
   const [inlineSaving, setInlineSaving] = useState(false);
+
+  // Print preview modal state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<{ html: string; styles: string; title: string; filename: string; voucher?: FeeVoucher } | null>(null);
 
   const [bulkForm, setBulkForm] = useState({
     class_name: "",
@@ -226,7 +232,7 @@ const FeeVouchers = () => {
     else { toast({ title: editingId ? "Updated" : "Voucher Generated" }); setDialogOpen(false); setEditingId(null); setForm(emptyFeeForm); fetchData(); }
   };
 
-  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+  const uniqueClasses = sortClasses([...new Set(students.map(s => s.class))]);
 
   const handleBulkGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -425,8 +431,19 @@ const FeeVouchers = () => {
     const logo = getPreloadedLogo();
     const logoImg = logo ? `<img src="${logo}" alt="Logo" style="width:40px;height:40px;border-radius:50%;margin:0 auto 4px;display:block;" />` : "";
 
-    const qrData = `TCS|${v.voucher_no}|${student?.name || ""}|Rs${Number(v.amount)}|${v.month} ${v.year}|${new Date().toISOString().split("T")[0]}`;
-    const qrImg = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(qrData)}" alt="QR" style="width:50px;height:50px;margin:0 auto;display:block;" />`;
+    // QR encodes a verifiable validity payload — scanner sees voucher#, student, amount, period & issue date
+    const validityCode = `TCS-${v.voucher_no}-${v.year}${(MONTHS.indexOf(v.month)+1).toString().padStart(2,"0")}`;
+    const qrPayload = [
+      `Voucher: ${v.voucher_no}`,
+      `Student: ${student?.name || ""} (${student?.student_id || ""})`,
+      `Class: ${student?.class}-${student?.section || ""}`,
+      `Period: ${v.month} ${v.year}`,
+      `Amount: PKR ${Number(v.amount)}`,
+      `Issued: ${(v as any).issue_date || new Date().toISOString().split("T")[0]}`,
+      `Validity: ${validityCode}`,
+      `Verify: ${window.location.origin}/verify/${validityCode}`,
+    ].join("\n");
+    const qrImg = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&ecc=M&data=${encodeURIComponent(qrPayload)}" alt="QR" style="width:55px;height:55px;margin:0 auto;display:block;" />`;
 
     const slipContent = (title: string) => `
       <div class="slip">
@@ -468,12 +485,21 @@ const FeeVouchers = () => {
 
   const printSingleVoucher = (v: FeeVoucher) => {
     const { slipContent, voucherNo } = handlePrint(v);
+    const student = getStudent(v.student_id);
+    const filename = buildVoucherFilename({
+      studentName: student?.name,
+      fatherName: student?.father_name,
+      className: student?.class,
+      section: student?.section,
+      month: v.month,
+      year: v.year,
+    });
     const voucherStyles = `
       @page { size: A4 landscape; margin: 5mm; }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
-      .voucher-container { display: flex; width: 100%; height: 100vh; gap: 0; }
-      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden; }
+      .a4-page { width: 287mm !important; min-height: 200mm !important; padding: 4mm !important; }
+      * { box-sizing: border-box; }
+      .voucher-container { display: flex; width: 100%; gap: 0; }
+      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden; min-height: 195mm; }
       .slip + .slip { border-left: 2px dashed #999; }
       .slip-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
       .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
@@ -496,23 +522,10 @@ const FeeVouchers = () => {
       .slip-sign { display: flex; gap: 10px; font-size: 8px; }
       .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 65px; text-align: center; }
       .slip-qr { text-align: right; }
-      @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
     `;
-
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head><title>Fee Challan - ${voucherNo}</title><style>${voucherStyles}
-      .print-preview-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #c0392b; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; font-family: Arial, sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-      .print-preview-bar span { font-size: 14px; font-weight: bold; }
-      .print-preview-bar button { background: #fff; color: #c0392b; border: none; padding: 8px 24px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; }
-      .print-preview-bar button:hover { background: #f0f0f0; }
-      .print-preview-bar .close-btn { background: transparent; color: #fff; font-size: 13px; border: 1px solid rgba(255,255,255,0.4); padding: 6px 16px; border-radius: 4px; margin-left: 8px; }
-      body { padding-top: 50px; }
-    </style></head><body>
-      <div class="print-preview-bar"><span>📄 Fee Challan ${voucherNo} — Print Preview</span><div><button onclick="window.print()">🖨️ Print</button><button class="close-btn" onclick="window.close()">✕ Close</button></div></div>
-      <div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>
-    </body></html>`);
-    win.document.close();
+    const html = `<div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>`;
+    setPreviewData({ html, styles: voucherStyles, title: `Fee Challan ${voucherNo}`, filename, voucher: v });
+    setPreviewOpen(true);
   };
 
   const printMultipleVouchers = (vouchersToPrint: FeeVoucher[]) => {
@@ -1309,6 +1322,19 @@ const FeeVouchers = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {previewData && (
+        <PrintPreviewDialog
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          html={previewData.html}
+          styles={previewData.styles}
+          title={previewData.title}
+          filename={previewData.filename}
+          orientation="landscape"
+          onSavePdf={previewData.voucher ? () => savePdfVoucher(previewData.voucher!) : undefined}
+        />
+      )}
     </DashboardLayout>
   );
 };

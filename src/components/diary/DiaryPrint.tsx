@@ -13,50 +13,49 @@ interface DiaryEntry {
 const buildDiarySlipsHtml = (entries: DiaryEntry[]) => {
   if (entries.length === 0) return "";
 
-  // Build slips - 8 per page
+  // Build slips - 10 per page (5 rows × 2 cols on A4 portrait)
   const slipHtml = (entry: DiaryEntry) => `
     <div style="
       border: 1.5px dashed #888;
-      padding: 8px 10px;
-      width: 48%;
-      height: calc(25% - 8px);
+      padding: 6px 8px;
+      width: 48.5%;
+      height: calc(20% - 6px);
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       font-family: Arial, sans-serif;
       overflow: hidden;
     ">
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #c0392b;padding-bottom:4px;margin-bottom:4px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #c0392b;padding-bottom:3px;margin-bottom:3px;">
         <div>
-          <strong style="font-size:11px;color:#c0392b;">The Country School</strong>
-          <div style="font-size:7px;color:#666;">A Project of Bloomfield Hall (Since 1984)</div>
-          <div style="font-size:7px;color:#666;">Model Town Fahad Campus, Bahawalpur | 📞 0322-6107000</div>
+          <strong style="font-size:10px;color:#c0392b;">The Country School</strong>
+          <div style="font-size:6.5px;color:#666;">Model Town Fahad Campus, Bahawalpur | 📞 0322-6107000</div>
         </div>
-        <span style="font-size:9px;color:#333;font-weight:bold;">${format(new Date(entry.date), "dd MMM yyyy")}</span>
+        <span style="font-size:8.5px;color:#333;font-weight:bold;">${format(new Date(entry.date), "dd MMM yyyy")}</span>
       </div>
-      <div style="font-size:10px;margin-bottom:3px;color:#333;">
+      <div style="font-size:9px;margin-bottom:2px;color:#333;">
         <strong>Class:</strong> ${entry.class_name}-${entry.section} &nbsp;|&nbsp; <strong>Subject:</strong> ${entry.subject}
       </div>
-      <div style="font-size:10px;color:#222;flex:1;overflow:hidden;line-height:1.4;font-weight:500;">
+      <div style="font-size:9px;color:#222;flex:1;overflow:hidden;line-height:1.3;font-weight:500;">
         ${entry.homework_text.replace(/\n/g, "<br>")}
       </div>
-      <div style="font-size:8px;color:#888;text-align:right;margin-top:3px;border-top:1px dotted #ccc;padding-top:2px;">Parent Sign: ____________</div>
+      <div style="font-size:7.5px;color:#888;text-align:right;margin-top:2px;border-top:1px dotted #ccc;padding-top:2px;">Parent Sign: ____________</div>
     </div>
   `;
 
-  // Group into pages of 8
+  // Group into pages of 10
   const pages: string[] = [];
-  for (let i = 0; i < entries.length; i += 8) {
-    const pageEntries = entries.slice(i, i + 8);
-    // Fill remaining slots with empty if less than 8 (for consistent layout)
-    while (pageEntries.length < 8) {
-      pageEntries.push(pageEntries[pageEntries.length - 1]); // duplicate last entry to fill
+  for (let i = 0; i < entries.length; i += 10) {
+    const pageEntries = entries.slice(i, i + 10);
+    // Fill remaining slots with last entry to keep layout consistent
+    while (pageEntries.length < 10) {
+      pageEntries.push(pageEntries[pageEntries.length - 1]);
     }
     pages.push(`
       <div class="print-page" style="
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
+        gap: 4px 1.5%;
         justify-content: space-between;
         align-content: flex-start;
         height: 277mm;
@@ -83,10 +82,10 @@ export const downloadDiarySlipsPdf = async (entries: DiaryEntry[]) => {
 };
 
 /**
- * For a single diary entry, prints 8 copies on one A4 page
+ * For a single diary entry, prints 10 copies on one A4 page
  */
 export const printSingleDiaryAs8 = (entry: DiaryEntry) => {
-  const copies = Array(8).fill(entry);
+  const copies = Array(10).fill(entry);
   printDiarySlips(copies);
 };
 
