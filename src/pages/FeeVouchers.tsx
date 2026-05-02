@@ -20,6 +20,8 @@ import BulkActionBar from "@/components/BulkActionBar";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { getPreloadedLogo } from "@/lib/logoBase64";
 import { buildVoucherFilename } from "@/lib/voucherFilename";
+import { sortClasses } from "@/lib/constants";
+import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
 interface FeeVoucher {
   id: string;
@@ -64,8 +66,8 @@ const LATE_FEE = 300;
 const getDueDate = (month: string, year: number) => {
   const monthIdx = MONTHS.indexOf(month);
   if (monthIdx === -1) return "";
-  const d = new Date(year, monthIdx, 7);
-  if (d.getDay() === 0) d.setDate(8);
+  // Fees are due on the 10th of every month
+  const d = new Date(year, monthIdx, 10);
   return d.toISOString().split("T")[0];
 };
 
@@ -226,7 +228,7 @@ const FeeVouchers = () => {
     else { toast({ title: editingId ? "Updated" : "Voucher Generated" }); setDialogOpen(false); setEditingId(null); setForm(emptyFeeForm); fetchData(); }
   };
 
-  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+  const uniqueClasses = sortClasses([...new Set(students.map(s => s.class))]);
 
   const handleBulkGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
