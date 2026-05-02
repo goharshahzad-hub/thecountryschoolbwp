@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { sortClasses } from "@/lib/constants";
 
 interface FeeVoucher {
   student_id: string;
@@ -37,7 +38,7 @@ interface ClassMetric {
 }
 
 const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseFeeMetricsProps) => {
-  const classNames = [...new Set(students.map(s => s.class))].sort();
+  const classNames = sortClasses([...new Set(students.map(s => s.class))]);
 
   const metrics: ClassMetric[] = classNames.map(cls => {
     const classStudents = students.filter(s => s.class === cls);

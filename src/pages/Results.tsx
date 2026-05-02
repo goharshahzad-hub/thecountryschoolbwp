@@ -15,6 +15,7 @@ import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
+import { sortClasses } from "@/lib/constants";
 
 interface TestResult {
   id: string;
@@ -110,7 +111,7 @@ const Results = () => {
 
   const getStudent = (id: string) => students.find(s => s.id === id);
   const getSubject = (id: string) => subjects.find(s => s.id === id);
-  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+  const uniqueClasses = sortClasses([...new Set(students.map(s => s.class))]);
 
   // ========== FORM HANDLERS ==========
   const handleSubmit = async (e: React.FormEvent) => {
