@@ -1067,11 +1067,17 @@ const FeeVouchers = () => {
                             <TableCell>{student?.class}-{student?.section}</TableCell>
                             <TableCell>{v.month} {v.year}</TableCell>
                             <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
-                            <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
+                            <TableCell className="font-bold">
+                              ₨ {Number(v.amount).toLocaleString("en-PK")}
+                              {Number((v as any).amount_paid || 0) > 0 && Number((v as any).amount_paid) < Number(v.amount) && (
+                                <div className="text-[10px] font-normal text-warning">Paid ₨ {Number((v as any).amount_paid).toLocaleString("en-PK")}</div>
+                              )}
+                            </TableCell>
                             <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
                             <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
                             <TableCell className="text-right space-x-1">
-                              {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
+                              {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => recordPartialPayment(v)} title="Record partial or full payment">Pay</Button>}
+                              {v.status !== "Paid" && <Button variant="ghost" size="sm" onClick={() => markPaid(v.id)} title="Mark fully paid">✓</Button>}
                               <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
                                 <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
                               </Button>
