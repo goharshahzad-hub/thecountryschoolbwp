@@ -18,6 +18,9 @@ interface PrintPreviewDialogProps {
   orientation?: "portrait" | "landscape";
   /** Optional callback when user clicks Save as PDF */
   onSavePdf?: () => void | Promise<void>;
+  /** When true, render html directly without the inner .a4-page wrapper —
+   *  use this when the html already controls its own A4 layout via @page rules */
+  fullBleed?: boolean;
 }
 
 /**
