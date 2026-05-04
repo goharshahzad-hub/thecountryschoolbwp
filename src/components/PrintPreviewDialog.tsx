@@ -28,7 +28,7 @@ interface PrintPreviewDialogProps {
  * so the user can confirm layout and filename **before** committing to print/save.
  */
 const PrintPreviewDialog = ({
-  open, onOpenChange, html, styles = "", title, filename, orientation = "portrait", onSavePdf,
+  open, onOpenChange, html, styles = "", title, filename, orientation = "portrait", onSavePdf, fullBleed = false,
 }: PrintPreviewDialogProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -39,18 +39,29 @@ const PrintPreviewDialog = ({
     const doc = iframe.contentDocument;
     if (!doc) return;
     doc.open();
+    const wrapperOpen = fullBleed ? "" : `<div class="a4-page">`;
+    const wrapperClose = fullBleed ? "" : `</div>`;
+    const baseStyles = fullBleed
+      ? `@page { size: A4 ${orientation}; margin: 5mm; }
+         body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; padding: 0; }
+         @media screen {
+           body { padding: 12px; }
+           body > * { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.15); margin: 0 auto 16px;
+                     width: ${orientation === "landscape" ? "287mm" : "200mm"}; padding: 5mm; }
+         }`
+      : `@page { size: A4 ${orientation}; margin: 10mm; }
+         body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; padding: 12px; }
+         .a4-page { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.15); margin: 0 auto 16px; padding: 12mm;
+                    width: ${orientation === "landscape" ? "297mm" : "210mm"};
+                    min-height: ${orientation === "landscape" ? "210mm" : "297mm"}; }`;
     doc.write(`<!DOCTYPE html><html><head>
       <style>
-        @page { size: A4 ${orientation}; margin: 10mm; }
-        body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; padding: 12px; }
-        .a4-page { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.15); margin: 0 auto 16px; padding: 12mm;
-                   width: ${orientation === "landscape" ? "297mm" : "210mm"};
-                   min-height: ${orientation === "landscape" ? "210mm" : "297mm"}; }
+        ${baseStyles}
         ${styles}
       </style>
-    </head><body><div class="a4-page">${html}</div></body></html>`);
+    </head><body>${wrapperOpen}${html}${wrapperClose}</body></html>`);
     doc.close();
-  }, [open, html, styles, orientation]);
+  }, [open, html, styles, orientation, fullBleed]);
 
   const handlePrint = () => {
     iframeRef.current?.contentWindow?.print();
