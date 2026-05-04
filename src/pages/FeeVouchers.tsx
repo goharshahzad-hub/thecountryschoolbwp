@@ -496,10 +496,10 @@ const FeeVouchers = () => {
     });
     const voucherStyles = `
       @page { size: A4 landscape; margin: 5mm; }
-      .a4-page { width: 287mm !important; min-height: 200mm !important; padding: 4mm !important; }
-      * { box-sizing: border-box; }
-      .voucher-container { display: flex; width: 100%; gap: 0; }
-      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden; min-height: 195mm; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
+      .voucher-container { display: flex; width: 100%; gap: 0; height: 195mm; }
+      .slip { flex: 1; border: 1px solid #333; padding: 5px 7px; display: flex; flex-direction: column; min-width: 0; }
       .slip + .slip { border-left: 2px dashed #999; }
       .slip-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
       .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
@@ -518,10 +518,11 @@ const FeeVouchers = () => {
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 8px; }
-      .slip-sign { display: flex; gap: 10px; font-size: 8px; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 65px; text-align: center; }
-      .slip-qr { text-align: right; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 6px; gap: 6px; }
+      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-qr { flex-shrink: 0; }
+      .slip-qr img { display: block; width: 50px; height: 50px; }
     `;
     const html = `<div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>`;
     setPreviewData({ html, styles: voucherStyles, title: `Fee Challan ${voucherNo}`, filename, voucher: v });
@@ -560,10 +561,11 @@ const FeeVouchers = () => {
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 8px; }
-      .slip-sign { display: flex; gap: 10px; font-size: 8px; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 65px; text-align: center; }
-      .slip-qr { text-align: right; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 6px; gap: 6px; }
+      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-qr { flex-shrink: 0; }
+      .slip-qr img { display: block; width: 50px; height: 50px; }
       @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
     `;
 
@@ -617,10 +619,11 @@ const FeeVouchers = () => {
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; padding-top: 8px; }
-      .slip-sign { display: flex; gap: 10px; font-size: 8px; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 65px; text-align: center; }
-      .slip-qr { text-align: right; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; padding-top: 6px; gap: 6px; }
+      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-qr { flex-shrink: 0; }
+      .slip-qr img { display: block; width: 50px; height: 50px; }
     `;
     const el = document.createElement("div");
     el.innerHTML = `<style>${voucherStyles}</style><div class="voucher-container">${slipContent("School Copy")}${slipContent("Bank Copy")}${slipContent("Student Copy")}</div>`;
@@ -1332,6 +1335,7 @@ const FeeVouchers = () => {
           title={previewData.title}
           filename={previewData.filename}
           orientation="landscape"
+          fullBleed
           onSavePdf={previewData.voucher ? () => savePdfVoucher(previewData.voucher!) : undefined}
         />
       )}
