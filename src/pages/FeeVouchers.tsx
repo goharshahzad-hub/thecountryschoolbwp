@@ -312,10 +312,36 @@ const FeeVouchers = () => {
   };
 
   const markPaid = async (id: string) => {
-    await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: new Date().toISOString().split("T")[0] }).eq("id", id);
+    const v = vouchers.find(x => x.id === id);
+    const total = Number(v?.amount || 0);
+    await supabase.from("fee_vouchers").update({ amount_paid: total, status: "Paid", paid_date: new Date().toISOString().split("T")[0] } as any).eq("id", id);
     fetchData();
     toast({ title: "Marked as Paid" });
   };
+
+  const recordPartialPayment = async (v: FeeVoucher) => {
+    const outstanding = Math.max(0, Number(v.amount) - Number((v as any).amount_paid || 0));
+    const input = window.prompt(`Enter amount paid (Outstanding: ₨ ${outstanding.toLocaleString("en-PK")})`, String(outstanding));
+    if (!input) return;
+    const pay = parseFloat(input);
+    if (!pay || pay <= 0) { toast({ title: "Invalid amount", variant: "destructive" }); return; }
+    const newPaid = Number((v as any).amount_paid || 0) + pay;
+    const receiptNo = `REC-${Date.now().toString().slice(-6)}`;
+    const { error: payErr } = await supabase.from("payment_records" as any).insert({
+      receipt_no: receiptNo,
+      payment_date: new Date().toISOString().split("T")[0],
+      student_id: v.student_id,
+      voucher_id: v.id,
+      fee_head: pay >= Number(v.amount) ? "Full Payment" : "Partial Payment",
+      description: `Voucher ${v.voucher_no} — ${v.month} ${v.year}`,
+      amount: pay,
+      payment_method: "Cash",
+    });
+    if (payErr) { toast({ title: "Error", description: payErr.message, variant: "destructive" }); return; }
+    fetchData();
+    toast({ title: newPaid >= Number(v.amount) ? "✓ Voucher fully paid" : `✓ Partial payment recorded (₨ ${pay.toLocaleString("en-PK")})` });
+  };
+
 
   const handleEdit = (v: FeeVoucher) => {
     setForm({
