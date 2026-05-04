@@ -364,8 +364,11 @@ export type Database = {
         Row: {
           admission_fee: number
           amount: number
+          amount_paid: number
           annual_charges: number
           arrears: number
+          arrears_aging_months: number
+          arrears_source_voucher_id: string | null
           books_charges: number
           created_at: string
           discount: number
@@ -391,8 +394,11 @@ export type Database = {
         Insert: {
           admission_fee?: number
           amount?: number
+          amount_paid?: number
           annual_charges?: number
           arrears?: number
+          arrears_aging_months?: number
+          arrears_source_voucher_id?: string | null
           books_charges?: number
           created_at?: string
           discount?: number
@@ -418,8 +424,11 @@ export type Database = {
         Update: {
           admission_fee?: number
           amount?: number
+          amount_paid?: number
           annual_charges?: number
           arrears?: number
+          arrears_aging_months?: number
+          arrears_source_voucher_id?: string | null
           books_charges?: number
           created_at?: string
           discount?: number
