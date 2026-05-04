@@ -561,10 +561,11 @@ const FeeVouchers = () => {
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 8px; }
-      .slip-sign { display: flex; gap: 10px; font-size: 8px; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 65px; text-align: center; }
-      .slip-qr { text-align: right; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 6px; gap: 6px; }
+      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-qr { flex-shrink: 0; }
+      .slip-qr img { display: block; width: 50px; height: 50px; }
       @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
     `;
 
