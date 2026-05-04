@@ -141,24 +141,23 @@ const FeeVouchers = () => {
 
   const getStudent = (id: string) => students.find(s => s.id === id);
 
-  // Calculate arrears from student's last month unpaid vouchers + late fee
+  // Aging arrears: sum of OUTSTANDING balances (amount − amount_paid) across ALL prior months
+  // for this student, plus a late fee per overdue month. Excludes the current voucher month.
   const calcStudentArrears = (studentId: string, currentMonth: string, currentYear: number) => {
-    const currentMonthIdx = MONTHS.indexOf(currentMonth);
-    let prevMonth: string;
-    let prevYear: number;
-    if (currentMonthIdx === 0) {
-      prevMonth = MONTHS[11];
-      prevYear = currentYear - 1;
-    } else {
-      prevMonth = MONTHS[currentMonthIdx - 1];
-      prevYear = currentYear;
-    }
-    const unpaid = vouchers.filter(
-      v => v.student_id === studentId && v.month === prevMonth && v.year === prevYear && v.status !== "Paid"
-    );
-    if (unpaid.length === 0) return 0;
-    const unpaidTotal = unpaid.reduce((sum, v) => sum + Number(v.amount), 0);
-    return unpaidTotal + LATE_FEE;
+    const currentIdx = MONTHS.indexOf(currentMonth) + currentYear * 12;
+    const overdue = vouchers.filter(v => {
+      if (v.student_id !== studentId) return false;
+      if (v.status === "Paid") return false;
+      const idx = MONTHS.indexOf(v.month) + v.year * 12;
+      return idx < currentIdx;
+    });
+    if (overdue.length === 0) return 0;
+    const outstanding = overdue.reduce((sum, v) => {
+      const paid = Number((v as any).amount_paid || 0);
+      return sum + Math.max(0, Number(v.amount) - paid);
+    }, 0);
+    // One late fee per overdue month → aging penalty
+    return outstanding + LATE_FEE * overdue.length;
   };
 
   const generateVoucherNo = (offset = 0) => {
