@@ -1332,6 +1332,7 @@ const FeeVouchers = () => {
           title={previewData.title}
           filename={previewData.filename}
           orientation="landscape"
+          fullBleed
           onSavePdf={previewData.voucher ? () => savePdfVoucher(previewData.voucher!) : undefined}
         />
       )}
