@@ -141,24 +141,23 @@ const FeeVouchers = () => {
 
   const getStudent = (id: string) => students.find(s => s.id === id);
 
-  // Calculate arrears from student's last month unpaid vouchers + late fee
+  // Aging arrears: sum of OUTSTANDING balances (amount − amount_paid) across ALL prior months
+  // for this student, plus a late fee per overdue month. Excludes the current voucher month.
   const calcStudentArrears = (studentId: string, currentMonth: string, currentYear: number) => {
-    const currentMonthIdx = MONTHS.indexOf(currentMonth);
-    let prevMonth: string;
-    let prevYear: number;
-    if (currentMonthIdx === 0) {
-      prevMonth = MONTHS[11];
-      prevYear = currentYear - 1;
-    } else {
-      prevMonth = MONTHS[currentMonthIdx - 1];
-      prevYear = currentYear;
-    }
-    const unpaid = vouchers.filter(
-      v => v.student_id === studentId && v.month === prevMonth && v.year === prevYear && v.status !== "Paid"
-    );
-    if (unpaid.length === 0) return 0;
-    const unpaidTotal = unpaid.reduce((sum, v) => sum + Number(v.amount), 0);
-    return unpaidTotal + LATE_FEE;
+    const currentIdx = MONTHS.indexOf(currentMonth) + currentYear * 12;
+    const overdue = vouchers.filter(v => {
+      if (v.student_id !== studentId) return false;
+      if (v.status === "Paid") return false;
+      const idx = MONTHS.indexOf(v.month) + v.year * 12;
+      return idx < currentIdx;
+    });
+    if (overdue.length === 0) return 0;
+    const outstanding = overdue.reduce((sum, v) => {
+      const paid = Number((v as any).amount_paid || 0);
+      return sum + Math.max(0, Number(v.amount) - paid);
+    }, 0);
+    // One late fee per overdue month → aging penalty
+    return outstanding + LATE_FEE * overdue.length;
   };
 
   const generateVoucherNo = (offset = 0) => {
@@ -313,10 +312,36 @@ const FeeVouchers = () => {
   };
 
   const markPaid = async (id: string) => {
-    await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: new Date().toISOString().split("T")[0] }).eq("id", id);
+    const v = vouchers.find(x => x.id === id);
+    const total = Number(v?.amount || 0);
+    await supabase.from("fee_vouchers").update({ amount_paid: total, status: "Paid", paid_date: new Date().toISOString().split("T")[0] } as any).eq("id", id);
     fetchData();
     toast({ title: "Marked as Paid" });
   };
+
+  const recordPartialPayment = async (v: FeeVoucher) => {
+    const outstanding = Math.max(0, Number(v.amount) - Number((v as any).amount_paid || 0));
+    const input = window.prompt(`Enter amount paid (Outstanding: ₨ ${outstanding.toLocaleString("en-PK")})`, String(outstanding));
+    if (!input) return;
+    const pay = parseFloat(input);
+    if (!pay || pay <= 0) { toast({ title: "Invalid amount", variant: "destructive" }); return; }
+    const newPaid = Number((v as any).amount_paid || 0) + pay;
+    const receiptNo = `REC-${Date.now().toString().slice(-6)}`;
+    const { error: payErr } = await supabase.from("payment_records" as any).insert({
+      receipt_no: receiptNo,
+      payment_date: new Date().toISOString().split("T")[0],
+      student_id: v.student_id,
+      voucher_id: v.id,
+      fee_head: pay >= Number(v.amount) ? "Full Payment" : "Partial Payment",
+      description: `Voucher ${v.voucher_no} — ${v.month} ${v.year}`,
+      amount: pay,
+      payment_method: "Cash",
+    });
+    if (payErr) { toast({ title: "Error", description: payErr.message, variant: "destructive" }); return; }
+    fetchData();
+    toast({ title: newPaid >= Number(v.amount) ? "✓ Voucher fully paid" : `✓ Partial payment recorded (₨ ${pay.toLocaleString("en-PK")})` });
+  };
+
 
   const handleEdit = (v: FeeVoucher) => {
     setForm({
@@ -1042,11 +1067,17 @@ const FeeVouchers = () => {
                             <TableCell>{student?.class}-{student?.section}</TableCell>
                             <TableCell>{v.month} {v.year}</TableCell>
                             <TableCell className="font-medium">₨ {Number(v.tuition_fee || 0).toLocaleString("en-PK")}</TableCell>
-                            <TableCell className="font-bold">₨ {Number(v.amount).toLocaleString("en-PK")}</TableCell>
+                            <TableCell className="font-bold">
+                              ₨ {Number(v.amount).toLocaleString("en-PK")}
+                              {Number((v as any).amount_paid || 0) > 0 && Number((v as any).amount_paid) < Number(v.amount) && (
+                                <div className="text-[10px] font-normal text-warning">Paid ₨ {Number((v as any).amount_paid).toLocaleString("en-PK")}</div>
+                              )}
+                            </TableCell>
                             <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
                             <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
                             <TableCell className="text-right space-x-1">
-                              {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => markPaid(v.id)}>Mark Paid</Button>}
+                              {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => recordPartialPayment(v)} title="Record partial or full payment">Pay</Button>}
+                              {v.status !== "Paid" && <Button variant="ghost" size="sm" onClick={() => markPaid(v.id)} title="Mark fully paid">✓</Button>}
                               <Button variant="ghost" size="icon" onClick={() => isInlineEditing ? setInlineEditId(null) : startInlineEdit(v)} title="Edit inline">
                                 <Pencil className={`h-4 w-4 ${isInlineEditing ? "text-primary" : ""}`} />
                               </Button>
