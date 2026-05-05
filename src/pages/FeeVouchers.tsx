@@ -696,7 +696,7 @@ const FeeVouchers = () => {
     printMultipleVouchers(selected);
   };
 
-  const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Partial" ? "border-info/30" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
+  const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Partial" ? "border-primary/30 text-primary" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   const feeFields: { key: keyof typeof emptyFeeForm; label: string }[] = [
     { key: "registration_fee", label: "Registration Fee" },
