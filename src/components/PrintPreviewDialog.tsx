@@ -43,17 +43,33 @@ const PrintPreviewDialog = ({
     const wrapperClose = fullBleed ? "" : `</div>`;
     const baseStyles = fullBleed
       ? `@page { size: A4 ${orientation}; margin: 5mm; }
-         body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; padding: 0; }
+         html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
          @media screen {
            body { padding: 12px; }
            body > * { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.15); margin: 0 auto 16px;
                      width: ${orientation === "landscape" ? "287mm" : "200mm"}; padding: 5mm; }
+         }
+         @media print {
+           html, body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+           body > * { box-shadow: none !important; margin: 0 !important; padding: 0 !important;
+                      width: auto !important; background: #fff !important; page-break-after: avoid; }
+           body > *:last-child { page-break-after: auto; }
          }`
       : `@page { size: A4 ${orientation}; margin: 10mm; }
-         body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; padding: 12px; }
-         .a4-page { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.15); margin: 0 auto 16px; padding: 12mm;
-                    width: ${orientation === "landscape" ? "297mm" : "210mm"};
-                    min-height: ${orientation === "landscape" ? "210mm" : "297mm"}; }`;
+         html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #f5f5f5; }
+         @media screen {
+           body { padding: 12px; }
+           .a4-page { background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.15); margin: 0 auto 16px; padding: 12mm;
+                      width: ${orientation === "landscape" ? "297mm" : "210mm"};
+                      min-height: ${orientation === "landscape" ? "210mm" : "297mm"}; }
+         }
+         @media print {
+           html, body { background: #fff !important; padding: 0 !important; margin: 0 !important; }
+           .a4-page { box-shadow: none !important; margin: 0 !important; padding: 0 !important;
+                      width: auto !important; min-height: auto !important; background: #fff !important;
+                      page-break-after: avoid; }
+           .a4-page:last-child { page-break-after: auto; }
+         }`;
     doc.write(`<!DOCTYPE html><html><head>
       <style>
         ${baseStyles}
