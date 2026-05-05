@@ -117,7 +117,7 @@ const ClasswiseFeeMetrics = ({ vouchers, students, compact = false }: ClasswiseF
                   <span className="ml-1 text-xs text-muted-foreground">({m.paidCount})</span>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className="text-info font-medium" style={{ color: "hsl(217 91% 50%)" }}>{fmt(m.partialPaid)}</span>
+                  <span className="font-medium" style={{ color: "hsl(217 91% 50%)" }}>{fmt(m.partialPaid)}</span>
                   <span className="ml-1 text-xs text-muted-foreground">({m.partialCount})</span>
                 </TableCell>
                 <TableCell className="text-right">
