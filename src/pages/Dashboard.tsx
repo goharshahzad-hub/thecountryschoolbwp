@@ -185,7 +185,8 @@ const Dashboard = () => {
   const enrollmentByClass = useMemo(() => {
     const map: Record<string, number> = {};
     students.forEach(s => { map[s.class] = (map[s.class] || 0) + 1; });
-    return Object.entries(map).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+    const items = Object.entries(map).map(([name, count]) => ({ name, count }));
+    return sortClasses(items, (i) => i.name);
   }, [students]);
 
   // Attendance summary (last 30 days)
