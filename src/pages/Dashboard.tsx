@@ -271,21 +271,61 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { label: "Total Fees", amount: feeCollected + feePending + feeOverdue, cls: "text-foreground" },
-              { label: "Total Paid", amount: feeCollected, cls: "text-success" },
+              { label: "Total Fees", amount: filteredVouchers.reduce((s,v) => s + Number(v.amount), 0), cls: "text-foreground" },
+              { label: "Total Received", amount: feeCollected, cls: "text-success" },
+              { label: "Partial Received", amount: feePartial, cls: "" , style: { color: "hsl(217 91% 50%)" } as any },
               { label: "Total Pending", amount: feePending, cls: "text-warning" },
               { label: "Total Overdue", amount: feeOverdue, cls: "text-destructive" },
-            ].map((s, i) => (
+              { label: "Scholarship", amount: students.filter(s => !Number((s as any).monthly_fee || 0)).length, cls: "text-primary", isCount: true },
+            ].map((s: any, i) => (
               <Card key={i} className="shadow-card">
                 <CardContent className="p-4 text-center">
-                  <p className={`font-display text-xl font-bold ${s.cls}`}>₨ {s.amount.toLocaleString("en-PK")}</p>
+                  <p className={`font-display text-xl font-bold ${s.cls}`} style={s.style}>
+                    {s.isCount ? s.amount : `₨ ${s.amount.toLocaleString("en-PK")}`}
+                  </p>
                   <p className="text-xs text-muted-foreground">{s.label}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          {headSummary.length > 0 && (
+            <Card className="mb-4 shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg">Fee Head-wise Summary {filterLabel !== "All Time" ? `— ${filterLabel}` : ""}</CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto p-0">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 text-xs">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Head</th>
+                      <th className="px-3 py-2 text-right font-medium">Due</th>
+                      <th className="px-3 py-2 text-right font-medium">Received</th>
+                      <th className="px-3 py-2 text-right font-medium">Pending</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {headSummary.map(h => (
+                      <tr key={h.label} className="border-t border-border">
+                        <td className="px-3 py-2 font-medium">{h.label}</td>
+                        <td className="px-3 py-2 text-right">₨ {Math.round(h.due).toLocaleString("en-PK")}</td>
+                        <td className="px-3 py-2 text-right text-success">₨ {Math.round(h.received).toLocaleString("en-PK")}</td>
+                        <td className="px-3 py-2 text-right text-warning">₨ {Math.round(h.pending).toLocaleString("en-PK")}</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t border-border bg-muted/30 font-semibold">
+                      <td className="px-3 py-2">Total</td>
+                      <td className="px-3 py-2 text-right">₨ {Math.round(headSummary.reduce((s,h) => s+h.due, 0)).toLocaleString("en-PK")}</td>
+                      <td className="px-3 py-2 text-right text-success">₨ {Math.round(headSummary.reduce((s,h) => s+h.received, 0)).toLocaleString("en-PK")}</td>
+                      <td className="px-3 py-2 text-right text-warning">₨ {Math.round(headSummary.reduce((s,h) => s+h.pending, 0)).toLocaleString("en-PK")}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
 
           {chartData.length > 0 && (
             <Card className="mb-4 shadow-card">
