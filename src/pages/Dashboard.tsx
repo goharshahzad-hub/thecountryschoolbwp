@@ -163,7 +163,9 @@ const Dashboard = () => {
       const key = `${v.month.slice(0, 3)} ${v.year}`;
       if (!monthMap[key]) monthMap[key] = { paid: 0, pending: 0, overdue: 0 };
       const amt = Number(v.amount);
+      const paid = Number(v.amount_paid || 0);
       if (v.status === "Paid") monthMap[key].paid += amt;
+      else if (v.status === "Partial") { monthMap[key].paid += paid; monthMap[key].pending += Math.max(0, amt - paid); }
       else if (v.status === "Pending") monthMap[key].pending += amt;
       else if (v.status === "Overdue") monthMap[key].overdue += amt;
     });
