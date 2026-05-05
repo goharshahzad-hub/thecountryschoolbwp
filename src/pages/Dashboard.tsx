@@ -104,9 +104,41 @@ const Dashboard = () => {
     });
   }, [allVouchers, selectedMonth, selectedYear]);
 
-  const feeCollected = filteredVouchers.filter(v => v.status === "Paid").reduce((s, v) => s + Number(v.amount), 0);
-  const feePending = filteredVouchers.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
+  // Treat Partial vouchers as paid for counts; add the actually-received portion to "collected"
+  const feeCollected = filteredVouchers
+    .filter(v => v.status === "Paid" || v.status === "Partial")
+    .reduce((s, v) => s + (v.status === "Paid" ? Number(v.amount) : Number(v.amount_paid || 0)), 0);
+  const feePartial = filteredVouchers.filter(v => v.status === "Partial").reduce((s, v) => s + Number(v.amount_paid || 0), 0);
+  const feePending = filteredVouchers
+    .filter(v => v.status === "Pending" || v.status === "Partial")
+    .reduce((s, v) => s + (v.status === "Pending" ? Number(v.amount) : Math.max(0, Number(v.amount) - Number(v.amount_paid || 0))), 0);
   const feeOverdue = filteredVouchers.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
+
+  // Head-wise summary (Due / Received / Pending) including arrears
+  const HEADS: { key: keyof FeeVoucher; label: string }[] = [
+    { key: "registration_fee", label: "Registration" },
+    { key: "admission_fee", label: "Admission" },
+    { key: "security_deposit", label: "Security" },
+    { key: "tuition_fee", label: "Tuition" },
+    { key: "annual_charges", label: "Annual" },
+    { key: "trip_charges", label: "Trip" },
+    { key: "books_charges", label: "Books" },
+    { key: "arrears", label: "Arrears" },
+    { key: "late_fee", label: "Late Fee" },
+  ];
+  const headSummary = useMemo(() => HEADS.map(({ key, label }) => {
+    let due = 0, received = 0;
+    filteredVouchers.forEach(v => {
+      const headAmt = Number((v as any)[key] || 0);
+      if (!headAmt) return;
+      due += headAmt;
+      const paid = Number(v.amount_paid || 0);
+      const total = Number(v.amount || 0);
+      if (v.status === "Paid") received += headAmt;
+      else if (v.status === "Partial" && total > 0) received += Math.min(headAmt, headAmt * (paid / total));
+    });
+    return { label, due, received, pending: Math.max(0, due - received) };
+  }).filter(h => h.due > 0), [filteredVouchers]);
 
   const filteredExpenses = useMemo(() => {
     return allExpenses.filter(e => {
