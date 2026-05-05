@@ -839,13 +839,17 @@ const FeeVouchers = () => {
               totalSkipped += existingStudentIds.size;
               if (newStudents.length === 0) continue;
               const rows = newStudents.map((s, i) => {
-                const tuition = s.monthly_fee || 0;
-                const arrears = calcStudentArrears(s.id, month, year);
+                const isScholarship = !Number(s.monthly_fee || 0);
+                const tuition = isScholarship ? 0 : (s.monthly_fee || 0);
+                const arrears = isScholarship ? 0 : calcStudentArrears(s.id, month, year);
                 return {
                   voucher_no: generateVoucherNo(totalCreated + i),
-                  student_id: s.id, amount: tuition + arrears, tuition_fee: tuition, fee_type: "Monthly",
+                  student_id: s.id, amount: tuition + arrears, amount_paid: 0,
+                  tuition_fee: tuition, fee_type: isScholarship ? "Scholarship" : "Monthly",
                   month, year, due_date: dueDate, issue_date: new Date().toISOString().split("T")[0],
-                  status: "Pending" as string, remarks: "", registration_fee: 0, admission_fee: 0,
+                  status: isScholarship ? "Paid" : "Pending",
+                  remarks: isScholarship ? "100% Scholarship — auto-paid" : "",
+                  registration_fee: 0, admission_fee: 0,
                   security_deposit: 0, annual_charges: 0, trip_charges: 0, books_charges: 0,
                   arrears, late_fee: 0, discount: 0, late_fee_amount: LATE_FEE,
                 };
