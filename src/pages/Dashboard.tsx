@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { sortClasses } from "@/lib/constants";
 
-interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; }
+interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; amount_paid?: number; registration_fee?: number; admission_fee?: number; security_deposit?: number; tuition_fee?: number; annual_charges?: number; trip_charges?: number; books_charges?: number; arrears?: number; late_fee?: number; discount?: number; }
 interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; date_of_birth?: string | null; }
 interface Expense { id: string; expense_head: string; amount: number; month: string; year: number; }
 interface AttendanceRecord { id: string; student_id: string; date: string; status: string; }
@@ -49,7 +50,7 @@ const Dashboard = () => {
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("admissions").select("*", { count: "exact", head: true }).eq("status", "Pending"),
-        supabase.from("fee_vouchers").select("student_id, amount, status, month, year").limit(10000),
+        supabase.from("fee_vouchers").select("student_id, amount, status, month, year, amount_paid, registration_fee, admission_fee, security_deposit, tuition_fee, annual_charges, trip_charges, books_charges, arrears, late_fee, discount").limit(20000),
         supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id, date_of_birth").limit(5000),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
@@ -104,9 +105,41 @@ const Dashboard = () => {
     });
   }, [allVouchers, selectedMonth, selectedYear]);
 
-  const feeCollected = filteredVouchers.filter(v => v.status === "Paid").reduce((s, v) => s + Number(v.amount), 0);
-  const feePending = filteredVouchers.filter(v => v.status === "Pending").reduce((s, v) => s + Number(v.amount), 0);
+  // Treat Partial vouchers as paid for counts; add the actually-received portion to "collected"
+  const feeCollected = filteredVouchers
+    .filter(v => v.status === "Paid" || v.status === "Partial")
+    .reduce((s, v) => s + (v.status === "Paid" ? Number(v.amount) : Number(v.amount_paid || 0)), 0);
+  const feePartial = filteredVouchers.filter(v => v.status === "Partial").reduce((s, v) => s + Number(v.amount_paid || 0), 0);
+  const feePending = filteredVouchers
+    .filter(v => v.status === "Pending" || v.status === "Partial")
+    .reduce((s, v) => s + (v.status === "Pending" ? Number(v.amount) : Math.max(0, Number(v.amount) - Number(v.amount_paid || 0))), 0);
   const feeOverdue = filteredVouchers.filter(v => v.status === "Overdue").reduce((s, v) => s + Number(v.amount), 0);
+
+  // Head-wise summary (Due / Received / Pending) including arrears
+  const HEADS: { key: keyof FeeVoucher; label: string }[] = [
+    { key: "registration_fee", label: "Registration" },
+    { key: "admission_fee", label: "Admission" },
+    { key: "security_deposit", label: "Security" },
+    { key: "tuition_fee", label: "Tuition" },
+    { key: "annual_charges", label: "Annual" },
+    { key: "trip_charges", label: "Trip" },
+    { key: "books_charges", label: "Books" },
+    { key: "arrears", label: "Arrears" },
+    { key: "late_fee", label: "Late Fee" },
+  ];
+  const headSummary = useMemo(() => HEADS.map(({ key, label }) => {
+    let due = 0, received = 0;
+    filteredVouchers.forEach(v => {
+      const headAmt = Number((v as any)[key] || 0);
+      if (!headAmt) return;
+      due += headAmt;
+      const paid = Number(v.amount_paid || 0);
+      const total = Number(v.amount || 0);
+      if (v.status === "Paid") received += headAmt;
+      else if (v.status === "Partial" && total > 0) received += Math.min(headAmt, headAmt * (paid / total));
+    });
+    return { label, due, received, pending: Math.max(0, due - received) };
+  }).filter(h => h.due > 0), [filteredVouchers]);
 
   const filteredExpenses = useMemo(() => {
     return allExpenses.filter(e => {
@@ -131,7 +164,9 @@ const Dashboard = () => {
       const key = `${v.month.slice(0, 3)} ${v.year}`;
       if (!monthMap[key]) monthMap[key] = { paid: 0, pending: 0, overdue: 0 };
       const amt = Number(v.amount);
+      const paid = Number(v.amount_paid || 0);
       if (v.status === "Paid") monthMap[key].paid += amt;
+      else if (v.status === "Partial") { monthMap[key].paid += paid; monthMap[key].pending += Math.max(0, amt - paid); }
       else if (v.status === "Pending") monthMap[key].pending += amt;
       else if (v.status === "Overdue") monthMap[key].overdue += amt;
     });
@@ -151,7 +186,8 @@ const Dashboard = () => {
   const enrollmentByClass = useMemo(() => {
     const map: Record<string, number> = {};
     students.forEach(s => { map[s.class] = (map[s.class] || 0) + 1; });
-    return Object.entries(map).map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+    const items = Object.entries(map).map(([name, count]) => ({ name, count }));
+    return sortClasses(items, (i) => i.name);
   }, [students]);
 
   // Attendance summary (last 30 days)
@@ -239,21 +275,61 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { label: "Total Fees", amount: feeCollected + feePending + feeOverdue, cls: "text-foreground" },
-              { label: "Total Paid", amount: feeCollected, cls: "text-success" },
+              { label: "Total Fees", amount: filteredVouchers.reduce((s,v) => s + Number(v.amount), 0), cls: "text-foreground" },
+              { label: "Total Received", amount: feeCollected, cls: "text-success" },
+              { label: "Partial Received", amount: feePartial, cls: "" , style: { color: "hsl(217 91% 50%)" } as any },
               { label: "Total Pending", amount: feePending, cls: "text-warning" },
               { label: "Total Overdue", amount: feeOverdue, cls: "text-destructive" },
-            ].map((s, i) => (
+              { label: "Scholarship", amount: students.filter(s => !Number((s as any).monthly_fee || 0)).length, cls: "text-primary", isCount: true },
+            ].map((s: any, i) => (
               <Card key={i} className="shadow-card">
                 <CardContent className="p-4 text-center">
-                  <p className={`font-display text-xl font-bold ${s.cls}`}>₨ {s.amount.toLocaleString("en-PK")}</p>
+                  <p className={`font-display text-xl font-bold ${s.cls}`} style={s.style}>
+                    {s.isCount ? s.amount : `₨ ${s.amount.toLocaleString("en-PK")}`}
+                  </p>
                   <p className="text-xs text-muted-foreground">{s.label}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          {headSummary.length > 0 && (
+            <Card className="mb-4 shadow-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-display text-lg">Fee Head-wise Summary {filterLabel !== "All Time" ? `— ${filterLabel}` : ""}</CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto p-0">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 text-xs">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Head</th>
+                      <th className="px-3 py-2 text-right font-medium">Due</th>
+                      <th className="px-3 py-2 text-right font-medium">Received</th>
+                      <th className="px-3 py-2 text-right font-medium">Pending</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {headSummary.map(h => (
+                      <tr key={h.label} className="border-t border-border">
+                        <td className="px-3 py-2 font-medium">{h.label}</td>
+                        <td className="px-3 py-2 text-right">₨ {Math.round(h.due).toLocaleString("en-PK")}</td>
+                        <td className="px-3 py-2 text-right text-success">₨ {Math.round(h.received).toLocaleString("en-PK")}</td>
+                        <td className="px-3 py-2 text-right text-warning">₨ {Math.round(h.pending).toLocaleString("en-PK")}</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t border-border bg-muted/30 font-semibold">
+                      <td className="px-3 py-2">Total</td>
+                      <td className="px-3 py-2 text-right">₨ {Math.round(headSummary.reduce((s,h) => s+h.due, 0)).toLocaleString("en-PK")}</td>
+                      <td className="px-3 py-2 text-right text-success">₨ {Math.round(headSummary.reduce((s,h) => s+h.received, 0)).toLocaleString("en-PK")}</td>
+                      <td className="px-3 py-2 text-right text-warning">₨ {Math.round(headSummary.reduce((s,h) => s+h.pending, 0)).toLocaleString("en-PK")}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
 
           {chartData.length > 0 && (
             <Card className="mb-4 shadow-card">

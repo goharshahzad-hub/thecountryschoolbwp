@@ -21,6 +21,7 @@ import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printU
 import { getPreloadedLogo } from "@/lib/logoBase64";
 import { buildVoucherFilename } from "@/lib/voucherFilename";
 import { sortClasses } from "@/lib/constants";
+import { formatDate } from "@/lib/dateFormat";
 import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
 interface FeeVoucher {
@@ -272,32 +273,34 @@ const FeeVouchers = () => {
     const bulkTuition = parseFloat(bulkForm.tuition_fee) || 0;
 
     const rows = newStudents.map((s, i) => {
-      const tuition = useBulkTuition ? bulkTuition : (s.monthly_fee || 0);
+      const isScholarship = !Number(s.monthly_fee || 0);
+      const tuition = isScholarship ? 0 : (useBulkTuition ? bulkTuition : (s.monthly_fee || 0));
       // Auto-calculate per-student arrears from last month's unpaid + late fee
-      const studentArrears = calcStudentArrears(s.id, bulkForm.month, bulkYear);
-      const arrears = studentArrears > 0 ? studentArrears : bulkArrears;
-      const total = bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + arrears + bulkLateFee - bulkDiscount;
+      const studentArrears = isScholarship ? 0 : calcStudentArrears(s.id, bulkForm.month, bulkYear);
+      const arrears = studentArrears > 0 ? studentArrears : (isScholarship ? 0 : bulkArrears);
+      const total = isScholarship ? 0 : (bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + arrears + bulkLateFee - bulkDiscount);
       return {
         voucher_no: generateVoucherNo(i),
         student_id: s.id,
         amount: total,
+        amount_paid: isScholarship ? 0 : 0,
         tuition_fee: tuition,
-        fee_type: "Monthly",
+        fee_type: isScholarship ? "Scholarship" : "Monthly",
         month: bulkForm.month,
         year: bulkYear,
         due_date: dueDate,
         issue_date: new Date().toISOString().split("T")[0],
-        status: "Pending" as string,
-        remarks: bulkForm.remarks.trim(),
-        registration_fee: bulkRegFee,
-        admission_fee: bulkAdmFee,
-        security_deposit: bulkSecDep,
-        annual_charges: bulkAnnual,
-        trip_charges: bulkTrip,
-        books_charges: bulkBooks,
+        status: isScholarship ? "Paid" : "Pending",
+        remarks: isScholarship ? "100% Scholarship — auto-paid" : bulkForm.remarks.trim(),
+        registration_fee: isScholarship ? 0 : bulkRegFee,
+        admission_fee: isScholarship ? 0 : bulkAdmFee,
+        security_deposit: isScholarship ? 0 : bulkSecDep,
+        annual_charges: isScholarship ? 0 : bulkAnnual,
+        trip_charges: isScholarship ? 0 : bulkTrip,
+        books_charges: isScholarship ? 0 : bulkBooks,
         arrears: arrears,
-        late_fee: bulkLateFee,
-        discount: bulkDiscount,
+        late_fee: isScholarship ? 0 : bulkLateFee,
+        discount: isScholarship ? 0 : bulkDiscount,
         late_fee_amount: LATE_FEE,
       };
     });
@@ -479,9 +482,9 @@ const FeeVouchers = () => {
         <div class="slip-heading">FEE CHALLAN</div>
         <table class="slip-info">
           <tr><td class="lbl">Challan No</td><td>${v.voucher_no}</td></tr>
-          <tr><td class="lbl">Issue Date</td><td>${(v as any).issue_date || new Date().toISOString().split("T")[0]}</td></tr>
+          <tr><td class="lbl">Issue Date</td><td>${formatDate((v as any).issue_date || new Date())}</td></tr>
           <tr><td class="lbl">Billing Month</td><td>${v.month} ${v.year}</td></tr>
-          <tr><td class="lbl">Due Date</td><td>${v.due_date}</td></tr>
+          <tr><td class="lbl">Due Date</td><td>${formatDate(v.due_date)}</td></tr>
           <tr><td class="lbl">Reg. No</td><td>${student?.student_id || "—"}</td></tr>
           <tr><td class="lbl">Name</td><td>${student?.name || "—"}</td></tr>
           <tr><td class="lbl">Guardian/Father's Name</td><td>${student?.father_name || "—"}</td></tr>
@@ -693,7 +696,7 @@ const FeeVouchers = () => {
     printMultipleVouchers(selected);
   };
 
-  const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
+  const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Partial" ? "border-primary/30 text-primary" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   const feeFields: { key: keyof typeof emptyFeeForm; label: string }[] = [
     { key: "registration_fee", label: "Registration Fee" },
@@ -764,7 +767,7 @@ const FeeVouchers = () => {
           <td style="text-align:left">${item.student.name}</td>
           <td style="text-align:left">${item.student.father_name}</td>
           <td>${item.voucher.month} ${item.voucher.year}</td>
-          <td>${item.voucher.due_date}</td>
+          <td>${formatDate(item.voucher.due_date)}</td>
           <td style="text-align:right; font-weight:bold">₨ ${Number(item.voucher.amount).toLocaleString("en-PK")}</td>
           <td>${item.student.phone || item.student.whatsapp || "—"}</td>
         </tr>
@@ -813,7 +816,7 @@ const FeeVouchers = () => {
           <Button variant="outline" size="sm" onClick={() => {
             const rows = vouchers.map(v => {
               const student = getStudent(v.student_id);
-              return `<tr><td>${v.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>${v.month}</td><td>${v.year}</td><td>₨ ${Number(v.amount).toLocaleString("en-PK")}</td><td>${v.due_date}</td><td>${v.paid_date || "—"}</td><td>${v.status}</td></tr>`;
+              return `<tr><td>${v.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>${v.month}</td><td>${v.year}</td><td>₨ ${Number(v.amount).toLocaleString("en-PK")}</td><td>${formatDate(v.due_date)}</td><td>${formatDate(v.paid_date) || "—"}</td><td>${v.status}</td></tr>`;
             }).join("");
             downloadA4Pdf(`<div class="print-page">${schoolHeader("FEE VOUCHERS REPORT")}<table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Month</th><th>Year</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee_Vouchers");
           }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
@@ -836,13 +839,17 @@ const FeeVouchers = () => {
               totalSkipped += existingStudentIds.size;
               if (newStudents.length === 0) continue;
               const rows = newStudents.map((s, i) => {
-                const tuition = s.monthly_fee || 0;
-                const arrears = calcStudentArrears(s.id, month, year);
+                const isScholarship = !Number(s.monthly_fee || 0);
+                const tuition = isScholarship ? 0 : (s.monthly_fee || 0);
+                const arrears = isScholarship ? 0 : calcStudentArrears(s.id, month, year);
                 return {
                   voucher_no: generateVoucherNo(totalCreated + i),
-                  student_id: s.id, amount: tuition + arrears, tuition_fee: tuition, fee_type: "Monthly",
+                  student_id: s.id, amount: tuition + arrears, amount_paid: 0,
+                  tuition_fee: tuition, fee_type: isScholarship ? "Scholarship" : "Monthly",
                   month, year, due_date: dueDate, issue_date: new Date().toISOString().split("T")[0],
-                  status: "Pending" as string, remarks: "", registration_fee: 0, admission_fee: 0,
+                  status: isScholarship ? "Paid" : "Pending",
+                  remarks: isScholarship ? "100% Scholarship — auto-paid" : "",
+                  registration_fee: 0, admission_fee: 0,
                   security_deposit: 0, annual_charges: 0, trip_charges: 0, books_charges: 0,
                   arrears, late_fee: 0, discount: 0, late_fee_amount: LATE_FEE,
                 };
@@ -1073,7 +1080,7 @@ const FeeVouchers = () => {
                                 <div className="text-[10px] font-normal text-warning">Paid ₨ {Number((v as any).amount_paid).toLocaleString("en-PK")}</div>
                               )}
                             </TableCell>
-                            <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
+                            <TableCell className="text-muted-foreground">{formatDate(v.due_date)}</TableCell>
                             <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
                             <TableCell className="text-right space-x-1">
                               {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => recordPartialPayment(v)} title="Record partial or full payment">Pay</Button>}
@@ -1213,7 +1220,7 @@ const FeeVouchers = () => {
                           <TableCell>{item.student.class}-{item.student.section}</TableCell>
                           <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
                           <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
-                          <TableCell className="text-muted-foreground">{item.voucher.due_date}</TableCell>
+                          <TableCell className="text-muted-foreground">{formatDate(item.voucher.due_date)}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={item.voucher.status === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning"}>
                               {item.voucher.status}
@@ -1331,7 +1338,7 @@ const FeeVouchers = () => {
                             <TableCell className="font-medium">{item.student.name}</TableCell>
                             <TableCell>{item.student.father_name}</TableCell>
                             <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
-                            <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
+                            <TableCell className="text-destructive">{formatDate(item.voucher.due_date)}</TableCell>
                             <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
                             <TableCell className="text-muted-foreground">{phone || "—"}</TableCell>
                             <TableCell>
