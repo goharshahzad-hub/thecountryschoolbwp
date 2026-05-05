@@ -480,9 +480,9 @@ const FeeVouchers = () => {
         <div class="slip-heading">FEE CHALLAN</div>
         <table class="slip-info">
           <tr><td class="lbl">Challan No</td><td>${v.voucher_no}</td></tr>
-          <tr><td class="lbl">Issue Date</td><td>${(v as any).issue_date || new Date().toISOString().split("T")[0]}</td></tr>
+          <tr><td class="lbl">Issue Date</td><td>${formatDate((v as any).issue_date || new Date())}</td></tr>
           <tr><td class="lbl">Billing Month</td><td>${v.month} ${v.year}</td></tr>
-          <tr><td class="lbl">Due Date</td><td>${v.due_date}</td></tr>
+          <tr><td class="lbl">Due Date</td><td>${formatDate(v.due_date)}</td></tr>
           <tr><td class="lbl">Reg. No</td><td>${student?.student_id || "—"}</td></tr>
           <tr><td class="lbl">Name</td><td>${student?.name || "—"}</td></tr>
           <tr><td class="lbl">Guardian/Father's Name</td><td>${student?.father_name || "—"}</td></tr>
