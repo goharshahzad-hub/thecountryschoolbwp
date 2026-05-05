@@ -21,6 +21,7 @@ import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printU
 import { getPreloadedLogo } from "@/lib/logoBase64";
 import { buildVoucherFilename } from "@/lib/voucherFilename";
 import { sortClasses } from "@/lib/constants";
+import { formatDate } from "@/lib/dateFormat";
 import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
 interface FeeVoucher {
