@@ -767,7 +767,7 @@ const FeeVouchers = () => {
           <td style="text-align:left">${item.student.name}</td>
           <td style="text-align:left">${item.student.father_name}</td>
           <td>${item.voucher.month} ${item.voucher.year}</td>
-          <td>${item.voucher.due_date}</td>
+          <td>${formatDate(item.voucher.due_date)}</td>
           <td style="text-align:right; font-weight:bold">₨ ${Number(item.voucher.amount).toLocaleString("en-PK")}</td>
           <td>${item.student.phone || item.student.whatsapp || "—"}</td>
         </tr>
@@ -816,7 +816,7 @@ const FeeVouchers = () => {
           <Button variant="outline" size="sm" onClick={() => {
             const rows = vouchers.map(v => {
               const student = getStudent(v.student_id);
-              return `<tr><td>${v.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>${v.month}</td><td>${v.year}</td><td>₨ ${Number(v.amount).toLocaleString("en-PK")}</td><td>${v.due_date}</td><td>${v.paid_date || "—"}</td><td>${v.status}</td></tr>`;
+              return `<tr><td>${v.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>${v.month}</td><td>${v.year}</td><td>₨ ${Number(v.amount).toLocaleString("en-PK")}</td><td>${formatDate(v.due_date)}</td><td>${formatDate(v.paid_date) || "—"}</td><td>${v.status}</td></tr>`;
             }).join("");
             downloadA4Pdf(`<div class="print-page">${schoolHeader("FEE VOUCHERS REPORT")}<table><thead><tr><th>Voucher</th><th>Student</th><th>Class</th><th>Month</th><th>Year</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>${schoolFooter()}</div>`, "Fee_Vouchers");
           }}><Download className="mr-2 h-4 w-4" />Save PDF</Button>
@@ -1080,7 +1080,7 @@ const FeeVouchers = () => {
                                 <div className="text-[10px] font-normal text-warning">Paid ₨ {Number((v as any).amount_paid).toLocaleString("en-PK")}</div>
                               )}
                             </TableCell>
-                            <TableCell className="text-muted-foreground">{v.due_date}</TableCell>
+                            <TableCell className="text-muted-foreground">{formatDate(v.due_date)}</TableCell>
                             <TableCell><Badge variant="outline" className={statusColor(v.status)}>{v.status}</Badge></TableCell>
                             <TableCell className="text-right space-x-1">
                               {v.status !== "Paid" && <Button variant="outline" size="sm" onClick={() => recordPartialPayment(v)} title="Record partial or full payment">Pay</Button>}
@@ -1220,7 +1220,7 @@ const FeeVouchers = () => {
                           <TableCell>{item.student.class}-{item.student.section}</TableCell>
                           <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
                           <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
-                          <TableCell className="text-muted-foreground">{item.voucher.due_date}</TableCell>
+                          <TableCell className="text-muted-foreground">{formatDate(item.voucher.due_date)}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={item.voucher.status === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning"}>
                               {item.voucher.status}
@@ -1338,7 +1338,7 @@ const FeeVouchers = () => {
                             <TableCell className="font-medium">{item.student.name}</TableCell>
                             <TableCell>{item.student.father_name}</TableCell>
                             <TableCell>{item.voucher.month} {item.voucher.year}</TableCell>
-                            <TableCell className="text-destructive">{item.voucher.due_date}</TableCell>
+                            <TableCell className="text-destructive">{formatDate(item.voucher.due_date)}</TableCell>
                             <TableCell className="text-right font-bold">₨ {Number(item.voucher.amount).toLocaleString("en-PK")}</TableCell>
                             <TableCell className="text-muted-foreground">{phone || "—"}</TableCell>
                             <TableCell>
