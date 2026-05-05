@@ -273,32 +273,34 @@ const FeeVouchers = () => {
     const bulkTuition = parseFloat(bulkForm.tuition_fee) || 0;
 
     const rows = newStudents.map((s, i) => {
-      const tuition = useBulkTuition ? bulkTuition : (s.monthly_fee || 0);
+      const isScholarship = !Number(s.monthly_fee || 0);
+      const tuition = isScholarship ? 0 : (useBulkTuition ? bulkTuition : (s.monthly_fee || 0));
       // Auto-calculate per-student arrears from last month's unpaid + late fee
-      const studentArrears = calcStudentArrears(s.id, bulkForm.month, bulkYear);
-      const arrears = studentArrears > 0 ? studentArrears : bulkArrears;
-      const total = bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + arrears + bulkLateFee - bulkDiscount;
+      const studentArrears = isScholarship ? 0 : calcStudentArrears(s.id, bulkForm.month, bulkYear);
+      const arrears = studentArrears > 0 ? studentArrears : (isScholarship ? 0 : bulkArrears);
+      const total = isScholarship ? 0 : (bulkRegFee + bulkAdmFee + bulkSecDep + tuition + bulkAnnual + bulkTrip + bulkBooks + arrears + bulkLateFee - bulkDiscount);
       return {
         voucher_no: generateVoucherNo(i),
         student_id: s.id,
         amount: total,
+        amount_paid: isScholarship ? 0 : 0,
         tuition_fee: tuition,
-        fee_type: "Monthly",
+        fee_type: isScholarship ? "Scholarship" : "Monthly",
         month: bulkForm.month,
         year: bulkYear,
         due_date: dueDate,
         issue_date: new Date().toISOString().split("T")[0],
-        status: "Pending" as string,
-        remarks: bulkForm.remarks.trim(),
-        registration_fee: bulkRegFee,
-        admission_fee: bulkAdmFee,
-        security_deposit: bulkSecDep,
-        annual_charges: bulkAnnual,
-        trip_charges: bulkTrip,
-        books_charges: bulkBooks,
+        status: isScholarship ? "Paid" : "Pending",
+        remarks: isScholarship ? "100% Scholarship — auto-paid" : bulkForm.remarks.trim(),
+        registration_fee: isScholarship ? 0 : bulkRegFee,
+        admission_fee: isScholarship ? 0 : bulkAdmFee,
+        security_deposit: isScholarship ? 0 : bulkSecDep,
+        annual_charges: isScholarship ? 0 : bulkAnnual,
+        trip_charges: isScholarship ? 0 : bulkTrip,
+        books_charges: isScholarship ? 0 : bulkBooks,
         arrears: arrears,
-        late_fee: bulkLateFee,
-        discount: bulkDiscount,
+        late_fee: isScholarship ? 0 : bulkLateFee,
+        discount: isScholarship ? 0 : bulkDiscount,
         late_fee_amount: LATE_FEE,
       };
     });
