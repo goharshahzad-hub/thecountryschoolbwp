@@ -49,7 +49,7 @@ const Dashboard = () => {
         supabase.from("teachers").select("*", { count: "exact", head: true }).eq("status", "Active"),
         supabase.from("classes").select("*", { count: "exact", head: true }),
         supabase.from("admissions").select("*", { count: "exact", head: true }).eq("status", "Pending"),
-        supabase.from("fee_vouchers").select("student_id, amount, status, month, year").limit(10000),
+        supabase.from("fee_vouchers").select("student_id, amount, status, month, year, amount_paid, registration_fee, admission_fee, security_deposit, tuition_fee, annual_charges, trip_charges, books_charges, arrears, late_fee, discount").limit(20000),
         supabase.from("students").select("id, name, class, section, monthly_fee, gender, parent_user_id, date_of_birth").limit(5000),
         supabase.from("expenses").select("id, expense_head, amount, month, year"),
         supabase.from("attendance_records").select("id, student_id, date, status").gte("date", new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split("T")[0]),
