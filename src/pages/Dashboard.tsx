@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import ClasswiseFeeMetrics from "@/components/ClasswiseFeeMetrics";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { sortClasses } from "@/lib/constants";
 
 interface FeeVoucher { student_id: string; amount: number; status: string; month: string; year: number; amount_paid?: number; registration_fee?: number; admission_fee?: number; security_deposit?: number; tuition_fee?: number; annual_charges?: number; trip_charges?: number; books_charges?: number; arrears?: number; late_fee?: number; discount?: number; }
 interface Student { id: string; name: string; class: string; section: string | null; gender?: string; parent_user_id?: string | null; date_of_birth?: string | null; }
