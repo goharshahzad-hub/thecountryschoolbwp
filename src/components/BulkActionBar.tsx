@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, Printer, X } from "lucide-react";
+import { Download, Trash2, Printer, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface BulkActionBarProps {
   count: number;
   onDelete?: () => void;
   onPrint?: () => void;
+  onSave?: () => void;
   onClear: () => void;
   deleting?: boolean;
 }
 
-const BulkActionBar = ({ count, onDelete, onPrint, onClear, deleting }: BulkActionBarProps) => {
+const BulkActionBar = ({ count, onDelete, onPrint, onSave, onClear, deleting }: BulkActionBarProps) => {
   if (count === 0) return null;
 
   return (
@@ -20,6 +21,11 @@ const BulkActionBar = ({ count, onDelete, onPrint, onClear, deleting }: BulkActi
         {onPrint && (
           <Button variant="outline" size="sm" onClick={onPrint}>
             <Printer className="mr-2 h-4 w-4" />Print Selected
+          </Button>
+        )}
+        {onSave && (
+          <Button variant="outline" size="sm" onClick={onSave}>
+            <Download className="mr-2 h-4 w-4" />Save Selected
           </Button>
         )}
         {onDelete && (
