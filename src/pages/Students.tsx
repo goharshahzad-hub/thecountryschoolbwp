@@ -17,6 +17,7 @@ import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import SearchableCombobox from "@/components/SearchableCombobox";
 
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
@@ -40,6 +41,14 @@ interface ParentProfile {
   phone: string | null;
 }
 
+interface StudentParentLink {
+  id: string;
+  student_id: string;
+  parent_user_id: string;
+  relationship: "Father" | "Mother" | "Guardian";
+  is_primary: boolean;
+}
+
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "", date_of_birth: "" };
 
 const generateStudentId = (existingStudents: { student_id: string }[]) => {
@@ -57,6 +66,7 @@ const Students = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [parents, setParents] = useState<ParentProfile[]>([]);
+  const [parentLinks, setParentLinks] = useState<StudentParentLink[]>([]);
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("all");
   const [parentFilter, setParentFilter] = useState("all");
@@ -65,6 +75,8 @@ const Students = () => {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkingStudent, setLinkingStudent] = useState<Student | null>(null);
   const [selectedParentId, setSelectedParentId] = useState("");
+  const [selectedFatherParentId, setSelectedFatherParentId] = useState("");
+  const [selectedMotherParentId, setSelectedMotherParentId] = useState("");
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -72,12 +84,14 @@ const Students = () => {
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchData = async () => {
-    const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
+    const [{ data: studentsData }, { data: parentsData }, { data: linksData }] = await Promise.all([
       supabase.from("students").select("*").order("student_id", { ascending: true }),
       supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
+      supabase.from("student_parent_links" as any).select("*"),
     ]);
     if (studentsData) setStudents(studentsData);
     if (parentsData) setParents(parentsData);
+    if (linksData) setParentLinks(linksData as any);
     setLoading(false);
   };
 
