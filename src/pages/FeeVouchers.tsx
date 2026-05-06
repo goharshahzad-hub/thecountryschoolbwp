@@ -36,6 +36,7 @@ interface FeeVoucher {
   due_date: string;
   paid_date: string | null;
   status: string;
+  amount_paid?: number;
   remarks: string | null;
   issue_date?: string;
   registration_fee?: number;
@@ -738,8 +739,8 @@ const FeeVouchers = () => {
   // Defaulter list: vouchers past due date that are not Paid
   const today = new Date().toISOString().split("T")[0];
   const defaulters = useMemo(() => {
-    return vouchers.filter(v => v.status !== "Paid" && v.due_date < today);
-  }, [vouchers, today]);
+    return sortedVouchers.filter(v => v.status !== "Paid" && v.due_date < today);
+  }, [sortedVouchers, today]);
 
   const defaultersByClass = useMemo(() => {
     const map: Record<string, { student: Student; voucher: FeeVoucher }[]> = {};
@@ -750,7 +751,7 @@ const FeeVouchers = () => {
       if (!map[cls]) map[cls] = [];
       map[cls].push({ student, voucher: v });
     });
-    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
+    return Object.entries(map).sort((a, b) => compareClassNames(a[0], b[0]));
   }, [defaulters, students]);
 
   const [defaulterClassFilter, setDefaulterClassFilter] = useState<string>("all");
