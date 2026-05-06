@@ -20,7 +20,8 @@ import BulkActionBar from "@/components/BulkActionBar";
 import { printA4, downloadA4Pdf, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { getPreloadedLogo } from "@/lib/logoBase64";
 import { buildVoucherFilename } from "@/lib/voucherFilename";
-import { sortClasses } from "@/lib/constants";
+import { compareClassNames, sortClasses } from "@/lib/constants";
+import SearchableCombobox from "@/components/SearchableCombobox";
 import { formatDate } from "@/lib/dateFormat";
 import PrintPreviewDialog from "@/components/PrintPreviewDialog";
 
@@ -35,6 +36,7 @@ interface FeeVoucher {
   due_date: string;
   paid_date: string | null;
   status: string;
+  amount_paid?: number;
   remarks: string | null;
   issue_date?: string;
   registration_fee?: number;
@@ -142,6 +144,29 @@ const FeeVouchers = () => {
 
   const getStudent = (id: string) => students.find(s => s.id === id);
 
+  const compareStudents = (a: Student, b: Student) => {
+    const cls = compareClassNames(`${a.class}-${a.section || "A"}`, `${b.class}-${b.section || "A"}`);
+    if (cls !== 0) return cls;
+    return a.student_id.localeCompare(b.student_id, undefined, { numeric: true });
+  };
+
+  const compareVouchers = (a: FeeVoucher, b: FeeVoucher) => {
+    const sa = getStudent(a.student_id);
+    const sb = getStudent(b.student_id);
+    if (sa && sb) {
+      const cls = compareStudents(sa, sb);
+      if (cls !== 0) return cls;
+    }
+    if (sa && !sb) return -1;
+    if (!sa && sb) return 1;
+    const monthCmp = a.year !== b.year ? b.year - a.year : MONTHS.indexOf(b.month) - MONTHS.indexOf(a.month);
+    if (monthCmp !== 0) return monthCmp;
+    return a.voucher_no.localeCompare(b.voucher_no, undefined, { numeric: true });
+  };
+
+  const sortedStudents = useMemo(() => [...students].sort(compareStudents), [students]);
+  const sortedVouchers = useMemo(() => [...vouchers].sort(compareVouchers), [vouchers, students]);
+
   // Aging arrears: sum of OUTSTANDING balances (amount − amount_paid) across ALL prior months
   // for this student, plus a late fee per overdue month. Excludes the current voucher month.
   const calcStudentArrears = (studentId: string, currentMonth: string, currentYear: number) => {
@@ -240,7 +265,7 @@ const FeeVouchers = () => {
       toast({ title: "Error", description: "Please select a class", variant: "destructive" });
       return;
     }
-    const classStudents = students.filter(s => s.class === bulkForm.class_name);
+    const classStudents = sortedStudents.filter(s => s.class === bulkForm.class_name);
     if (classStudents.length === 0) {
       toast({ title: "No Students", description: `No students found in Class ${bulkForm.class_name}`, variant: "destructive" });
       return;
@@ -671,7 +696,7 @@ const FeeVouchers = () => {
     document.body.removeChild(el);
   };
 
-  const filtered = vouchers.filter(v => {
+  const filtered = sortedVouchers.filter(v => {
     const student = getStudent(v.student_id);
     return v.voucher_no.toLowerCase().includes(search.toLowerCase()) ||
       student?.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -696,6 +721,13 @@ const FeeVouchers = () => {
     printMultipleVouchers(selected);
   };
 
+  const handleBulkSave = () => {
+    const selected = filtered.filter(v => bulk.selectedIds.has(v.id));
+    if (selected.length === 0) return;
+    selected.forEach((voucher, index) => setTimeout(() => savePdfVoucher(voucher), index * 400));
+    toast({ title: "Bulk Save Started", description: `${selected.length} voucher PDFs are being prepared in class order.` });
+  };
+
   const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Partial" ? "border-primary/30 text-primary" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   const feeFields: { key: keyof typeof emptyFeeForm; label: string }[] = [
@@ -714,8 +746,8 @@ const FeeVouchers = () => {
   // Defaulter list: vouchers past due date that are not Paid
   const today = new Date().toISOString().split("T")[0];
   const defaulters = useMemo(() => {
-    return vouchers.filter(v => v.status !== "Paid" && v.due_date < today);
-  }, [vouchers, today]);
+    return sortedVouchers.filter(v => v.status !== "Paid" && v.due_date < today);
+  }, [sortedVouchers, today]);
 
   const defaultersByClass = useMemo(() => {
     const map: Record<string, { student: Student; voucher: FeeVoucher }[]> = {};
@@ -726,7 +758,7 @@ const FeeVouchers = () => {
       if (!map[cls]) map[cls] = [];
       map[cls].push({ student, voucher: v });
     });
-    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
+    return Object.entries(map).sort((a, b) => compareClassNames(a[0], b[0]));
   }, [defaulters, students]);
 
   const [defaulterClassFilter, setDefaulterClassFilter] = useState<string>("all");
@@ -737,11 +769,11 @@ const FeeVouchers = () => {
 
   // All unpaid vouchers (Pending or Overdue) - available for reminders anytime
   const unpaidVouchers = useMemo(() => {
-    return vouchers.filter(v => v.status !== "Paid").map(v => {
+    return sortedVouchers.filter(v => v.status !== "Paid").map(v => {
       const student = getStudent(v.student_id);
       return student ? { student, voucher: v } : null;
     }).filter(Boolean) as { student: Student; voucher: FeeVoucher }[];
-  }, [vouchers, students]);
+  }, [sortedVouchers, students]);
 
   const buildWhatsAppUrl = (phone: string, studentName: string, amount: number, dueDate: string, month: string) => {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
@@ -810,11 +842,11 @@ const FeeVouchers = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Fee Vouchers</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Generate and manage fee challans — Late fee: ₨{LATE_FEE} after due date (7th of each month)</p>
+          <p className="mt-1 text-sm text-muted-foreground">Generate and manage fee challans — Late fee: ₨{LATE_FEE} after due date (10th of each month)</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => {
-            const rows = vouchers.map(v => {
+            const rows = sortedVouchers.map(v => {
               const student = getStudent(v.student_id);
               return `<tr><td>${v.voucher_no}</td><td style="text-align:left">${student?.name || "—"}</td><td>${student ? `${student.class}-${student.section}` : "—"}</td><td>${v.month}</td><td>${v.year}</td><td>₨ ${Number(v.amount).toLocaleString("en-PK")}</td><td>${formatDate(v.due_date)}</td><td>${formatDate(v.paid_date) || "—"}</td><td>${v.status}</td></tr>`;
             }).join("");
@@ -831,7 +863,7 @@ const FeeVouchers = () => {
             let totalSkipped = 0;
             const dueDate = getDueDate(month, year);
             for (const cls of uniqueClasses) {
-              const classStudents = students.filter(s => s.class === cls);
+              const classStudents = sortedStudents.filter(s => s.class === cls);
               const existingStudentIds = new Set(
                 vouchers.filter(v => v.month === month && v.year === year && classStudents.some(s => s.id === v.student_id)).map(v => v.student_id)
               );
@@ -873,14 +905,16 @@ const FeeVouchers = () => {
               <form onSubmit={handleBulkGenerate} className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-2">
                   <Label>Class *</Label>
-                  <Select value={bulkForm.class_name} onValueChange={v => setBulkForm({ ...bulkForm, class_name: v })}>
-                    <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
-                    <SelectContent>
-                      {uniqueClasses.map(c => (
-                        <SelectItem key={c} value={c}>Class {c} ({students.filter(s => s.class === c).length} students)</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableCombobox
+                    options={uniqueClasses.map(c => ({
+                      value: c,
+                      label: c,
+                      sublabel: `${students.filter(s => s.class === c).length} students`,
+                    }))}
+                    value={bulkForm.class_name}
+                    onChange={v => setBulkForm({ ...bulkForm, class_name: v })}
+                    placeholder="Search class..."
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Month</Label>
@@ -920,7 +954,7 @@ const FeeVouchers = () => {
                 <div className="col-span-2 space-y-2"><Label>Remarks</Label><Input value={bulkForm.remarks} onChange={e => setBulkForm({ ...bulkForm, remarks: e.target.value })} /></div>
                 <div className="col-span-2 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
                   <p>• Leave Tuition Fee blank to auto-fill from each student's monthly fee</p>
-                  <p>• Due date: 7th {bulkForm.month} {bulkForm.year} (8th if Sunday)</p>
+                  <p>• Due date: 10th {bulkForm.month} {bulkForm.year}</p>
                   <p>• Late fee after due date: ₨{LATE_FEE}</p>
                 </div>
                 <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Generating..." : "Generate Challans"}</Button></div>
@@ -938,14 +972,16 @@ const FeeVouchers = () => {
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-2">
                   <Label>Student *</Label>
-                  <Select value={form.student_id} onValueChange={handleStudentSelect}>
-                    <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
-                    <SelectContent>
-                      {students.map(s => (
-                        <SelectItem key={s.id} value={s.id}>{s.student_id} - {s.name} (Class {s.class})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableCombobox
+                    options={sortedStudents.map(s => ({
+                      value: s.id,
+                      label: `${s.student_id} - ${s.name}`,
+                      sublabel: `${s.class}-${s.section || "A"} • Guardian/Father's: ${s.father_name}`,
+                    }))}
+                    value={form.student_id}
+                    onChange={handleStudentSelect}
+                    placeholder="Search by student, class, or parent..."
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Month</Label>
@@ -1044,7 +1080,7 @@ const FeeVouchers = () => {
         </TabsList>
 
         <TabsContent value="vouchers">
-          <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+          <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onSave={handleBulkSave} onClear={bulk.clear} deleting={bulkDeleting} />
 
           <Card className="shadow-card">
             <CardHeader className="pb-3">
@@ -1256,15 +1292,14 @@ const FeeVouchers = () => {
               </span>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <Select value={defaulterClassFilter} onValueChange={setDefaulterClassFilter}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Filter by class" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Classes</SelectItem>
-                  {defaultersByClass.map(([cls]) => (
-                    <SelectItem key={cls} value={cls}>Class {cls}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-[190px]">
+                <SearchableCombobox
+                  options={[{ value: "all", label: "All Classes" }, ...defaultersByClass.map(([cls]) => ({ value: cls, label: cls }))]}
+                  value={defaulterClassFilter}
+                  onChange={setDefaulterClassFilter}
+                  placeholder="Filter by class"
+                />
+              </div>
               <Button variant="outline" size="sm" onClick={() => printDefaulterList()}>
                 <Printer className="mr-2 h-4 w-4" /> Print Defaulter List
               </Button>

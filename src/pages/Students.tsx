@@ -17,6 +17,7 @@ import PhotoUpload from "@/components/PhotoUpload";
 import IDCard from "@/components/IDCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import SearchableCombobox from "@/components/SearchableCombobox";
 
 import { useBulkSelect } from "@/hooks/useBulkSelect";
 import BulkActionBar from "@/components/BulkActionBar";
@@ -40,6 +41,14 @@ interface ParentProfile {
   phone: string | null;
 }
 
+interface StudentParentLink {
+  id: string;
+  student_id: string;
+  parent_user_id: string;
+  relationship: "Father" | "Mother" | "Guardian";
+  is_primary: boolean;
+}
+
 const emptyForm = { student_id: "", name: "", class: "", section: "A", father_name: "", phone: "", mother_phone: "", whatsapp: "", gender: "Male", status: "Active", fee_status: "Pending", monthly_fee: "", photo_url: "", date_of_birth: "" };
 
 const generateStudentId = (existingStudents: { student_id: string }[]) => {
@@ -57,6 +66,7 @@ const Students = () => {
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [parents, setParents] = useState<ParentProfile[]>([]);
+  const [parentLinks, setParentLinks] = useState<StudentParentLink[]>([]);
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("all");
   const [parentFilter, setParentFilter] = useState("all");
@@ -65,6 +75,8 @@ const Students = () => {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkingStudent, setLinkingStudent] = useState<Student | null>(null);
   const [selectedParentId, setSelectedParentId] = useState("");
+  const [selectedFatherParentId, setSelectedFatherParentId] = useState("");
+  const [selectedMotherParentId, setSelectedMotherParentId] = useState("");
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -72,12 +84,14 @@ const Students = () => {
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchData = async () => {
-    const [{ data: studentsData }, { data: parentsData }] = await Promise.all([
+    const [{ data: studentsData }, { data: parentsData }, { data: linksData }] = await Promise.all([
       supabase.from("students").select("*").order("student_id", { ascending: true }),
       supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
+      supabase.from("student_parent_links" as any).select("*"),
     ]);
     if (studentsData) setStudents(studentsData);
     if (parentsData) setParents(parentsData);
+    if (linksData) setParentLinks(linksData as any);
     setLoading(false);
   };
 
@@ -88,11 +102,18 @@ const Students = () => {
     return parents.find(p => p.user_id === userId);
   };
 
+  const getStudentParentLinks = (studentId: string) => parentLinks.filter(l => l.student_id === studentId);
+
+  const getParentByRelationship = (studentId: string, relationship: "Father" | "Mother") => {
+    const link = getStudentParentLinks(studentId).find(l => l.relationship === relationship);
+    return link ? parents.find(p => p.user_id === link.parent_user_id) : null;
+  };
+
   // Unique class options from data
   const uniqueClasses = sortClasses([...new Set(students.map(s => `${s.class}-${s.section || "A"}`))]);
 
   // Linked parents for filter
-  const linkedParentIds = [...new Set(students.filter(s => s.parent_user_id).map(s => s.parent_user_id!))];
+  const linkedParentIds = [...new Set([...students.filter(s => s.parent_user_id).map(s => s.parent_user_id!), ...parentLinks.map(l => l.parent_user_id)])];
   const linkedParents = parents.filter(p => linkedParentIds.includes(p.user_id));
 
   const filtered = students.filter(s => {
@@ -100,7 +121,7 @@ const Students = () => {
       s.student_id.toLowerCase().includes(search.toLowerCase()) ||
       s.father_name.toLowerCase().includes(search.toLowerCase());
     const matchesClass = classFilter === "all" || `${s.class}-${s.section || "A"}` === classFilter;
-    const matchesParent = parentFilter === "all" || s.parent_user_id === parentFilter;
+    const matchesParent = parentFilter === "all" || s.parent_user_id === parentFilter || getStudentParentLinks(s.id).some(l => l.parent_user_id === parentFilter);
     return matchesSearch && matchesClass && matchesParent;
   });
 
@@ -189,18 +210,36 @@ const Students = () => {
   const openLinkDialog = (student: Student) => {
     setLinkingStudent(student);
     setSelectedParentId(student.parent_user_id || "");
+    setSelectedFatherParentId(getStudentParentLinks(student.id).find(l => l.relationship === "Father")?.parent_user_id || "");
+    setSelectedMotherParentId(getStudentParentLinks(student.id).find(l => l.relationship === "Mother")?.parent_user_id || "");
     setLinkDialogOpen(true);
   };
 
   const handleLinkParent = async () => {
     if (!linkingStudent) return;
+    const primaryParentId = selectedFatherParentId || selectedMotherParentId || selectedParentId || null;
     const { error } = await supabase.from("students")
-      .update({ parent_user_id: selectedParentId || null })
+      .update({ parent_user_id: primaryParentId })
       .eq("id", linkingStudent.id);
+    if (!error) {
+      await supabase.from("student_parent_links" as any).delete().eq("student_id", linkingStudent.id);
+      const rows = [
+        selectedFatherParentId ? { student_id: linkingStudent.id, parent_user_id: selectedFatherParentId, relationship: "Father", is_primary: true } : null,
+        selectedMotherParentId ? { student_id: linkingStudent.id, parent_user_id: selectedMotherParentId, relationship: "Mother", is_primary: !selectedFatherParentId } : null,
+        !selectedFatherParentId && !selectedMotherParentId && selectedParentId ? { student_id: linkingStudent.id, parent_user_id: selectedParentId, relationship: "Guardian", is_primary: true } : null,
+      ].filter(Boolean);
+      if (rows.length) {
+        const { error: linkError } = await supabase.from("student_parent_links" as any).insert(rows as any);
+        if (linkError) {
+          toast({ title: "Link Error", description: linkError.message, variant: "destructive" });
+          return;
+        }
+      }
+    }
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: selectedParentId ? "Linked" : "Unlinked", description: selectedParentId ? "Student linked to parent account." : "Parent link removed." });
+      toast({ title: primaryParentId ? "Linked" : "Unlinked", description: primaryParentId ? "Student linked to parent account(s)." : "Parent links removed." });
       fetchData();
     }
     setLinkDialogOpen(false);
@@ -208,6 +247,7 @@ const Students = () => {
   };
 
   const handleUnlink = async (studentId: string) => {
+    await supabase.from("student_parent_links" as any).delete().eq("student_id", studentId);
     const { error } = await supabase.from("students").update({ parent_user_id: null }).eq("id", studentId);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: "Unlinked", description: "Parent link removed." }); fetchData(); }
@@ -368,19 +408,19 @@ const Students = () => {
                 <p className="text-sm font-medium text-foreground">{linkingStudent.name}</p>
                 <p className="text-xs text-muted-foreground">{linkingStudent.student_id} — Class {linkingStudent.class}-{linkingStudent.section}</p>
               </div>
-              <div className="space-y-2">
-                <Label>Select Parent Account</Label>
-                <Select value={selectedParentId} onValueChange={setSelectedParentId}>
-                  <SelectTrigger><SelectValue placeholder="Choose a parent account..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">— No parent linked —</SelectItem>
-                    {parents.map(p => (
-                      <SelectItem key={p.user_id} value={p.user_id}>
-                        {p.full_name || "Unnamed"} {p.phone ? `(${p.phone})` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Father Account</Label>
+                  <SearchableCombobox options={[{ value: "", label: "No father account" }, ...parents.map(p => ({ value: p.user_id, label: p.full_name || "Unnamed", sublabel: p.phone || "" }))]} value={selectedFatherParentId} onChange={setSelectedFatherParentId} placeholder="Search father..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mother Account</Label>
+                  <SearchableCombobox options={[{ value: "", label: "No mother account" }, ...parents.map(p => ({ value: p.user_id, label: p.full_name || "Unnamed", sublabel: p.phone || "" }))]} value={selectedMotherParentId} onChange={setSelectedMotherParentId} placeholder="Search mother..." />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Guardian Account</Label>
+                  <SearchableCombobox options={[{ value: "", label: "No guardian account" }, ...parents.map(p => ({ value: p.user_id, label: p.full_name || "Unnamed", sublabel: p.phone || "" }))]} value={selectedParentId} onChange={setSelectedParentId} placeholder="Search guardian..." />
+                </div>
                 {parents.length === 0 && (
                   <p className="text-xs text-muted-foreground">No parent accounts found. Parents need to sign up first.</p>
                 )}
@@ -388,11 +428,10 @@ const Students = () => {
               <Button
                 className="w-full gradient-primary text-primary-foreground"
                 onClick={() => {
-                  if (selectedParentId === "none") setSelectedParentId("");
                   handleLinkParent();
                 }}
               >
-                {selectedParentId && selectedParentId !== "none" ? "Link Parent" : "Remove Link"}
+                {selectedFatherParentId || selectedMotherParentId || selectedParentId ? "Save Parent Links" : "Remove Links"}
               </Button>
             </div>
           )}

@@ -635,6 +635,44 @@ export type Database = {
         }
         Relationships: []
       }
+      student_parent_links: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          parent_user_id: string
+          relationship: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          parent_user_id: string
+          relationship?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          parent_user_id?: string
+          relationship?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_parent_links_student_fk"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           class: string
@@ -970,6 +1008,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      recalculate_voucher_payment_totals: {
+        Args: { _voucher_id: string }
+        Returns: undefined
       }
     }
     Enums: {

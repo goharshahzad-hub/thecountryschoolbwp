@@ -8,7 +8,7 @@ import { getPreloadedLogo } from "./logoBase64";
 const A4_STYLES = `
   @page {
     size: A4;
-    margin: 15mm;
+    margin: 10mm;
   }
   * { box-sizing: border-box; }
   body {
@@ -21,17 +21,18 @@ const A4_STYLES = `
   }
   .print-page {
     width: 100%;
-    max-width: 210mm;
+    max-width: 190mm;
+    min-height: 277mm;
     margin: 0 auto;
-    padding: 10mm 0;
+    padding: 0;
     page-break-after: always;
   }
   .print-page:last-child { page-break-after: auto; }
   .print-header {
     text-align: center;
     border-bottom: 2px solid #333;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
   }
   .print-header h1 { font-size: 20px; margin: 0; color: #c0392b; }
   .print-header h2 { font-size: 15px; margin: 4px 0; color: #333; }
@@ -48,12 +49,12 @@ const A4_STYLES = `
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 11px;
-    margin-bottom: 12px;
+    font-size: 10px;
+    margin-bottom: 8px;
   }
   th, td {
     border: 1px solid #333;
-    padding: 5px 8px;
+    padding: 4px 5px;
     text-align: center;
   }
   th { background: #f0f0f0; font-size: 10px; }
@@ -69,7 +70,7 @@ const A4_STYLES = `
   }
   .print-footer {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 10px;
     font-size: 10px;
     color: #999;
     border-top: 1px solid #ddd;
@@ -96,7 +97,7 @@ const A4_STYLES = `
   /* List print */
   .list-title { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
   .list-subtitle { font-size: 11px; color: #666; margin-bottom: 12px; }
-  @media print { body { padding: 0; } }
+  @media print { html, body { width: 210mm; min-height: 297mm; padding: 0; margin: 0; } }
 `;
 
 export const printA4 = (htmlContent: string, title: string = "Print") => {

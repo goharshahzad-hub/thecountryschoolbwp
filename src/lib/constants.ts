@@ -27,14 +27,18 @@ const resolveClassIndex = (raw: string): number => {
   return 999;
 };
 
+export const compareClassNames = (a: string, b: string): number => {
+  const ai = resolveClassIndex(a);
+  const bi = resolveClassIndex(b);
+  if (ai !== bi) return ai - bi;
+  return a.localeCompare(b, undefined, { numeric: true });
+};
+
 export const sortClasses = <T,>(items: T[], getName: (t: T) => string = (t) => String(t)): T[] => {
   return [...items].sort((a, b) => {
     const an = getName(a);
     const bn = getName(b);
-    const ai = resolveClassIndex(an);
-    const bi = resolveClassIndex(bn);
-    if (ai !== bi) return ai - bi;
-    return an.localeCompare(bn);
+    return compareClassNames(an, bn);
   });
 };
 
