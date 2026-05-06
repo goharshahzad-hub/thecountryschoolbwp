@@ -102,11 +102,18 @@ const Students = () => {
     return parents.find(p => p.user_id === userId);
   };
 
+  const getStudentParentLinks = (studentId: string) => parentLinks.filter(l => l.student_id === studentId);
+
+  const getParentByRelationship = (studentId: string, relationship: "Father" | "Mother") => {
+    const link = getStudentParentLinks(studentId).find(l => l.relationship === relationship);
+    return link ? parents.find(p => p.user_id === link.parent_user_id) : null;
+  };
+
   // Unique class options from data
   const uniqueClasses = sortClasses([...new Set(students.map(s => `${s.class}-${s.section || "A"}`))]);
 
   // Linked parents for filter
-  const linkedParentIds = [...new Set(students.filter(s => s.parent_user_id).map(s => s.parent_user_id!))];
+  const linkedParentIds = [...new Set([...students.filter(s => s.parent_user_id).map(s => s.parent_user_id!), ...parentLinks.map(l => l.parent_user_id)])];
   const linkedParents = parents.filter(p => linkedParentIds.includes(p.user_id));
 
   const filtered = students.filter(s => {
@@ -114,7 +121,7 @@ const Students = () => {
       s.student_id.toLowerCase().includes(search.toLowerCase()) ||
       s.father_name.toLowerCase().includes(search.toLowerCase());
     const matchesClass = classFilter === "all" || `${s.class}-${s.section || "A"}` === classFilter;
-    const matchesParent = parentFilter === "all" || s.parent_user_id === parentFilter;
+    const matchesParent = parentFilter === "all" || s.parent_user_id === parentFilter || getStudentParentLinks(s.id).some(l => l.parent_user_id === parentFilter);
     return matchesSearch && matchesClass && matchesParent;
   });
 
