@@ -408,19 +408,19 @@ const Students = () => {
                 <p className="text-sm font-medium text-foreground">{linkingStudent.name}</p>
                 <p className="text-xs text-muted-foreground">{linkingStudent.student_id} — Class {linkingStudent.class}-{linkingStudent.section}</p>
               </div>
-              <div className="space-y-2">
-                <Label>Select Parent Account</Label>
-                <Select value={selectedParentId} onValueChange={setSelectedParentId}>
-                  <SelectTrigger><SelectValue placeholder="Choose a parent account..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">— No parent linked —</SelectItem>
-                    {parents.map(p => (
-                      <SelectItem key={p.user_id} value={p.user_id}>
-                        {p.full_name || "Unnamed"} {p.phone ? `(${p.phone})` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Father Account</Label>
+                  <SearchableCombobox options={[{ value: "", label: "No father account" }, ...parents.map(p => ({ value: p.user_id, label: p.full_name || "Unnamed", sublabel: p.phone || "" }))]} value={selectedFatherParentId} onChange={setSelectedFatherParentId} placeholder="Search father..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Mother Account</Label>
+                  <SearchableCombobox options={[{ value: "", label: "No mother account" }, ...parents.map(p => ({ value: p.user_id, label: p.full_name || "Unnamed", sublabel: p.phone || "" }))]} value={selectedMotherParentId} onChange={setSelectedMotherParentId} placeholder="Search mother..." />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Guardian Account</Label>
+                  <SearchableCombobox options={[{ value: "", label: "No guardian account" }, ...parents.map(p => ({ value: p.user_id, label: p.full_name || "Unnamed", sublabel: p.phone || "" }))]} value={selectedParentId} onChange={setSelectedParentId} placeholder="Search guardian..." />
+                </div>
                 {parents.length === 0 && (
                   <p className="text-xs text-muted-foreground">No parent accounts found. Parents need to sign up first.</p>
                 )}
@@ -428,11 +428,10 @@ const Students = () => {
               <Button
                 className="w-full gradient-primary text-primary-foreground"
                 onClick={() => {
-                  if (selectedParentId === "none") setSelectedParentId("");
                   handleLinkParent();
                 }}
               >
-                {selectedParentId && selectedParentId !== "none" ? "Link Parent" : "Remove Link"}
+                {selectedFatherParentId || selectedMotherParentId || selectedParentId ? "Save Parent Links" : "Remove Links"}
               </Button>
             </div>
           )}
