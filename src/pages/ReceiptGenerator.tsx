@@ -78,7 +78,7 @@ const ReceiptGenerator = () => {
         supabase.from("fee_vouchers").select("*").neq("status", "Paid").order("year", { ascending: false }),
         supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
       ]);
-      setStudents([...(s.data as any) || []].sort((a, b) => compareClassNames(`${a.class}-${a.section || "A"}`, `${b.class}-${b.section || "A"}`) || a.student_id.localeCompare(b.student_id, undefined, { numeric: true })));
+      setStudents([...((s.data as any) || [])].sort((a, b) => compareClassNames(`${a.class}-${a.section || "A"}`, `${b.class}-${b.section || "A"}`) || a.student_id.localeCompare(b.student_id, undefined, { numeric: true })));
       setVouchers((v.data as any) || []);
       setParents((p.data as any) || []);
     })();
@@ -224,10 +224,10 @@ const ReceiptGenerator = () => {
       setSavedReceiptNo(form.receipt_no);
       toast({
         title: "✓ Receipt Saved",
-        description: `Receipt ${form.receipt_no} recorded in student account` + (form.auto_mark_paid && form.voucher_id ? " and voucher marked Paid" : ""),
+        description: `Receipt ${form.receipt_no} recorded in student account`,
       });
       // Refresh unpaid vouchers list so the just-paid voucher disappears
-      const { data: v } = await supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false });
+      const { data: v } = await supabase.from("fee_vouchers").select("*").neq("status", "Paid").order("year", { ascending: false });
       setVouchers((v as any) || []);
     }
   };
@@ -247,7 +247,7 @@ const ReceiptGenerator = () => {
       setSaving(false);
       if (!ok) return;
       setSavedReceiptNo(form.receipt_no);
-      const { data: v } = await supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false });
+      const { data: v } = await supabase.from("fee_vouchers").select("*").neq("status", "Paid").order("year", { ascending: false });
       setVouchers((v as any) || []);
     }
     setPreviewOpen(true);
@@ -320,12 +320,7 @@ const ReceiptGenerator = () => {
                 placeholder={form.student_id ? "Select unpaid voucher..." : "Pick a student first"}
                 disabled={!form.student_id}
               />
-              {form.voucher_id && (
-                <label className="flex items-center gap-2 text-xs text-muted-foreground mt-1 cursor-pointer">
-                  <input type="checkbox" checked={form.auto_mark_paid} onChange={(e) => setForm((f) => ({ ...f, auto_mark_paid: e.target.checked }))} />
-                  Auto-mark voucher as Paid after printing
-                </label>
-              )}
+              {form.voucher_id && <p className="mt-1 text-xs text-muted-foreground">Saved head-wise payments automatically sync this voucher balance.</p>}
             </div>
 
             <div className="space-y-1.5">
