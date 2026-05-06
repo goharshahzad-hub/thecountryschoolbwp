@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SearchableCombobox from "@/components/SearchableCombobox";
 import PrintPreviewDialog from "@/components/PrintPreviewDialog";
+import { compareClassNames } from "@/lib/constants";
 
 const PAYMENT_METHODS = ["Cash", "Bank Transfer", "Cheque", "Online", "Easypaisa", "JazzCash"];
 
@@ -40,7 +41,7 @@ interface LineItem {
 }
 
 interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; parent_user_id: string | null; }
-interface Voucher { id: string; voucher_no: string; student_id: string; month: string; year: number; amount: number; status: string; }
+interface Voucher { id: string; voucher_no: string; student_id: string; month: string; year: number; amount: number; amount_paid?: number; status: string; registration_fee?: number; admission_fee?: number; security_deposit?: number; tuition_fee?: number; annual_charges?: number; trip_charges?: number; books_charges?: number; arrears?: number; late_fee?: number; }
 interface ParentProfile { user_id: string; full_name: string; phone: string | null; }
 
 const ReceiptGenerator = () => {
@@ -73,11 +74,11 @@ const ReceiptGenerator = () => {
   useEffect(() => {
     (async () => {
       const [s, v, p] = await Promise.all([
-        supabase.from("students").select("id, student_id, name, class, section, father_name, parent_user_id").order("name"),
-        supabase.from("fee_vouchers").select("id, voucher_no, student_id, month, year, amount, status").neq("status", "Paid").order("created_at", { ascending: false }),
+        supabase.from("students").select("id, student_id, name, class, section, father_name, parent_user_id").order("student_id"),
+        supabase.from("fee_vouchers").select("*").neq("status", "Paid").order("year", { ascending: false }),
         supabase.from("profiles").select("user_id, full_name, phone").eq("role", "parent"),
       ]);
-      setStudents((s.data as any) || []);
+      setStudents([...(s.data as any) || []].sort((a, b) => compareClassNames(`${a.class}-${a.section || "A"}`, `${b.class}-${b.section || "A"}`) || a.student_id.localeCompare(b.student_id, undefined, { numeric: true })));
       setVouchers((v.data as any) || []);
       setParents((p.data as any) || []);
     })();
@@ -106,8 +107,17 @@ const ReceiptGenerator = () => {
     const v = vouchers.find((x) => x.id === vid);
     setForm((f) => ({ ...f, voucher_id: vid }));
     if (v) {
-      // Pre-fill a single line item with voucher amount
-      setItems([{ fee_head: "Tuition Fee", custom_head: "", description: `Voucher ${v.voucher_no} — ${v.month} ${v.year}`, amount: String(v.amount) }]);
+      const headRows = [
+        ["Registration Fee", v.registration_fee], ["Admission Fee", v.admission_fee], ["Security Deposit", v.security_deposit],
+        ["Tuition Fee", v.tuition_fee], ["Annual Charges", v.annual_charges], ["Trip Charges", v.trip_charges],
+        ["Books / Summer Pack", v.books_charges], ["Arrears", v.arrears], ["Late Fee", v.late_fee],
+      ].filter(([, amount]) => Number(amount || 0) > 0);
+      setItems((headRows.length ? headRows : [["Tuition Fee", Math.max(0, Number(v.amount) - Number(v.amount_paid || 0))]]).map(([fee_head, amount]) => ({
+        fee_head: String(fee_head),
+        custom_head: "",
+        description: `Voucher ${v.voucher_no} — ${v.month} ${v.year}`,
+        amount: String(amount || 0),
+      })));
     }
   };
 
@@ -200,10 +210,6 @@ const ReceiptGenerator = () => {
     if (error) {
       toast({ title: "Save Error", description: error.message, variant: "destructive" });
       return false;
-    }
-    // Auto-mark voucher as Paid
-    if (form.auto_mark_paid && form.voucher_id) {
-      await supabase.from("fee_vouchers").update({ status: "Paid", paid_date: form.date }).eq("id", form.voucher_id);
     }
     return true;
   };
