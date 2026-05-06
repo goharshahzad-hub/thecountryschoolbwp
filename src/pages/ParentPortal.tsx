@@ -103,11 +103,19 @@ const ParentPortal = () => {
         if (data) setProfileName(data.full_name || user.email || "");
       });
 
-    supabase
-      .from("students")
-      .select("*")
-      .eq("parent_user_id", user.id)
-      .then(({ data }) => {
+    (async () => {
+      const [{ data: directChildren }, { data: linkedRows }] = await Promise.all([
+        supabase.from("students").select("*").eq("parent_user_id", user.id),
+        supabase.from("student_parent_links" as any).select("student_id").eq("parent_user_id", user.id),
+      ]);
+      const linkedIds = [...new Set(((linkedRows as any[]) || []).map(row => row.student_id).filter(Boolean))];
+      const { data: linkedChildren } = linkedIds.length
+        ? await supabase.from("students").select("*").in("id", linkedIds)
+        : { data: [] as any[] };
+      const merged = [...((directChildren as any[]) || []), ...((linkedChildren as any[]) || [])]
+        .filter((student, index, arr) => arr.findIndex(s => s.id === student.id) === index);
+
+      const data = merged;
         if (!data || data.length === 0) return;
         setStudents(data);
 
@@ -167,7 +175,7 @@ const ParentPortal = () => {
           const all = results.flatMap(r => r.data || []);
           setDiaryEntries(all);
         });
-      });
+    })();
 
     // Fetch announcements (public)
     supabase
