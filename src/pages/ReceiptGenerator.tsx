@@ -62,7 +62,6 @@ const ReceiptGenerator = () => {
     student_id: "",
     parent_id: "",
     voucher_id: "",
-    auto_mark_paid: true,
   });
   const [items, setItems] = useState<LineItem[]>([
     { fee_head: "Tuition Fee", custom_head: "", description: "", amount: "" },
