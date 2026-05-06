@@ -721,6 +721,13 @@ const FeeVouchers = () => {
     printMultipleVouchers(selected);
   };
 
+  const handleBulkSave = () => {
+    const selected = filtered.filter(v => bulk.selectedIds.has(v.id));
+    if (selected.length === 0) return;
+    selected.forEach((voucher, index) => setTimeout(() => savePdfVoucher(voucher), index * 400));
+    toast({ title: "Bulk Save Started", description: `${selected.length} voucher PDFs are being prepared in class order.` });
+  };
+
   const statusColor = (s: string) => s === "Paid" ? "border-success/30 text-success" : s === "Partial" ? "border-primary/30 text-primary" : s === "Overdue" ? "border-destructive/30 text-destructive" : "border-warning/30 text-warning";
 
   const feeFields: { key: keyof typeof emptyFeeForm; label: string }[] = [
@@ -1073,7 +1080,7 @@ const FeeVouchers = () => {
         </TabsList>
 
         <TabsContent value="vouchers">
-          <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onClear={bulk.clear} deleting={bulkDeleting} />
+          <BulkActionBar count={bulk.count} onDelete={handleBulkDelete} onPrint={handleBulkPrint} onSave={handleBulkSave} onClear={bulk.clear} deleting={bulkDeleting} />
 
           <Card className="shadow-card">
             <CardHeader className="pb-3">
