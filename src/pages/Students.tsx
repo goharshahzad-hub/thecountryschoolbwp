@@ -210,18 +210,36 @@ const Students = () => {
   const openLinkDialog = (student: Student) => {
     setLinkingStudent(student);
     setSelectedParentId(student.parent_user_id || "");
+    setSelectedFatherParentId(getStudentParentLinks(student.id).find(l => l.relationship === "Father")?.parent_user_id || "");
+    setSelectedMotherParentId(getStudentParentLinks(student.id).find(l => l.relationship === "Mother")?.parent_user_id || "");
     setLinkDialogOpen(true);
   };
 
   const handleLinkParent = async () => {
     if (!linkingStudent) return;
+    const primaryParentId = selectedFatherParentId || selectedMotherParentId || selectedParentId || null;
     const { error } = await supabase.from("students")
-      .update({ parent_user_id: selectedParentId || null })
+      .update({ parent_user_id: primaryParentId })
       .eq("id", linkingStudent.id);
+    if (!error) {
+      await supabase.from("student_parent_links" as any).delete().eq("student_id", linkingStudent.id);
+      const rows = [
+        selectedFatherParentId ? { student_id: linkingStudent.id, parent_user_id: selectedFatherParentId, relationship: "Father", is_primary: true } : null,
+        selectedMotherParentId ? { student_id: linkingStudent.id, parent_user_id: selectedMotherParentId, relationship: "Mother", is_primary: !selectedFatherParentId } : null,
+        !selectedFatherParentId && !selectedMotherParentId && selectedParentId ? { student_id: linkingStudent.id, parent_user_id: selectedParentId, relationship: "Guardian", is_primary: true } : null,
+      ].filter(Boolean);
+      if (rows.length) {
+        const { error: linkError } = await supabase.from("student_parent_links" as any).insert(rows as any);
+        if (linkError) {
+          toast({ title: "Link Error", description: linkError.message, variant: "destructive" });
+          return;
+        }
+      }
+    }
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: selectedParentId ? "Linked" : "Unlinked", description: selectedParentId ? "Student linked to parent account." : "Parent link removed." });
+      toast({ title: primaryParentId ? "Linked" : "Unlinked", description: primaryParentId ? "Student linked to parent account(s)." : "Parent links removed." });
       fetchData();
     }
     setLinkDialogOpen(false);
@@ -229,6 +247,7 @@ const Students = () => {
   };
 
   const handleUnlink = async (studentId: string) => {
+    await supabase.from("student_parent_links" as any).delete().eq("student_id", studentId);
     const { error } = await supabase.from("students").update({ parent_user_id: null }).eq("id", studentId);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else { toast({ title: "Unlinked", description: "Parent link removed." }); fetchData(); }
