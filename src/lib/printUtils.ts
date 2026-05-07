@@ -7,14 +7,13 @@ import { getPreloadedLogo } from "./logoBase64";
 
 const A4_STYLES = `
   @page {
-    size: A4;
+    size: A4 portrait;
     margin: 10mm;
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
   body {
     font-family: Arial, sans-serif;
-    padding: 0;
-    margin: 0;
     color: #222;
     font-size: 12px;
     line-height: 1.4;
@@ -22,12 +21,16 @@ const A4_STYLES = `
   .print-page {
     width: 100%;
     max-width: 190mm;
-    min-height: 277mm;
     margin: 0 auto;
     padding: 0;
     page-break-after: always;
+    page-break-inside: avoid;
   }
   .print-page:last-child { page-break-after: auto; }
+  table { page-break-inside: auto; }
+  tr { page-break-inside: avoid; page-break-after: auto; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
   .print-header {
     text-align: center;
     border-bottom: 2px solid #333;
