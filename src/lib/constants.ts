@@ -38,14 +38,17 @@ const CLASS_ORDER: Record<string, number> = classOptions.reduce((acc, c, i) => {
 
 /** Resolve a class index from a string that may include a section suffix (e.g. "Class-1-A"). */
 const resolveClassIndex = (raw: string): number => {
-  const name = raw.trim().toLowerCase();
-  if (CLASS_ORDER[name] !== undefined) return CLASS_ORDER[name];
-  // Try stripping a trailing "-X" section
-  const withoutSection = name.replace(/-[a-z0-9]+$/i, "");
+  const original = raw.trim().toLowerCase();
+  // Try alias resolution first so Nursery/Prep/Play Group sort with their canonical class
+  const aliasedFull = (CLASS_ALIASES[original] ?? raw).toLowerCase();
+  if (CLASS_ORDER[aliasedFull] !== undefined) return CLASS_ORDER[aliasedFull];
+  if (CLASS_ORDER[original] !== undefined) return CLASS_ORDER[original];
+  const withoutSection = original.replace(/-[a-z0-9]+$/i, "");
+  const aliasedNoSection = (CLASS_ALIASES[withoutSection] ?? withoutSection).toLowerCase();
+  if (CLASS_ORDER[aliasedNoSection] !== undefined) return CLASS_ORDER[aliasedNoSection];
   if (CLASS_ORDER[withoutSection] !== undefined) return CLASS_ORDER[withoutSection];
-  // Try matching the longest known prefix
   for (const key of Object.keys(CLASS_ORDER)) {
-    if (name.startsWith(key)) return CLASS_ORDER[key];
+    if (original.startsWith(key)) return CLASS_ORDER[key];
   }
   return 999;
 };
