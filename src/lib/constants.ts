@@ -1,7 +1,30 @@
+/**
+ * Canonical class hierarchy. Some classes have legacy DB names that we keep
+ * accepting so existing students/vouchers/results keep working unchanged.
+ *   Reception   ← also "Play Group"
+ *   Foundation  ← also "Nursery"
+ *   Pre-1       ← also "Prep"
+ *   Class-1 … Class-8
+ */
 export const classOptions = [
   "Reception", "Foundation", "Pre-1",
   "Class-1", "Class-2", "Class-3", "Class-4", "Class-5", "Class-6", "Class-7", "Class-8",
 ];
+
+/** Maps any accepted alias to its canonical class name. */
+const CLASS_ALIASES: Record<string, string> = {
+  "play group": "Reception",
+  "playgroup": "Reception",
+  "nursery": "Foundation",
+  "prep": "Pre-1",
+};
+
+/** Resolve any alias / legacy name to the canonical class name (or returns the input unchanged). */
+export const canonicalClassName = (raw: string): string => {
+  if (!raw) return raw;
+  const key = raw.trim().toLowerCase();
+  return CLASS_ALIASES[key] ?? raw;
+};
 
 /**
  * Canonical class hierarchy order. Use this to sort any list of class names so that
