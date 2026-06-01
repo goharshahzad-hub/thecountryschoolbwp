@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, Palette, Calculator, Globe, Microscope, Dumbbell, 
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import SeoHead from "@/components/SeoHead";
 
 const levels = [
   {
