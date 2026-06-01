@@ -19,6 +19,32 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="About Us | The Country School Fahad Campus, Bahawalpur"
+        description="Our story, vision, mission, director's message, and campus facilities at The Country School — a project of Bloomfield Hall in Model Town, Bahawalpur."
+        path="/about"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "School",
+          name: "The Country School — Fahad Campus",
+          url: "https://thecountryschoolbwp.lovable.app/about",
+          telephone: "+92 322 6107000",
+          email: "thecountryschoolbwp@gmail.com",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "41-A, Street #2, Near Telenor Franchise, Model Town-B",
+            addressLocality: "Bahawalpur",
+            addressRegion: "Punjab",
+            addressCountry: "PK",
+          },
+          openingHoursSpecification: {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            opens: "07:30",
+            closes: "13:30",
+          },
+        }}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
