@@ -64,6 +64,11 @@ const Curriculum = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="Curriculum & Academic Programs | The Country School Bahawalpur"
+        description="Explore our Reception to Class 8 curriculum at The Country School Fahad Campus, Bahawalpur — English-medium academics modelled on Bloomfield Hall standards."
+        path="/curriculum"
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
