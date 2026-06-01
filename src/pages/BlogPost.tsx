@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import SeoHead from "@/components/SeoHead";
 
 const blogPosts: Record<string, {
   title: string;
@@ -166,6 +167,22 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title={`${post.title} | The Country School Bahawalpur`}
+        description={post.excerpt}
+        path={`/blog/${slug}`}
+        ogType="article"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: post.title,
+          description: post.excerpt,
+          datePublished: post.date,
+          author: { "@type": "Organization", name: settings.school_name },
+          publisher: { "@type": "Organization", name: settings.school_name },
+          keywords: post.keywords.join(", "),
+        }}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">

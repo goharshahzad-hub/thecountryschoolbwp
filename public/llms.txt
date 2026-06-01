@@ -1,0 +1,29 @@
+# The Country School — Fahad Campus, Bahawalpur
+
+> A project of Bloomfield Hall offering quality English-medium education from Reception (Playgroup) to Class 8 in Model Town, Bahawalpur, Pakistan, with an affordable fee structure.
+
+The Country School Fahad Campus is a leading school in Bahawalpur, Pakistan, providing primary and middle school education modelled on Bloomfield Hall standards. Contact: 0322-6107000 / 0305-7457171. Address: 41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur.
+
+## Pages
+
+- [Home](/): Overview of the school, programs, gallery, announcements, and contact.
+- [About Us](/about): School history, vision, mission, director's message, facilities, and location.
+- [Curriculum](/curriculum): Academic approach, programs by level (Reception to Class 8), and extracurricular activities.
+- [FAQ](/faq): Common questions about admissions, fees, curriculum, transport, and policies.
+- [Admission Inquiry](/admission-query): Online form to submit an admission application.
+
+## Blog
+
+- [Best School in Bahawalpur](/blog/best-school-in-bahawalpur): Why The Country School stands out among Bahawalpur schools.
+- [Affordable School Fees in Bahawalpur](/blog/affordable-school-fees-bahawalpur): Transparent and competitive fee structure.
+- [School Admissions Open 2026](/blog/school-admissions-bahawalpur-2026): Admission process and required documents.
+- [Bloomfield Hall Project in Bahawalpur](/blog/bloomfield-hall-project-bahawalpur): Our affiliation with Bloomfield Hall.
+- [Best Primary School in Bahawalpur](/blog/primary-education-bahawalpur): Early childhood and primary education program.
+- [Top English Medium School in Bahawalpur](/blog/english-medium-school-bahawalpur): English-medium curriculum from Playgroup onward.
+- [Best School in Model Town Bahawalpur](/blog/school-model-town-bahawalpur): Campus location and accessibility.
+- [Importance of Quality Education in Bahawalpur](/blog/importance-of-education-bahawalpur): Our educational philosophy.
+- [Blog Index](/blog): All articles.
+
+## Optional
+
+- [Parent Login](/parent-login): Secure portal for enrolled parents.

@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Lightbox from "@/components/Lightbox";
 import ScrollingBanner from "@/components/ScrollingBanner";
+import SeoHead from "@/components/SeoHead";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
@@ -40,19 +41,24 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="The Country School Fahad Campus — Best School in Bahawalpur"
+        description="Quality English-medium education from Reception to Class 8 at The Country School, a project of Bloomfield Hall in Model Town, Bahawalpur, with an affordable fee structure."
+        path="/"
+      />
       {/* Scrolling Banner */}
       <ScrollingBanner />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt={`${settings.school_name} Logo`} className="h-10 w-10 rounded-full object-cover" />
+            <img src={logo} alt={`${settings.school_name} logo`} className="h-10 w-10 rounded-full object-cover" />
             <div className="hidden sm:block">
-              <h1 className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</h1>
+              <p className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</p>
               <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall (Since 1984) — {settings.campus}, {settings.city}</p>
             </div>
             <div className="sm:hidden">
-              <h1 className="font-display text-sm font-bold leading-tight text-foreground">{settings.school_name}</h1>
+              <p className="font-display text-sm font-bold leading-tight text-foreground">{settings.school_name}</p>
             </div>
           </div>
           <nav className="hidden items-center gap-4 lg:flex">
@@ -101,9 +107,9 @@ const Index = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(356_72%_48%/0.12),transparent_60%)]" />
         <div className="container relative z-10 text-center">
           <img src={logo} alt={settings.school_name} className="mx-auto mb-8 h-28 w-28 rounded-full border-4 border-primary/30 object-cover shadow-elevated" />
-          <h2 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
-            {settings.school_name}
-          </h2>
+          <h1 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
+            {settings.school_name} — Excellence in Education
+          </h1>
           <p className="mb-1 text-base font-medium text-primary-foreground/80">A Project of Bloomfield Hall (Since 1984)</p>
           <p className="mb-2 text-lg font-medium text-primary-foreground/80 md:text-xl">
             {settings.campus}, {settings.city}
@@ -200,8 +206,17 @@ const Index = () => {
             </div>
             <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {content.gallery.map((img, i) => (
-                <div key={i} className="group relative cursor-pointer overflow-hidden rounded-lg shadow-card transition-all hover:shadow-elevated animate-fade-in" style={{ animationDelay: `${i * 60}ms` }} onClick={() => setLightboxIndex(i)}>
-                  <img src={img.url} alt={img.caption || "Gallery photo"} className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                <div
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={img.caption ? `Open ${img.caption} in lightbox` : `Open gallery image ${i + 1} in lightbox`}
+                  className="group relative cursor-pointer overflow-hidden rounded-lg shadow-card transition-all hover:shadow-elevated animate-fade-in focus:outline-none focus:ring-2 focus:ring-primary"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                  onClick={() => setLightboxIndex(i)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLightboxIndex(i); } }}
+                >
+                  <img src={img.url} alt={img.caption || `The Country School campus photo ${i + 1}`} className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
                     <ZoomIn className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>

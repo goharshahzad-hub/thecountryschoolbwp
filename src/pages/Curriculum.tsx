@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, Palette, Calculator, Globe, Microscope, Dumbbell, 
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import SeoHead from "@/components/SeoHead";
 
 const levels = [
   {
@@ -63,6 +64,11 @@ const Curriculum = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="Curriculum & Academic Programs | The Country School Bahawalpur"
+        description="Explore our Reception to Class 8 curriculum at The Country School Fahad Campus, Bahawalpur — English-medium academics modelled on Bloomfield Hall standards."
+        path="/curriculum"
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
@@ -114,7 +120,7 @@ const Curriculum = () => {
                   <h.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-display font-semibold text-foreground">{h.title}</h4>
+                  <h3 className="font-display font-semibold text-foreground">{h.title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{h.desc}</p>
                 </div>
               </div>
