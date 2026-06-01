@@ -109,8 +109,24 @@ const faqs = [
 const FAQ = () => {
   const { settings } = useSchoolSettings();
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.flatMap((s) => s.questions.map((q) => ({
+      "@type": "Question",
+      name: q.q,
+      acceptedAnswer: { "@type": "Answer", text: q.a },
+    }))),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="Frequently Asked Questions | The Country School Bahawalpur"
+        description="Answers to common questions about admissions, fees, curriculum, transport, and policies at The Country School Fahad Campus, Bahawalpur."
+        path="/faq"
+        jsonLd={faqJsonLd}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
