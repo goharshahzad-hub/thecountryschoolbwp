@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import SeoHead from "@/components/SeoHead";
 
 const blogPosts: Record<string, {
   title: string;
