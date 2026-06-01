@@ -107,9 +107,9 @@ const Index = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(356_72%_48%/0.12),transparent_60%)]" />
         <div className="container relative z-10 text-center">
           <img src={logo} alt={settings.school_name} className="mx-auto mb-8 h-28 w-28 rounded-full border-4 border-primary/30 object-cover shadow-elevated" />
-          <h2 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
-            {settings.school_name}
-          </h2>
+          <h1 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
+            {settings.school_name} — Excellence in Education
+          </h1>
           <p className="mb-1 text-base font-medium text-primary-foreground/80">A Project of Bloomfield Hall (Since 1984)</p>
           <p className="mb-2 text-lg font-medium text-primary-foreground/80 md:text-xl">
             {settings.campus}, {settings.city}
