@@ -41,19 +41,24 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SeoHead
+        title="The Country School Fahad Campus — Best School in Bahawalpur"
+        description="Quality English-medium education from Reception to Class 8 at The Country School, a project of Bloomfield Hall in Model Town, Bahawalpur, with an affordable fee structure."
+        path="/"
+      />
       {/* Scrolling Banner */}
       <ScrollingBanner />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt={`${settings.school_name} Logo`} className="h-10 w-10 rounded-full object-cover" />
+            <img src={logo} alt={`${settings.school_name} logo`} className="h-10 w-10 rounded-full object-cover" />
             <div className="hidden sm:block">
-              <h1 className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</h1>
+              <p className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</p>
               <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall (Since 1984) — {settings.campus}, {settings.city}</p>
             </div>
             <div className="sm:hidden">
-              <h1 className="font-display text-sm font-bold leading-tight text-foreground">{settings.school_name}</h1>
+              <p className="font-display text-sm font-bold leading-tight text-foreground">{settings.school_name}</p>
             </div>
           </div>
           <nav className="hidden items-center gap-4 lg:flex">
