@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import SeoHead from "@/components/SeoHead";
 
 const faqs = [
   {
