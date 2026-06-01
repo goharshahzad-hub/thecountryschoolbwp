@@ -206,8 +206,17 @@ const Index = () => {
             </div>
             <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {content.gallery.map((img, i) => (
-                <div key={i} className="group relative cursor-pointer overflow-hidden rounded-lg shadow-card transition-all hover:shadow-elevated animate-fade-in" style={{ animationDelay: `${i * 60}ms` }} onClick={() => setLightboxIndex(i)}>
-                  <img src={img.url} alt={img.caption || "Gallery photo"} className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                <div
+                  key={i}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={img.caption ? `Open ${img.caption} in lightbox` : `Open gallery image ${i + 1} in lightbox`}
+                  className="group relative cursor-pointer overflow-hidden rounded-lg shadow-card transition-all hover:shadow-elevated animate-fade-in focus:outline-none focus:ring-2 focus:ring-primary"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                  onClick={() => setLightboxIndex(i)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setLightboxIndex(i); } }}
+                >
+                  <img src={img.url} alt={img.caption || `The Country School campus photo ${i + 1}`} className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
                     <ZoomIn className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
