@@ -3,6 +3,7 @@ import { ArrowLeft, Shield, BookOpen, Users, Heart, Building, Laptop, TreePine, 
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.jpg";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
+import SeoHead from "@/components/SeoHead";
 
 const AboutUs = () => {
   const { settings } = useSchoolSettings();
