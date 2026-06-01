@@ -114,7 +114,7 @@ const Curriculum = () => {
                   <h.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-display font-semibold text-foreground">{h.title}</h4>
+                  <h3 className="font-display font-semibold text-foreground">{h.title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{h.desc}</p>
                 </div>
               </div>
