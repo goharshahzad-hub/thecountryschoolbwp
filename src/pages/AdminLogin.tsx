@@ -217,6 +217,14 @@ const AdminLogin = () => {
                 <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                   {loading ? "Authenticating..." : "Login to Dashboard"}
                 </Button>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                  className="w-full text-center text-sm text-primary hover:underline disabled:opacity-50"
+                >
+                  Forgot password?
+                </button>
               </form>
             )}
           </CardContent>
