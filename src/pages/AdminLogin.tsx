@@ -110,6 +110,23 @@ const AdminLogin = () => {
     setPhone("");
   };
 
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast({ title: "Email required", description: "Enter your admin email above, then click Forgot Password.", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: "Reset Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Reset Email Sent", description: "Check your inbox for a password reset link." });
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="absolute inset-0 gradient-hero opacity-5" />
