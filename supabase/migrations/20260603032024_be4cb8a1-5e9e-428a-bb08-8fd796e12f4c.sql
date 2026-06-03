@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.is_current_user_admin();

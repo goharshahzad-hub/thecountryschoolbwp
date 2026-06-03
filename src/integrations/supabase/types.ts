@@ -1009,7 +1009,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_current_user_admin: { Args: never; Returns: boolean }
       recalculate_voucher_payment_totals: {
         Args: { _voucher_id: string }
         Returns: undefined
