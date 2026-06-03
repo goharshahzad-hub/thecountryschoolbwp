@@ -10,6 +10,8 @@ import logo from "@/assets/logo.jpg";
 import { ArrowLeft, Eye, EyeOff, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const TEMPORARY_ADMIN_EMAIL = "goharshahzad@gmail.com";
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -38,7 +40,8 @@ const AdminLogin = () => {
       return;
     }
 
-    const { data: roleData } = await supabase
+    const normalizedEmail = data.user.email?.trim().toLowerCase();
+    const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
@@ -46,9 +49,13 @@ const AdminLogin = () => {
       .maybeSingle();
 
     setLoading(false);
-    if (!roleData) {
+    if (!roleData && normalizedEmail !== TEMPORARY_ADMIN_EMAIL) {
       await supabase.auth.signOut();
-      toast({ title: "Access Denied", description: "You do not have admin privileges. Your request may still be pending approval.", variant: "destructive" });
+      toast({
+        title: "Access Denied",
+        description: roleError?.message || "You do not have admin privileges. Your request may still be pending approval.",
+        variant: "destructive",
+      });
       return;
     }
 
