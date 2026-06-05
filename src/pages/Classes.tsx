@@ -32,6 +32,7 @@ const sectionColors: Record<string, string> = {
 const emptyForm = { name: "", section: "A", level: "Primary", room: "", max_students: "40" };
 
 const Classes = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,7 +125,15 @@ const Classes = () => {
       {loading ? <p className="text-center text-muted-foreground py-8">Loading...</p> : classes.length === 0 ? <p className="text-center text-muted-foreground py-8">No classes yet. Add your first class.</p> : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {classes.map((c, i) => (
-            <Card key={c.id} className="shadow-card transition-all hover:shadow-elevated hover:-translate-y-0.5 animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
+            <Card
+              key={c.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/dashboard/students?class=${encodeURIComponent(`${c.name}-${c.section || "A"}`)}`)}
+              onKeyDown={(e) => { if (e.key === "Enter") navigate(`/dashboard/students?class=${encodeURIComponent(`${c.name}-${c.section || "A"}`)}`); }}
+              className="cursor-pointer shadow-card transition-all hover:shadow-elevated hover:-translate-y-0.5 animate-fade-in"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
               <CardContent className="p-5">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="font-display text-lg font-semibold text-foreground">{c.name}-{c.section}</h3>
@@ -136,8 +145,11 @@ const Classes = () => {
                     <span>Max <span className="text-foreground font-medium">{c.max_students}</span> students</span>
                   </div>
                   {c.room && <p className="text-xs text-muted-foreground">{c.room}</p>}
+                  <p className="flex items-center gap-1 text-xs text-primary mt-2">
+                    View students <ArrowRight className="h-3 w-3" />
+                  </p>
                 </div>
-                <div className="mt-3 flex gap-1 justify-end">
+                <div className="mt-3 flex gap-1 justify-end" onClick={(e) => e.stopPropagation()}>
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(c)}><Pencil className="h-4 w-4" /></Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
