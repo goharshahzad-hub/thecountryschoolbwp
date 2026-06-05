@@ -351,9 +351,9 @@ const Dashboard = () => {
                     <YAxis tickFormatter={(v) => `₨${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <Tooltip formatter={(value: number) => `₨ ${value.toLocaleString("en-PK")}`} contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
                     <Legend />
-                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
-                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
-                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} cursor="pointer" onClick={() => navigate("/dashboard/fee-vouchers?status=Paid")} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} cursor="pointer" onClick={() => navigate("/dashboard/fee-vouchers?status=Pending")} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} cursor="pointer" onClick={() => navigate("/dashboard/fee-vouchers?status=Overdue")} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -374,7 +374,7 @@ const Dashboard = () => {
                       <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" height={60} />
                       <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                       <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
-                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600 }} />
+                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} cursor="pointer" onClick={(d: any) => d?.name && navigate(`/dashboard/students?class=${encodeURIComponent(d.name)}`)} label={{ position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600 }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
