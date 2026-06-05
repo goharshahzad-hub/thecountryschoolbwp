@@ -545,10 +545,10 @@ const Students = () => {
               name: cardStudent.name,
               subtitle: `Class ${cardStudent.class}-${cardStudent.section}`,
               extra_lines: [
-                `<strong>Father:</strong> ${cardStudent.father_name}`,
-                `<strong>ID:</strong> ${cardStudent.student_id}`,
-                cardStudent.phone ? `<strong>Phone:</strong> ${cardStudent.phone}` : "",
-              ].filter(Boolean),
+                { label: "Father", value: cardStudent.father_name || "" },
+                { label: "ID", value: cardStudent.student_id || "" },
+                ...(cardStudent.phone ? [{ label: "Phone", value: cardStudent.phone }] : []),
+              ],
               type: "student",
             }} />
           )}
