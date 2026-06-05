@@ -45,14 +45,23 @@ const ResetPassword = () => {
       return;
     }
     setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setLoading(false);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Password Updated", description: "You can now login with your new password." });
+      // Decide where to send them based on their role
+      let dest = "/parent-login";
+      if (user) {
+        const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+        const rs = (roles || []).map(r => r.role);
+        if (rs.includes("admin")) dest = "/admin-login";
+        else if (rs.includes("teacher")) dest = "/teacher-login";
+      }
       await supabase.auth.signOut();
-      navigate("/parent-login");
+      navigate(dest);
     }
   };
 
