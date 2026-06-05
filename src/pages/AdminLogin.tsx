@@ -10,7 +10,7 @@ import logo from "@/assets/logo.jpg";
 import { ArrowLeft, Eye, EyeOff, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const TEMPORARY_ADMIN_EMAIL = "goharshahzad@gmail.com";
+
 
 const AdminLogin = () => {
   const navigate = useNavigate();
