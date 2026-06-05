@@ -3,14 +3,27 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 
+interface ExtraLine {
+  label: string;
+  value: string;
+}
+
 interface CardData {
   photo_url?: string;
   id_number: string;
   name: string;
   subtitle: string; // class or designation
-  extra_lines: string[]; // father name, phone, etc.
+  extra_lines: ExtraLine[]; // father name, phone, etc.
   type: "student" | "teacher" | "staff";
 }
+
+const escHtml = (s: string) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 
 interface IDCardProps {
   data: CardData;
