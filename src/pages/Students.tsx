@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { classOptions, sortClasses } from "@/lib/constants";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,6 +97,13 @@ const Students = () => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Honor ?class=Class-1-A or ?class=Class-1 from links/dashboard chart clicks
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const c = searchParams.get("class");
+    if (c) setClassFilter(c.includes("-") && /-[A-Z]$/i.test(c) ? c : `${c}-A`);
+  }, [searchParams]);
 
   const getParentName = (userId: string | null) => {
     if (!userId) return null;
