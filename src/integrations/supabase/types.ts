@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_verification_codes: {
+        Row: {
+          action_type: string
+          code_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          payload: Json | null
+          requested_by: string | null
+          target_email: string | null
+          target_user_id: string | null
+          used_at: string | null
+        }
+        Insert: {
+          action_type: string
+          code_hash: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json | null
+          requested_by?: string | null
+          target_email?: string | null
+          target_user_id?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          action_type?: string
+          code_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          payload?: Json | null
+          requested_by?: string | null
+          target_email?: string | null
+          target_user_id?: string | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       admission_queries: {
         Row: {
           applying_for_class: string
@@ -515,6 +554,42 @@ export type Database = {
           staff_id?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      password_reset_requests: {
+        Row: {
+          approval_token: string
+          approved_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          requested_at: string
+          status: string
+          user_role: string
+        }
+        Insert: {
+          approval_token: string
+          approved_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          requested_at?: string
+          status?: string
+          user_role: string
+        }
+        Update: {
+          approval_token?: string
+          approved_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          requested_at?: string
+          status?: string
+          user_role?: string
         }
         Relationships: []
       }
