@@ -555,10 +555,10 @@ const Employees = () => {
               name: sCardItem.name,
               subtitle: sCardItem.designation || "Staff",
               extra_lines: [
-                `<strong>ID:</strong> ${sCardItem.staff_id}`,
-                sCardItem.department ? `<strong>Dept:</strong> ${sCardItem.department}` : "",
-                sCardItem.phone ? `<strong>Phone:</strong> ${sCardItem.phone}` : "",
-              ].filter(Boolean),
+                { label: "ID", value: sCardItem.staff_id || "" },
+                ...(sCardItem.department ? [{ label: "Dept", value: sCardItem.department }] : []),
+                ...(sCardItem.phone ? [{ label: "Phone", value: sCardItem.phone }] : []),
+              ],
               type: "staff",
             }} />
           )}
