@@ -111,7 +111,11 @@ const AdmissionQuery = () => {
       ].filter(Boolean).join("\n"),
     };
 
-    const { error } = await supabase.from("admission_queries").insert([queryPayload]);
+    const { data: insertedQuery, error } = await supabase
+      .from("admission_queries")
+      .insert([queryPayload])
+      .select("id")
+      .single();
     if (error) {
       setSubmitting(false);
       toast.error("Failed to submit. Please try again.");
@@ -149,8 +153,10 @@ const AdmissionQuery = () => {
 
     await supabase.from("admissions").insert([admPayload]);
 
-    // Send notifications
-    supabase.functions.invoke("notify-admission-query", { body: queryPayload }).catch(() => {});
+    // Send notifications (server validates the query_id exists)
+    supabase.functions.invoke("notify-admission-query", {
+      body: { query_id: insertedQuery?.id },
+    }).catch(() => {});
     if (form.whatsapp) {
       const cleanPhone = form.whatsapp.replace(/[^0-9]/g, "");
       const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;

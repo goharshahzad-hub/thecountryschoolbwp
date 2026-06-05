@@ -10,7 +10,7 @@ import logo from "@/assets/logo.jpg";
 import { ArrowLeft, Eye, EyeOff, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const TEMPORARY_ADMIN_EMAIL = "goharshahzad@gmail.com";
+
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -40,7 +40,6 @@ const AdminLogin = () => {
       return;
     }
 
-    const normalizedEmail = data.user.email?.trim().toLowerCase();
     const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
@@ -49,7 +48,7 @@ const AdminLogin = () => {
       .maybeSingle();
 
     setLoading(false);
-    if (!roleData && normalizedEmail !== TEMPORARY_ADMIN_EMAIL) {
+    if (!roleData) {
       await supabase.auth.signOut();
       toast({
         title: "Access Denied",

@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -13,11 +22,52 @@ serve(async (req) => {
 
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured");
+    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Require an authenticated caller (the user who just signed up)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const anonClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await anonClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const { full_name, email, phone } = await req.json();
+    // Pull the actual request row from the database via service role, so we
+    // never trust arbitrary client-supplied content.
+    const adminClient = createClient(supabaseUrl, serviceKey);
+    const { data: row } = await adminClient
+      .from("admin_requests")
+      .select("full_name, email, phone")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!row) {
+      return new Response(JSON.stringify({ error: "No admin request found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const full_name = esc(row.full_name);
+    const email = esc(row.email);
+    const phone = esc(row.phone || "Not provided");
 
     const htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -36,7 +86,7 @@ serve(async (req) => {
           </tr>
           <tr>
             <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Phone</td>
-            <td style="padding: 8px 12px; border: 1px solid #ddd;">${phone || "Not provided"}</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">${phone}</td>
           </tr>
         </table>
         <p>Please log in to the <a href="https://thecountryschoolbwp.lovable.app/dashboard/admin-requests" style="color: #16213e; font-weight: bold;">Admin Dashboard</a> to review and approve/reject this request.</p>
@@ -54,7 +104,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "The Country School <onboarding@resend.dev>",
         to: ["thecountryschoolbwp@gmail.com"],
-        subject: `New Admin Request: ${full_name}`,
+        subject: `New Admin Request: ${row.full_name}`,
         html: htmlBody,
       }),
     });
@@ -70,7 +120,7 @@ serve(async (req) => {
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unknown error";
     console.error("Error sending notification:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Failed to send notification" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const esc = (s: unknown) =>
+  String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -13,11 +22,51 @@ serve(async (req) => {
 
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured");
+    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const body = await req.json().catch(() => ({}));
+    const queryId: string | undefined = body?.query_id;
+    if (!queryId || typeof queryId !== "string") {
+      return new Response(JSON.stringify({ error: "query_id is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const { student_name, father_name, phone, email, applying_for_class, message } = await req.json();
+    // Validate the row actually exists and was created very recently.
+    // This prevents attackers from directly invoking this function with
+    // arbitrary payloads to flood the admin inbox.
+    const adminClient = createClient(supabaseUrl, serviceKey);
+    const { data: row } = await adminClient
+      .from("admission_queries")
+      .select("student_name, father_name, phone, email, applying_for_class, message, created_at")
+      .eq("id", queryId)
+      .maybeSingle();
+
+    if (!row) {
+      return new Response(JSON.stringify({ error: "Query not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const ageMs = Date.now() - new Date(row.created_at as string).getTime();
+    if (ageMs > 5 * 60 * 1000) {
+      return new Response(JSON.stringify({ error: "Query too old" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const student_name = esc(row.student_name);
+    const father_name = esc(row.father_name);
+    const phone = esc(row.phone);
+    const email = esc(row.email || "Not provided");
+    const applying_for_class = esc(row.applying_for_class);
+    const message = row.message ? esc(row.message) : "";
 
     const htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -40,7 +89,7 @@ serve(async (req) => {
           </tr>
           <tr>
             <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Email</td>
-            <td style="padding: 8px 12px; border: 1px solid #ddd;">${email || "Not provided"}</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">${email}</td>
           </tr>
           <tr>
             <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Applying for Class</td>
@@ -66,7 +115,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "The Country School <onboarding@resend.dev>",
         to: ["thecountryschoolbwp@gmail.com"],
-        subject: `New Admission Inquiry: ${student_name} — Class ${applying_for_class}`,
+        subject: `New Admission Inquiry: ${row.student_name} — Class ${row.applying_for_class}`,
         html: htmlBody,
       }),
     });
@@ -82,7 +131,7 @@ serve(async (req) => {
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Unknown error";
     console.error("Error sending admission notification:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Failed to send notification" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

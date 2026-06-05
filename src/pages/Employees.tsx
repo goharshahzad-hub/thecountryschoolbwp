@@ -535,10 +535,10 @@ const Employees = () => {
               name: tCardItem.name,
               subtitle: tCardItem.subject || "Teacher",
               extra_lines: [
-                `<strong>ID:</strong> ${tCardItem.teacher_id}`,
-                tCardItem.classes ? `<strong>Classes:</strong> ${tCardItem.classes}` : "",
-                tCardItem.phone ? `<strong>Phone:</strong> ${tCardItem.phone}` : "",
-              ].filter(Boolean),
+                { label: "ID", value: tCardItem.teacher_id || "" },
+                ...(tCardItem.classes ? [{ label: "Classes", value: tCardItem.classes }] : []),
+                ...(tCardItem.phone ? [{ label: "Phone", value: tCardItem.phone }] : []),
+              ],
               type: "teacher",
             }} />
           )}
@@ -555,10 +555,10 @@ const Employees = () => {
               name: sCardItem.name,
               subtitle: sCardItem.designation || "Staff",
               extra_lines: [
-                `<strong>ID:</strong> ${sCardItem.staff_id}`,
-                sCardItem.department ? `<strong>Dept:</strong> ${sCardItem.department}` : "",
-                sCardItem.phone ? `<strong>Phone:</strong> ${sCardItem.phone}` : "",
-              ].filter(Boolean),
+                { label: "ID", value: sCardItem.staff_id || "" },
+                ...(sCardItem.department ? [{ label: "Dept", value: sCardItem.department }] : []),
+                ...(sCardItem.phone ? [{ label: "Phone", value: sCardItem.phone }] : []),
+              ],
               type: "staff",
             }} />
           )}

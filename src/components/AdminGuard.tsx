@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-const TEMPORARY_ADMIN_EMAIL = "goharshahzad@gmail.com";
-
 const AdminGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -14,11 +12,6 @@ const AdminGuard = ({ children }: { children: React.ReactNode }) => {
     if (loading) return;
     if (!user) {
       navigate("/admin-login");
-      return;
-    }
-
-    if (user.email?.trim().toLowerCase() === TEMPORARY_ADMIN_EMAIL) {
-      setIsAdmin(true);
       return;
     }
 

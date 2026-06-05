@@ -3,14 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 
+interface ExtraLine {
+  label: string;
+  value: string;
+}
+
 interface CardData {
   photo_url?: string;
   id_number: string;
   name: string;
   subtitle: string; // class or designation
-  extra_lines: string[]; // father name, phone, etc.
+  extra_lines: ExtraLine[]; // father name, phone, etc.
   type: "student" | "teacher" | "staff";
 }
+
 
 interface IDCardProps {
   data: CardData;
@@ -79,7 +85,9 @@ const IDCard = ({ data, schoolName = "The Country School", campus = "Model Town 
             <div className="text-[10px] font-bold text-[hsl(222,47%,23%)] leading-tight">{data.name}</div>
             <div className="text-[7.5px] text-muted-foreground font-medium">{data.subtitle}</div>
             {data.extra_lines.map((line, i) => (
-              <div key={i} className="text-[7px] text-muted-foreground leading-snug" dangerouslySetInnerHTML={{ __html: line }} />
+              <div key={i} className="text-[7px] text-muted-foreground leading-snug">
+                <strong>{line.label}:</strong> {line.value}
+              </div>
             ))}
           </div>
         </div>
