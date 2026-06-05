@@ -1,0 +1,23 @@
+
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.profiles;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.students;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.attendance_records;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.user_roles;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.teachers;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.classes;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.fee_vouchers;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.subjects;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.test_results;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.admissions;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.school_settings;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.admission_queries;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.admin_requests;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.timetable_entries;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.website_content;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.non_teaching_staff;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.expenses;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.diary_entries;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.announcements;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.teacher_permissions;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.payment_records;
+DROP POLICY IF EXISTS "Temporary direct admin access for Gohar" ON public.student_parent_links;
