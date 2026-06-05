@@ -14,6 +14,7 @@ import Attendance from "./pages/Attendance";
 import Fees from "./pages/Fees";
 import Admissions from "./pages/Admissions";
 import FeeVouchers from "./pages/FeeVouchers";
+import FeeVoucherHistory from "./pages/FeeVoucherHistory";
 import Results from "./pages/Results";
 import Timetable from "./pages/Timetable";
 import SettingsPage from "./pages/Settings";
@@ -72,6 +73,7 @@ const App = () => (
             <Route path="/dashboard/admissions" element={<Admissions />} />
             <Route path="/dashboard/admission-queries" element={<AdmissionQueries />} />
             <Route path="/dashboard/fee-vouchers" element={<FeeVouchers />} />
+            <Route path="/dashboard/voucher-history" element={<FeeVoucherHistory />} />
             <Route path="/dashboard/results" element={<Results />} />
             <Route path="/dashboard/timetable" element={<Timetable />} />
             <Route path="/dashboard/timetable-generator" element={<TimetableGenerator />} />

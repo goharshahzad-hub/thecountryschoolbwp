@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Users, GraduationCap, BookOpen, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Filter, TrendingDown, Wallet, ClipboardCheck, UserPlus, UserCheck, Cake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,7 @@ const MONTHS = ["January","February","March","April","May","June","July","August
 
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [allVouchers, setAllVouchers] = useState<FeeVoucher[]>([]);
   const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -202,14 +204,14 @@ const Dashboard = () => {
   const COLORS = ["hsl(142,71%,45%)", "hsl(0,84%,60%)", "hsl(38,92%,50%)"];
 
   const statCards = [
-    { label: "Total Students", value: counts.students.toString(), icon: Users, color: "bg-primary/10 text-primary" },
-    { label: "Total Teachers", value: counts.teachers.toString(), icon: GraduationCap, color: "bg-secondary/10 text-secondary" },
-    { label: "Active Classes", value: counts.classes.toString(), icon: BookOpen, color: "bg-accent/10 text-accent-foreground" },
-    { label: "Pending Admissions", value: counts.admissions.toString(), icon: UserPlus, color: "bg-secondary/10 text-secondary" },
-    { label: "Fee Collected", value: `₨ ${feeCollected.toLocaleString("en-PK")}`, icon: CheckCircle, color: "bg-success/10 text-success" },
-    { label: "Fee Pending", value: `₨ ${feePending.toLocaleString("en-PK")}`, icon: DollarSign, color: "bg-warning/10 text-warning" },
-    { label: "Fee Overdue", value: `₨ ${feeOverdue.toLocaleString("en-PK")}`, icon: AlertTriangle, color: "bg-destructive/10 text-destructive" },
-    { label: "Attendance (30d)", value: `${attendanceSummary.rate}%`, icon: ClipboardCheck, color: "bg-primary/10 text-primary" },
+    { label: "Total Students", value: counts.students.toString(), icon: Users, color: "bg-primary/10 text-primary", to: "/dashboard/students" },
+    { label: "Total Teachers", value: counts.teachers.toString(), icon: GraduationCap, color: "bg-secondary/10 text-secondary", to: "/dashboard/employees" },
+    { label: "Active Classes", value: counts.classes.toString(), icon: BookOpen, color: "bg-accent/10 text-accent-foreground", to: "/dashboard/classes" },
+    { label: "Pending Admissions", value: counts.admissions.toString(), icon: UserPlus, color: "bg-secondary/10 text-secondary", to: "/dashboard/admissions" },
+    { label: "Fee Collected", value: `₨ ${feeCollected.toLocaleString("en-PK")}`, icon: CheckCircle, color: "bg-success/10 text-success", to: "/dashboard/fee-vouchers?status=Paid" },
+    { label: "Fee Pending", value: `₨ ${feePending.toLocaleString("en-PK")}`, icon: DollarSign, color: "bg-warning/10 text-warning", to: "/dashboard/fee-vouchers?status=Pending" },
+    { label: "Fee Overdue", value: `₨ ${feeOverdue.toLocaleString("en-PK")}`, icon: AlertTriangle, color: "bg-destructive/10 text-destructive", to: "/dashboard/fee-vouchers?status=Overdue" },
+    { label: "Attendance (30d)", value: `${attendanceSummary.rate}%`, icon: ClipboardCheck, color: "bg-primary/10 text-primary", to: "/dashboard/attendance" },
   ];
 
   const filterLabel = selectedMonth === "all" && selectedYear === "all"
@@ -225,7 +227,12 @@ const Dashboard = () => {
 
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {statCards.map((stat, i) => (
-          <Card key={i} className="shadow-card animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+          <Card
+            key={i}
+            onClick={() => stat.to && navigate(stat.to)}
+            className="shadow-card animate-fade-in cursor-pointer transition-all hover:shadow-elevated hover:-translate-y-0.5"
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color}`}>
@@ -344,9 +351,9 @@ const Dashboard = () => {
                     <YAxis tickFormatter={(v) => `₨${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                     <Tooltip formatter={(value: number) => `₨ ${value.toLocaleString("en-PK")}`} contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
                     <Legend />
-                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
-                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
-                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="paid" name="Paid" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} cursor="pointer" onClick={() => navigate("/dashboard/fee-vouchers?status=Paid")} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="pending" name="Pending" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} cursor="pointer" onClick={() => navigate("/dashboard/fee-vouchers?status=Pending")} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                    <Bar dataKey="overdue" name="Overdue" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} cursor="pointer" onClick={() => navigate("/dashboard/fee-vouchers?status=Overdue")} label={{ position: 'top', formatter: (v: number) => v > 0 ? `${(v/1000).toFixed(0)}k` : '', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -367,7 +374,7 @@ const Dashboard = () => {
                       <XAxis dataKey="name" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} angle={-45} textAnchor="end" height={60} />
                       <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                       <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }} />
-                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600 }} />
+                      <Bar dataKey="count" name="Students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} cursor="pointer" onClick={(d: any) => d?.name && navigate(`/dashboard/students?class=${encodeURIComponent(d.name)}`)} label={{ position: 'top', fill: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600 }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>

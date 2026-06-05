@@ -117,20 +117,19 @@ const AdminLogin = () => {
   };
 
   const handleForgotPassword = async () => {
-    if (!email.trim()) {
+    if (!email.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
       toast({ title: "Email required", description: "Enter your admin email above, then click Forgot Password.", variant: "destructive" });
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
+    await supabase.functions.invoke("request-password-reset", {
+      body: { email: email.trim().toLowerCase(), role: "admin", site_url: window.location.origin },
     });
     setLoading(false);
-    if (error) {
-      toast({ title: "Reset Failed", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Reset Email Sent", description: "Check your inbox for a password reset link." });
+    toast({
+      title: "Request submitted",
+      description: "Your reset request has been sent to the school admin for approval. You'll receive an email once it's approved.",
+    });
   };
 
   return (

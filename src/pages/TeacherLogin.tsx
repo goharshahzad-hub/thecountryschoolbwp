@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.jpg";
 import { ArrowLeft, Eye, EyeOff, GraduationCap } from "lucide-react";
@@ -17,6 +18,9 @@ const TeacherLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +57,24 @@ const TeacherLogin = () => {
     navigate("/teacher-portal");
   };
 
+  const handleForgotSubmit = async () => {
+    if (!forgotEmail.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(forgotEmail.trim())) {
+      toast({ title: "Email required", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+    setForgotLoading(true);
+    await supabase.functions.invoke("request-password-reset", {
+      body: { email: forgotEmail.trim().toLowerCase(), role: "teacher", site_url: window.location.origin },
+    });
+    setForgotLoading(false);
+    setForgotOpen(false);
+    setForgotEmail("");
+    toast({
+      title: "Request submitted",
+      description: "Your reset request has been sent to the school admin. You will receive an email once it is approved.",
+    });
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="absolute inset-0 gradient-hero opacity-5" />
@@ -87,6 +109,13 @@ const TeacherLogin = () => {
               <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
                 {loading ? "Authenticating..." : "Login to Teacher Portal"}
               </Button>
+              <button
+                type="button"
+                onClick={() => { setForgotEmail(email); setForgotOpen(true); }}
+                className="w-full text-center text-sm text-primary hover:underline"
+              >
+                Forgot password?
+              </button>
               <p className="text-xs text-center text-muted-foreground">
                 Teacher accounts are created by the school admin. Contact admin if you need access.
               </p>
@@ -94,6 +123,29 @@ const TeacherLogin = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Request Password Reset</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              For security, password resets must be approved by the school admin. Enter your email below — the admin will receive an approval request and the reset link will be emailed to you once approved.
+            </p>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input type="email" placeholder="your-email@example.com" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setForgotOpen(false)}>Cancel</Button>
+            <Button onClick={handleForgotSubmit} disabled={forgotLoading} className="gradient-primary text-primary-foreground">
+              {forgotLoading ? "Sending..." : "Submit Request"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
