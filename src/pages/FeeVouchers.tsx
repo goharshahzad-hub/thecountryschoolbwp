@@ -548,32 +548,33 @@ const FeeVouchers = () => {
       year: v.year,
     });
     const voucherStyles = `
-      @page { size: A4 landscape; margin: 5mm; }
+      @page { size: A4 landscape; margin: 6mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
-      .voucher-container { display: flex; width: 100%; gap: 0; height: 195mm; }
-      .slip { flex: 1; border: 1px solid #333; padding: 5px 7px; display: flex; flex-direction: column; min-width: 0; }
+      html, body { width: 285mm; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #222; }
+      .voucher-container { display: flex; width: 100%; gap: 0; height: 196mm; page-break-inside: avoid; page-break-after: avoid; }
+      .slip { flex: 1; border: 1px solid #333; padding: 5px 7px; display: flex; flex-direction: column; min-width: 0; height: 196mm; overflow: hidden; page-break-inside: avoid; }
       .slip + .slip { border-left: 2px dashed #999; }
-      .slip-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
-      .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
-      .slip-campus { text-align: center; font-size: 8px; color: #666; margin-bottom: 2px; }
-      .slip-heading { text-align: center; font-size: 12px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 4px; }
-      .slip-info { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 4px; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 12px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 14px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 9px; color: #666; margin-bottom: 2px; }
+      .slip-heading { text-align: center; font-size: 13px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 4px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 4px; }
       .slip-info td { padding: 2px 4px; border: 1px solid #ddd; }
-      .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
-      .desc-title { font-weight: bold; font-size: 10px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
-      .fee-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+      .slip-info .lbl { font-weight: bold; width: 40%; background: #f5f5f5; }
+      .desc-title { font-weight: bold; font-size: 11px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
       .fee-table td { padding: 2px 4px; border: 1px solid #ddd; }
       .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
-      .totals-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 2px; }
       .totals-table td { padding: 3px 4px; border: 1px solid #999; font-weight: bold; }
       .totals-table .amt { text-align: right; width: 35%; }
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 6px; gap: 6px; }
-      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 4px; gap: 6px; }
+      .slip-sign { display: flex; gap: 10px; font-size: 9.5px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; min-width: 70px; text-align: center; font-weight: 600; }
       .slip-qr { flex-shrink: 0; }
       .slip-qr img { display: block; width: 50px; height: 50px; }
     `;
@@ -589,37 +590,37 @@ const FeeVouchers = () => {
     });
 
     const voucherStyles = `
-      @page { size: A4 landscape; margin: 5mm; }
+      @page { size: A4 landscape; margin: 6mm; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
-      .voucher-container { display: flex; width: 100%; height: 100vh; gap: 0; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #222; }
+      .voucher-container { display: flex; width: 100%; height: 196mm; gap: 0; page-break-inside: avoid; }
       .page-break { page-break-after: always; }
       .page-break:last-child { page-break-after: auto; }
-      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; overflow: hidden; }
+      .slip { flex: 1; border: 1px solid #333; padding: 5px 7px; display: flex; flex-direction: column; height: 196mm; overflow: hidden; page-break-inside: avoid; }
       .slip + .slip { border-left: 2px dashed #999; }
-      .slip-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
-      .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
-      .slip-campus { text-align: center; font-size: 8px; color: #666; margin-bottom: 2px; }
-      .slip-heading { text-align: center; font-size: 12px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 4px; }
-      .slip-info { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 4px; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 12px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 14px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 9px; color: #666; margin-bottom: 2px; }
+      .slip-heading { text-align: center; font-size: 13px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 4px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 4px; }
       .slip-info td { padding: 2px 4px; border: 1px solid #ddd; }
-      .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
-      .desc-title { font-weight: bold; font-size: 10px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
-      .fee-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+      .slip-info .lbl { font-weight: bold; width: 40%; background: #f5f5f5; }
+      .desc-title { font-weight: bold; font-size: 11px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
       .fee-table td { padding: 2px 4px; border: 1px solid #ddd; }
       .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
-      .totals-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 2px; }
       .totals-table td { padding: 3px 4px; border: 1px solid #999; font-weight: bold; }
       .totals-table .amt { text-align: right; width: 35%; }
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 6px; gap: 6px; }
-      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 4px; gap: 6px; }
+      .slip-sign { display: flex; gap: 10px; font-size: 9.5px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; min-width: 70px; text-align: center; font-weight: 600; }
       .slip-qr { flex-shrink: 0; }
       .slip-qr img { display: block; width: 50px; height: 50px; }
-      @media print { .print-preview-bar { display: none !important; } body { padding: 0; } }
+      @media print { .print-preview-bar { display: none !important; } body { padding: 0 !important; } }
     `;
 
     const win = window.open("", "_blank");
@@ -651,30 +652,30 @@ const FeeVouchers = () => {
     });
     const voucherStyles = `
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: Arial, sans-serif; font-size: 10px; color: #222; }
-      .voucher-container { display: flex; width: 100%; gap: 0; }
-      .slip { flex: 1; border: 1px solid #333; padding: 6px 8px; display: flex; flex-direction: column; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #222; }
+      .voucher-container { display: flex; width: 100%; gap: 0; height: 196mm; }
+      .slip { flex: 1; border: 1px solid #333; padding: 5px 7px; display: flex; flex-direction: column; height: 196mm; overflow: hidden; }
       .slip + .slip { border-left: 2px dashed #999; }
-      .slip-title { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
-      .slip-school { text-align: center; font-size: 13px; font-weight: bold; color: #c0392b; }
-      .slip-campus { text-align: center; font-size: 8px; color: #666; margin-bottom: 2px; }
-      .slip-heading { text-align: center; font-size: 12px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 4px; }
-      .slip-info { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 4px; }
+      .slip-title { text-align: center; font-weight: bold; font-size: 12px; text-transform: uppercase; background: #c0392b; color: #fff; padding: 3px; margin-bottom: 4px; letter-spacing: 1px; }
+      .slip-school { text-align: center; font-size: 14px; font-weight: bold; color: #c0392b; }
+      .slip-campus { text-align: center; font-size: 9px; color: #666; margin-bottom: 2px; }
+      .slip-heading { text-align: center; font-size: 13px; font-weight: bold; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 3px 0; margin-bottom: 4px; }
+      .slip-info { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-bottom: 4px; }
       .slip-info td { padding: 2px 4px; border: 1px solid #ddd; }
-      .slip-info .lbl { font-weight: bold; width: 38%; background: #f5f5f5; }
-      .desc-title { font-weight: bold; font-size: 10px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
-      .fee-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+      .slip-info .lbl { font-weight: bold; width: 40%; background: #f5f5f5; }
+      .desc-title { font-weight: bold; font-size: 11px; background: #eee; padding: 2px 4px; border: 1px solid #ddd; border-bottom: none; }
+      .fee-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
       .fee-table td { padding: 2px 4px; border: 1px solid #ddd; }
       .fee-table .amt { text-align: right; font-weight: bold; width: 35%; }
-      .totals-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 2px; }
+      .totals-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 2px; }
       .totals-table td { padding: 3px 4px; border: 1px solid #999; font-weight: bold; }
       .totals-table .amt { text-align: right; width: 35%; }
       .highlight-green { background: #d4edda; color: #155724; }
       .highlight-yellow { background: #fff3cd; color: #856404; }
       .highlight-red { background: #f8d7da; color: #721c24; }
-      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; padding-top: 6px; gap: 6px; }
-      .slip-sign { display: flex; gap: 8px; font-size: 8px; flex: 1; }
-      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; width: 60px; text-align: center; }
+      .slip-footer-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 4px; gap: 6px; }
+      .slip-sign { display: flex; gap: 10px; font-size: 9.5px; flex: 1; }
+      .slip-sign div { border-top: 1px solid #333; padding-top: 2px; min-width: 70px; text-align: center; font-weight: 600; }
       .slip-qr { flex-shrink: 0; }
       .slip-qr img { display: block; width: 50px; height: 50px; }
     `;
