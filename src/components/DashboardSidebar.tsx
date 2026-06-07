@@ -10,7 +10,7 @@ import {
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
   FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
   BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck, X, FileBarChart, Wand2, GraduationCap as TeacherIcon,
-  History, Lock
+  History, Lock, Construction
 } from "lucide-react";
 
 const navItems = [
@@ -39,6 +39,7 @@ const navItems = [
   { to: "/dashboard/signedup-parents", icon: UserCheck, label: "Signedup Parents" },
   { to: "/dashboard/admin-requests", icon: ShieldCheck, label: "Admin Requests" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings" },
+  { to: "/dashboard/under-construction", icon: Construction, label: "App Under Construction" },
 ];
 
 interface DashboardSidebarProps {

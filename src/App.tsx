@@ -48,6 +48,7 @@ import ReceiptGenerator from "./pages/ReceiptGenerator";
 import TeacherPermissions from "./pages/TeacherPermissions";
 import PaymentHistory from "./pages/PaymentHistory";
 import NotFound from "./pages/NotFound";
+import UnderConstruction from "./pages/UnderConstruction";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
             <Route path="/dashboard/receipt" element={<ReceiptGenerator />} />
             <Route path="/dashboard/teacher-permissions" element={<TeacherPermissions />} />
             <Route path="/dashboard/payment-history" element={<PaymentHistory />} />
+            <Route path="/dashboard/under-construction" element={<UnderConstruction />} />
             <Route path="/parent-login" element={<ParentLogin />} />
             <Route path="/parent-portal" element={<ParentPortal />} />
             <Route path="/reset-password" element={<ResetPassword />} />
