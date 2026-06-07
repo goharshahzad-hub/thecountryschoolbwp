@@ -526,7 +526,7 @@ const FeeVouchers = () => {
         </table>
         <div class="slip-footer-row">
           <div class="slip-sign">
-            <div>e-Signature<br/><span style="font-size:7px;color:#888;">Verified Digitally</span></div>
+            <div>Authorized Signatures</div>
             <div>Stamp</div>
           </div>
           <div class="slip-qr">${qrImg}</div>
