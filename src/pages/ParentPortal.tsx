@@ -143,6 +143,7 @@ const ParentPortal = () => {
           .from("test_results")
           .select("*, subjects(name)")
           .in("student_id", studentIds)
+          .eq("is_published", true)
           .order("exam_date", { ascending: false })
           .then(({ data: d }) => { if (d) setTestResults(d as any); });
 
