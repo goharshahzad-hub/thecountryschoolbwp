@@ -948,6 +948,12 @@ const Results = () => {
                 </Button>
                 {monthlyClass && monthlyResults.length > 0 && (
                   <>
+                    <Button onClick={() => publishResults(monthlyResults.filter(r => !r.is_published).map(r => r.id), true)} variant="outline" className="border-success/30 text-success hover:bg-success/10" disabled={!monthlyResults.some(r => !r.is_published)}>
+                      Publish Drafts ({monthlyResults.filter(r => !r.is_published).length})
+                    </Button>
+                    <Button onClick={() => publishResults(monthlyResults.filter(r => r.is_published).map(r => r.id), false)} variant="outline" disabled={!monthlyResults.some(r => r.is_published)}>
+                      Unpublish All
+                    </Button>
                     <Button onClick={() => sendTermResultAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
                       <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
                     </Button>
