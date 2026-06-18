@@ -157,6 +157,15 @@ const Results = () => {
     toast({ title: "Deleted" });
   };
 
+  const publishResults = async (ids: string[], publish: boolean) => {
+    if (ids.length === 0) { toast({ title: "Nothing to update" }); return; }
+    const verb = publish ? "publish" : "unpublish";
+    if (!confirm(`${publish ? "Publish" : "Unpublish"} ${ids.length} result(s)? ${publish ? "They will become visible to parents." : "They will be hidden from parents."}`)) return;
+    const { error } = await supabase.from("test_results").update({ is_published: publish }).in("id", ids);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: publish ? "Published" : "Unpublished", description: `${ids.length} result(s) ${verb}ed.` }); fetchData(); }
+  };
+
   // ========== MONTHLY TEST (Jan-Dec) HANDLERS ==========
   const mtBulkClassStudents = mtBulkClass ? students.filter(s => s.class === mtBulkClass).sort((a, b) => a.name.localeCompare(b.name)) : [];
 
