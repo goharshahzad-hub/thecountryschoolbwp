@@ -129,12 +129,35 @@ const Admissions = () => {
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      // Send WhatsApp alert to parent on new admission
+      // Send WhatsApp welcome to parent on new admission, listing all children of this guardian
       if (!editingId && form.whatsapp) {
         const cleanPhone = form.whatsapp.replace(/[^0-9]/g, "");
         const fullPhone = cleanPhone.startsWith("0") ? "92" + cleanPhone.slice(1) : cleanPhone;
+        // Collect all children for this guardian (match by CNIC, phone or WhatsApp)
+        const childNames = new Set<string>([form.student_name.trim()]);
+        try {
+          const filters: string[] = [];
+          if (form.father_cnic.trim()) filters.push(`father_cnic.eq.${form.father_cnic.trim()}`);
+          if (form.father_phone.trim()) filters.push(`father_phone.eq.${form.father_phone.trim()}`);
+          if (form.whatsapp.trim()) filters.push(`whatsapp.eq.${form.whatsapp.trim()}`);
+          if (filters.length > 0) {
+            const { data: siblings } = await supabase
+              .from("admissions").select("student_name").or(filters.join(","));
+            siblings?.forEach(s => s.student_name && childNames.add(s.student_name));
+            const studentFilters: string[] = [];
+            if (form.father_name.trim()) studentFilters.push(`father_name.eq.${form.father_name.trim()}`);
+            if (form.whatsapp.trim()) studentFilters.push(`whatsapp.eq.${form.whatsapp.trim()}`);
+            if (form.father_phone.trim()) studentFilters.push(`phone.eq.${form.father_phone.trim()}`);
+            if (studentFilters.length > 0) {
+              const { data: enrolled } = await supabase
+                .from("students").select("name").or(studentFilters.join(","));
+              enrolled?.forEach(s => s.name && childNames.add(s.name));
+            }
+          }
+        } catch (_) { /* non-blocking */ }
+        const namesList = Array.from(childNames).map(n => `• ${n}`).join("\n");
         const msg = encodeURIComponent(
-          `Assalam o Alaikum,\n\nDear ${form.father_name},\n\nWe are pleased to inform you that the admission application for *${form.student_name}* has been submitted at *The Country School*.\n\nApplication No: *${payload.application_no}*\nClass Applied For: *${form.applying_for_class}-${form.applying_for_section}*\n\nOur team will review your application and contact you soon.\n\nRegards,\nThe Country School\nModel Town Fahad Campus, Bahawalpur`
+          `Assalam o Alaikum,\n\nDear ${form.father_name},\n\n🎉 *Welcome to The Country School Family!*\n\nWe are pleased to confirm the admission application for *${form.student_name}* has been received at *The Country School, Model Town Fahad Campus, Bahawalpur*.\n\n*Application No:* ${payload.application_no}\n*Class Applied For:* ${form.applying_for_class}-${form.applying_for_section}\n\n*Your Registered Children with us:*\n${namesList}\n\nOur admissions team will review the application and contact you shortly. For any questions, please reach us at 0322-6107000 / 0305-7457171.\n\nJazakAllah Khair,\n*The Country School*\nModel Town Fahad Campus, Bahawalpur`
         );
         window.open(`https://wa.me/${fullPhone}?text=${msg}`, "_blank");
       }

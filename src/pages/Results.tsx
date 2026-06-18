@@ -28,6 +28,7 @@ interface TestResult {
   grade: string | null;
   remarks: string | null;
   exam_date: string | null;
+  is_published?: boolean;
 }
 
 interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; whatsapp: string | null; phone: string | null; }
@@ -129,6 +130,7 @@ const Results = () => {
       exam_type: form.exam_type, term: form.term,
       total_marks: total, obtained_marks: obtained, grade,
       remarks: form.remarks.trim(), exam_date: form.exam_date || null,
+      ...(editingId ? {} : { is_published: false }),
     };
     const { error } = editingId
       ? await supabase.from("test_results").update(payload).eq("id", editingId)
@@ -155,6 +157,15 @@ const Results = () => {
     toast({ title: "Deleted" });
   };
 
+  const publishResults = async (ids: string[], publish: boolean) => {
+    if (ids.length === 0) { toast({ title: "Nothing to update" }); return; }
+    const verb = publish ? "publish" : "unpublish";
+    if (!confirm(`${publish ? "Publish" : "Unpublish"} ${ids.length} result(s)? ${publish ? "They will become visible to parents." : "They will be hidden from parents."}`)) return;
+    const { error } = await supabase.from("test_results").update({ is_published: publish }).in("id", ids);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: publish ? "Published" : "Unpublished", description: `${ids.length} result(s) ${verb}ed.` }); fetchData(); }
+  };
+
   // ========== MONTHLY TEST (Jan-Dec) HANDLERS ==========
   const mtBulkClassStudents = mtBulkClass ? students.filter(s => s.class === mtBulkClass).sort((a, b) => a.name.localeCompare(b.name)) : [];
 
@@ -174,6 +185,7 @@ const Results = () => {
           total_marks: total, obtained_marks: obtained,
           grade: gradeFromPercent((obtained / total) * 100),
           exam_date: mtBulkExamDate || null, remarks: "",
+          is_published: false,
         };
       });
     if (entries.length === 0) {
@@ -185,7 +197,7 @@ const Results = () => {
     setMtBulkSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Success", description: `${entries.length} monthly test results saved` });
+      toast({ title: "Saved as Draft", description: `${entries.length} monthly test results saved as draft. Click "Publish" to make them visible to parents.` });
       setMtBulkMarks({});
       fetchData();
     }
@@ -265,6 +277,7 @@ const Results = () => {
           total_marks: total, obtained_marks: obtained,
           grade: gradeFromPercent((obtained / total) * 100),
           exam_date: bulkExamDate || null, remarks: "",
+          is_published: false,
         };
       });
     if (entries.length === 0) {
@@ -276,7 +289,7 @@ const Results = () => {
     setBulkSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Success", description: `${entries.length} results saved` });
+      toast({ title: "Saved as Draft", description: `${entries.length} results saved as draft. Click "Publish" to make them visible to parents.` });
       setBulkMarks({});
       fetchData();
     }
@@ -757,6 +770,12 @@ const Results = () => {
                 </Button>
                 {mtViewClass && mtViewMonth && mtViewResults.length > 0 && (
                   <>
+                    <Button onClick={() => publishResults(mtViewResults.filter(r => !r.is_published).map(r => r.id), true)} variant="outline" className="border-success/30 text-success hover:bg-success/10" disabled={!mtViewResults.some(r => !r.is_published)}>
+                      Publish Drafts ({mtViewResults.filter(r => !r.is_published).length})
+                    </Button>
+                    <Button onClick={() => publishResults(mtViewResults.filter(r => r.is_published).map(r => r.id), false)} variant="outline" disabled={!mtViewResults.some(r => r.is_published)}>
+                      Unpublish All
+                    </Button>
                     <Button onClick={() => sendMonthlyTestAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
                       <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({mtViewStudents.filter(s => mtViewResults.some(r => r.student_id === s.id)).length})
                     </Button>
@@ -773,7 +792,7 @@ const Results = () => {
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={mtSelectedIds.size === mtViewStudents.length && mtViewStudents.length > 0} onCheckedChange={() => setMtSelectedIds(prev => prev.size === mtViewStudents.length ? new Set() : new Set(mtViewStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
-                    <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
+                    <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {mtViewResults.map((r, i) => {
@@ -788,6 +807,16 @@ const Results = () => {
                           <TableCell>{r.obtained_marks}</TableCell>
                           <TableCell>{pct}%</TableCell>
                           <TableCell><Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={r.is_published ? "border-success/30 text-success" : "border-warning/30 text-warning"}>
+                              {r.is_published ? "Published" : "Draft"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="ghost" onClick={() => publishResults([r.id], !r.is_published)}>
+                              {r.is_published ? "Unpublish" : "Publish"}
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -919,6 +948,12 @@ const Results = () => {
                 </Button>
                 {monthlyClass && monthlyResults.length > 0 && (
                   <>
+                    <Button onClick={() => publishResults(monthlyResults.filter(r => !r.is_published).map(r => r.id), true)} variant="outline" className="border-success/30 text-success hover:bg-success/10" disabled={!monthlyResults.some(r => !r.is_published)}>
+                      Publish Drafts ({monthlyResults.filter(r => !r.is_published).length})
+                    </Button>
+                    <Button onClick={() => publishResults(monthlyResults.filter(r => r.is_published).map(r => r.id), false)} variant="outline" disabled={!monthlyResults.some(r => r.is_published)}>
+                      Unpublish All
+                    </Button>
                     <Button onClick={() => sendTermResultAlerts()} variant="outline" className="border-success/30 text-success hover:bg-success/10">
                       <MessageCircle className="mr-2 h-4 w-4" />WhatsApp All ({monthlyClassStudents.filter(s => monthlyResults.some(r => r.student_id === s.id)).length})
                     </Button>
@@ -935,7 +970,7 @@ const Results = () => {
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={termSelectedIds.size === monthlyClassStudents.length && monthlyClassStudents.length > 0} onCheckedChange={() => setTermSelectedIds(prev => prev.size === monthlyClassStudents.length ? new Set() : new Set(monthlyClassStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
-                    <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
+                    <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {monthlyResults.map((r, i) => {
@@ -950,6 +985,16 @@ const Results = () => {
                           <TableCell>{r.obtained_marks}</TableCell>
                           <TableCell>{pct}%</TableCell>
                           <TableCell><Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={r.is_published ? "border-success/30 text-success" : "border-warning/30 text-warning"}>
+                              {r.is_published ? "Published" : "Draft"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="ghost" onClick={() => publishResults([r.id], !r.is_published)}>
+                              {r.is_published ? "Unpublish" : "Publish"}
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       );
                     })}

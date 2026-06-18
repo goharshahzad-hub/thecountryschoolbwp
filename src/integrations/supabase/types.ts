@@ -950,6 +950,7 @@ export type Database = {
           exam_type: string
           grade: string | null
           id: string
+          is_published: boolean
           obtained_marks: number
           remarks: string | null
           student_id: string
@@ -963,6 +964,7 @@ export type Database = {
           exam_type?: string
           grade?: string | null
           id?: string
+          is_published?: boolean
           obtained_marks?: number
           remarks?: string | null
           student_id: string
@@ -976,6 +978,7 @@ export type Database = {
           exam_type?: string
           grade?: string | null
           id?: string
+          is_published?: boolean
           obtained_marks?: number
           remarks?: string | null
           student_id?: string
