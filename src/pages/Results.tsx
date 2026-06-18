@@ -280,7 +280,7 @@ const Results = () => {
     setBulkSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Success", description: `${entries.length} results saved` });
+      toast({ title: "Saved as Draft", description: `${entries.length} results saved as draft. Click "Publish" to make them visible to parents.` });
       setBulkMarks({});
       fetchData();
     }
