@@ -268,6 +268,7 @@ const Results = () => {
           total_marks: total, obtained_marks: obtained,
           grade: gradeFromPercent((obtained / total) * 100),
           exam_date: bulkExamDate || null, remarks: "",
+          is_published: false,
         };
       });
     if (entries.length === 0) {
