@@ -188,7 +188,7 @@ const Results = () => {
     setMtBulkSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
-      toast({ title: "Success", description: `${entries.length} monthly test results saved` });
+      toast({ title: "Saved as Draft", description: `${entries.length} monthly test results saved as draft. Click "Publish" to make them visible to parents.` });
       setMtBulkMarks({});
       fetchData();
     }
