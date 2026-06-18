@@ -130,6 +130,7 @@ const Results = () => {
       exam_type: form.exam_type, term: form.term,
       total_marks: total, obtained_marks: obtained, grade,
       remarks: form.remarks.trim(), exam_date: form.exam_date || null,
+      ...(editingId ? {} : { is_published: false }),
     };
     const { error } = editingId
       ? await supabase.from("test_results").update(payload).eq("id", editingId)
