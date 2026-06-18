@@ -80,13 +80,14 @@ const TeacherResults = () => {
         total_marks: total,
         obtained_marks: obtained,
         grade,
+        is_published: false,
       };
     });
     if (entries.length === 0) { toast({ title: "Error", description: "Enter marks for at least one student", variant: "destructive" }); setSaving(false); return; }
     const { error } = await supabase.from("test_results").insert(entries);
     setSaving(false);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else toast({ title: "Saved", description: `Results saved for ${entries.length} students.` });
+    else toast({ title: "Saved as Draft", description: `Results saved as draft for ${entries.length} students. Admin can publish them to make visible to parents.` });
   };
 
   return (
