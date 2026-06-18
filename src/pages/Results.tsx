@@ -792,7 +792,7 @@ const Results = () => {
                   <TableHeader><TableRow>
                     <TableHead className="w-10"><Checkbox checked={mtSelectedIds.size === mtViewStudents.length && mtViewStudents.length > 0} onCheckedChange={() => setMtSelectedIds(prev => prev.size === mtViewStudents.length ? new Set() : new Set(mtViewStudents.map(s => s.id)))} /></TableHead>
                     <TableHead>#</TableHead><TableHead>Student</TableHead><TableHead>Subject</TableHead>
-                    <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead>
+                    <TableHead>Total</TableHead><TableHead>Obtained</TableHead><TableHead>%</TableHead><TableHead>Grade</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Action</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {mtViewResults.map((r, i) => {
@@ -807,6 +807,16 @@ const Results = () => {
                           <TableCell>{r.obtained_marks}</TableCell>
                           <TableCell>{pct}%</TableCell>
                           <TableCell><Badge variant="outline" className={gradeColor(r.grade || "")}>{r.grade}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={r.is_published ? "border-success/30 text-success" : "border-warning/30 text-warning"}>
+                              {r.is_published ? "Published" : "Draft"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="ghost" onClick={() => publishResults([r.id], !r.is_published)}>
+                              {r.is_published ? "Unpublish" : "Publish"}
+                            </Button>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
