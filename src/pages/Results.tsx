@@ -28,6 +28,7 @@ interface TestResult {
   grade: string | null;
   remarks: string | null;
   exam_date: string | null;
+  is_published?: boolean;
 }
 
 interface Student { id: string; student_id: string; name: string; class: string; section: string | null; father_name: string; whatsapp: string | null; phone: string | null; }
