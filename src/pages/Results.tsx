@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { printA4, schoolHeader, schoolFooter } from "@/lib/printUtils";
 import { sortClasses } from "@/lib/constants";
+import AiRemarkButton from "@/components/AiRemarkButton";
 
 interface TestResult {
   id: string;
