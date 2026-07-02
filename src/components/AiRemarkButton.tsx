@@ -35,24 +35,25 @@ const AiRemarkButton = ({ form, students, subjects, onGenerated }: Props) => {
     try {
       // Attendance last 90 days
       const since = new Date(); since.setDate(since.getDate() - 90);
-      const { data: att } = await supabase
+      const sb = supabase as any;
+      const { data: att } = await sb
         .from("attendance")
         .select("status")
         .eq("student_id", form.student_id)
         .gte("date", since.toISOString().slice(0, 10));
-      const present = (att || []).filter(a => a.status === "Present").length;
+      const present = (att || []).filter((a: any) => a.status === "Present").length;
       const attPct = att && att.length ? Math.round((present / att.length) * 100) : undefined;
 
       // Previous term average
-      const { data: prev } = await supabase
+      const { data: prev } = await sb
         .from("test_results")
         .select("obtained_marks,total_marks,term")
         .eq("student_id", form.student_id)
         .neq("term", form.term);
       let prevPct: number | undefined;
       if (prev && prev.length) {
-        const t = prev.reduce((s, r) => s + Number(r.total_marks || 0), 0);
-        const g = prev.reduce((s, r) => s + Number(r.obtained_marks || 0), 0);
+        const t = prev.reduce((s: number, r: any) => s + Number(r.total_marks || 0), 0);
+        const g = prev.reduce((s: number, r: any) => s + Number(r.obtained_marks || 0), 0);
         prevPct = t ? Math.round((g / t) * 100) : undefined;
       }
 
