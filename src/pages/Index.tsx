@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Lightbox from "@/components/Lightbox";
 import ScrollingBanner from "@/components/ScrollingBanner";
 import SeoHead from "@/components/SeoHead";
+import AIChatbot from "@/components/AIChatbot";
 
 const iconMap: Record<string, LucideIcon> = {
   GraduationCap, Users, BookOpen, Trophy, Shield, Clock,
@@ -341,6 +342,7 @@ const Index = () => {
         />
       )}
 
+      <AIChatbot />
       <DateTimeFooter />
     </div>
   );
