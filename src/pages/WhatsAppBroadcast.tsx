@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageCircle, Users, Send } from "lucide-react";
+import { MessageCircle, Users, Send, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { classOptions } from "@/lib/constants";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
@@ -36,6 +36,29 @@ const WhatsAppBroadcast = () => {
   const [message, setMessage] = useState(
     `Assalam o Alaikum,\n\nDear Parent,\n\nThis is to inform you from ${settings.school_name} that:\n\n[Your message here]\n\nThank you.\n${settings.school_name}\n${settings.campus}, ${settings.city}`
   );
+  const [rephrasing, setRephrasing] = useState(false);
+
+  const handleRephrase = async () => {
+    if (!message.trim()) {
+      toast({ title: "Nothing to rephrase", description: "Type a message first.", variant: "destructive" });
+      return;
+    }
+    setRephrasing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-assistant", {
+        body: { action: "rephrase", text: message, tone: "polite, professional, parent-friendly" },
+      });
+      if (error) throw error;
+      const reply = (data as any)?.reply?.trim();
+      if (!reply) throw new Error("Empty AI response");
+      setMessage(reply);
+      toast({ title: "Rephrased", description: "Message rewritten by AI. Review before sending." });
+    } catch (e: any) {
+      toast({ title: "AI unavailable", description: e.message || "Try again shortly.", variant: "destructive" });
+    } finally {
+      setRephrasing(false);
+    }
+  };
 
   useEffect(() => {
     supabase.from("students").select("id, student_id, name, class, section, father_name, phone, whatsapp, status")
@@ -139,13 +162,25 @@ const WhatsAppBroadcast = () => {
                   </p>
                 )}
               </div>
-              <Button
-                className="w-full bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
-                onClick={handleSendAll}
-              >
-                <Send className="mr-2 h-4 w-4" />
-                {bulk.count > 0 ? `Send to ${bulk.count} Selected` : `Send to All (${withPhone.length})`}
-              </Button>
+              <div className="grid gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleRephrase}
+                  disabled={rephrasing}
+                >
+                  {rephrasing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4 text-primary" />}
+                  {rephrasing ? "Rephrasing…" : "Rephrase with AI"}
+                </Button>
+                <Button
+                  className="w-full bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
+                  onClick={handleSendAll}
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  {bulk.count > 0 ? `Send to ${bulk.count} Selected` : `Send to All (${withPhone.length})`}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

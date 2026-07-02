@@ -321,6 +321,39 @@ export type Database = {
           },
         ]
       }
+      construction_features: {
+        Row: {
+          created_at: string
+          description: string
+          enabled: boolean
+          id: string
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          enabled?: boolean
+          id?: string
+          sort_order?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          enabled?: boolean
+          id?: string
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       diary_entries: {
         Row: {
           class_name: string
