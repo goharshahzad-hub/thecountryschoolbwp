@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users, CalendarDays, MessageCircle } from "lucide-react";
+import { Plus, Search, Printer, BarChart3, Pencil, Trash2, Users, CalendarDays, MessageCircle, Sparkles, Loader2 } from "lucide-react";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -636,7 +636,13 @@ const Results = () => {
               <div className="space-y-2"><Label>Total Marks</Label><Input type="number" value={form.total_marks} onChange={e => setForm({ ...form, total_marks: e.target.value })} /></div>
               <div className="space-y-2"><Label>Obtained Marks *</Label><Input type="number" value={form.obtained_marks} onChange={e => setForm({ ...form, obtained_marks: e.target.value })} required /></div>
               <div className="space-y-2"><Label>Exam Date</Label><Input type="date" value={form.exam_date} onChange={e => setForm({ ...form, exam_date: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Remarks</Label><Input value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} /></div>
+              <div className="space-y-2 col-span-2">
+                <Label>Remarks</Label>
+                <div className="flex gap-2">
+                  <Input value={form.remarks} onChange={e => setForm({ ...form, remarks: e.target.value })} className="flex-1" />
+                  <AiRemarkButton form={form} students={students} subjects={subjects} onGenerated={(txt) => setForm(f => ({ ...f, remarks: txt }))} />
+                </div>
+              </div>
               <div className="col-span-2"><Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={saving}>{saving ? "Saving..." : editingId ? "Update" : "Add Result"}</Button></div>
             </form>
           </DialogContent>
