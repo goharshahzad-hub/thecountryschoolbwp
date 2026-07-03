@@ -37,6 +37,7 @@ const WhatsAppBroadcast = () => {
     `Assalam o Alaikum,\n\nDear Parent,\n\nThis is to inform you from ${settings.school_name} that:\n\n[Your message here]\n\nThank you.\n${settings.school_name}\n${settings.campus}, ${settings.city}`
   );
   const [rephrasing, setRephrasing] = useState(false);
+  const [testPhone, setTestPhone] = useState("");
 
   const handleRephrase = async () => {
     if (!message.trim()) {
