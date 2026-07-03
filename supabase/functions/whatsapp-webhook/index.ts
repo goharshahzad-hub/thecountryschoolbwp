@@ -109,7 +109,32 @@ Deno.serve(async (req) => {
     }
 
     const reply = await askAi(text);
-    return new Response(JSON.stringify({ ok: true, reply, to: from }), {
+
+    // Send reply back to the user via Meta WhatsApp Cloud API (if configured)
+    let sent = false;
+    if (META_ACCESS_TOKEN && META_PHONE_NUMBER_ID && from) {
+      try {
+        const sendRes = await fetch(`https://graph.facebook.com/v20.0/${META_PHONE_NUMBER_ID}/messages`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${META_ACCESS_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: from,
+            type: "text",
+            text: { body: reply },
+          }),
+        });
+        sent = sendRes.ok;
+        if (!sendRes.ok) console.error("Meta send failed", sendRes.status, await sendRes.text());
+      } catch (e) {
+        console.error("Meta send error", e);
+      }
+    }
+
+    return new Response(JSON.stringify({ ok: true, reply, to: from, sent }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
