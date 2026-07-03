@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Check, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +21,8 @@ interface Props {
 
 const AiRemarkButton = ({ form, students, subjects, onGenerated }: Props) => {
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
   const { toast } = useToast();
 
   const generate = async () => {
@@ -70,8 +74,8 @@ const AiRemarkButton = ({ form, students, subjects, onGenerated }: Props) => {
       if (error) throw error;
       const reply = (data as any)?.reply?.trim();
       if (!reply) throw new Error("Empty AI response");
-      onGenerated(reply);
-      toast({ title: "AI remark generated" });
+      setDraft(reply);
+      setOpen(true);
     } catch (e: any) {
       toast({ title: "AI unavailable", description: e.message || "Try again shortly.", variant: "destructive" });
     } finally {
@@ -79,11 +83,42 @@ const AiRemarkButton = ({ form, students, subjects, onGenerated }: Props) => {
     }
   };
 
+  const apply = () => {
+    if (!draft.trim()) {
+      toast({ title: "Empty remark", variant: "destructive" });
+      return;
+    }
+    onGenerated(draft.trim());
+    setOpen(false);
+    toast({ title: "Applied to remarks", description: "AI draft saved into the remark field." });
+  };
+
   return (
-    <Button type="button" variant="outline" onClick={generate} disabled={busy} title="Generate remark with AI">
-      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
-      <span className="ml-1 hidden sm:inline">AI</span>
-    </Button>
+    <>
+      <Button type="button" variant="outline" onClick={generate} disabled={busy} title="Generate remark with AI">
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+        <span className="ml-1 hidden sm:inline">AI</span>
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Review AI Remark</DialogTitle>
+            <DialogDescription>Edit the draft below, then apply it to the student's remark field.</DialogDescription>
+          </DialogHeader>
+          <Textarea value={draft} onChange={e => setDraft(e.target.value)} rows={6} className="text-sm" />
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={generate} disabled={busy}>
+              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+              Regenerate
+            </Button>
+            <Button type="button" onClick={apply} className="gradient-primary text-primary-foreground">
+              <Check className="mr-2 h-4 w-4" /> Apply to Remarks
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

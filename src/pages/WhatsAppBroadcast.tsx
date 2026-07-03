@@ -37,6 +37,7 @@ const WhatsAppBroadcast = () => {
     `Assalam o Alaikum,\n\nDear Parent,\n\nThis is to inform you from ${settings.school_name} that:\n\n[Your message here]\n\nThank you.\n${settings.school_name}\n${settings.campus}, ${settings.city}`
   );
   const [rephrasing, setRephrasing] = useState(false);
+  const [testPhone, setTestPhone] = useState("");
 
   const handleRephrase = async () => {
     if (!message.trim()) {
@@ -161,6 +162,36 @@ const WhatsAppBroadcast = () => {
                     {filtered.length - withPhone.length} student(s) have no phone number
                   </p>
                 )}
+              </div>
+              <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 space-y-2">
+                <Label className="text-xs font-semibold">Test Mode — Preview before broadcast</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="tel"
+                    inputMode="tel"
+                    placeholder="e.g. 03001234567"
+                    value={testPhone}
+                    onChange={e => setTestPhone(e.target.value)}
+                    className="text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const clean = testPhone.replace(/[^0-9]/g, "");
+                      if (clean.length < 10) {
+                        toast({ title: "Enter a valid phone", description: "Include country/local digits, e.g. 03001234567.", variant: "destructive" });
+                        return;
+                      }
+                      window.open(buildUrl(testPhone), "_blank");
+                      toast({ title: "Test message opened", description: "Send it manually in WhatsApp, then broadcast when ready." });
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    <Send className="mr-2 h-4 w-4" /> Send Test
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">Opens one WhatsApp tab with your exact message so you can verify it before sending to all parents.</p>
               </div>
               <div className="grid gap-2">
                 <Button
