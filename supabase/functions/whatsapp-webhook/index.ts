@@ -8,6 +8,8 @@
 //   2. Meta WhatsApp Cloud API: application/json webhook events. Handles the
 //      GET hub.challenge verification and POST message events, returning JSON.
 
+import { createClient } from "npm:@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -17,6 +19,20 @@ const corsHeaders = {
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const META_VERIFY_TOKEN = Deno.env.get("WHATSAPP_VERIFY_TOKEN") || "";
 const META_ACCESS_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN") || "";
+const META_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+async function logMessage(row: Record<string, unknown>) {
+  try {
+    await db.from("whatsapp_messages").insert(row);
+  } catch (e) {
+    console.error("log insert failed", e);
+  }
+}
 const META_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "";
 const MODEL = "google/gemini-2.5-flash";
 const SCHOOL_NAME = "The Country School Fahad Campus";
@@ -86,9 +102,14 @@ Deno.serve(async (req) => {
       const form = await req.formData();
       const body = String(form.get("Body") || "").trim();
       const from = String(form.get("From") || "");
+      const messageSid = String(form.get("MessageSid") || "");
       console.log("WhatsApp inbound (Twilio) from", from, ":", body);
       if (!body) return twimlResponse("Assalam o Alaikum! How can we help you today?");
       const reply = await askAi(body);
+      await logMessage({
+        direction: "inbound", provider: "twilio",
+        from_number: from, body, ai_reply: reply, message_id: messageSid,
+      });
       return twimlResponse(reply);
     }
 
@@ -98,6 +119,7 @@ Deno.serve(async (req) => {
     const msg = change?.messages?.[0];
     const text = msg?.text?.body?.trim();
     const from = msg?.from;
+    const messageId = msg?.id;
     console.log("WhatsApp inbound (Meta) from", from, ":", text);
 
     if (!text) {
@@ -112,6 +134,7 @@ Deno.serve(async (req) => {
 
     // Send reply back to the user via Meta WhatsApp Cloud API (if configured)
     let sent = false;
+    let sentId: string | undefined;
     if (META_ACCESS_TOKEN && META_PHONE_NUMBER_ID && from) {
       try {
         const sendRes = await fetch(`https://graph.facebook.com/v20.0/${META_PHONE_NUMBER_ID}/messages`, {
@@ -128,10 +151,28 @@ Deno.serve(async (req) => {
           }),
         });
         sent = sendRes.ok;
-        if (!sendRes.ok) console.error("Meta send failed", sendRes.status, await sendRes.text());
+        if (sendRes.ok) {
+          const j = await sendRes.json().catch(() => ({}));
+          sentId = j?.messages?.[0]?.id;
+        } else {
+          console.error("Meta send failed", sendRes.status, await sendRes.text());
+        }
       } catch (e) {
         console.error("Meta send error", e);
       }
+    }
+
+    await logMessage({
+      direction: "inbound", provider: "meta",
+      from_number: from, body: text, ai_reply: reply, message_id: messageId,
+      status: sent ? "replied" : "received",
+      raw_payload: payload,
+    });
+    if (sent) {
+      await logMessage({
+        direction: "outbound", provider: "meta",
+        to_number: from, body: reply, message_id: sentId, status: "sent",
+      });
     }
 
     return new Response(JSON.stringify({ ok: true, reply, to: from, sent }), {
