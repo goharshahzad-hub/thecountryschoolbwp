@@ -102,9 +102,14 @@ Deno.serve(async (req) => {
       const form = await req.formData();
       const body = String(form.get("Body") || "").trim();
       const from = String(form.get("From") || "");
+      const messageSid = String(form.get("MessageSid") || "");
       console.log("WhatsApp inbound (Twilio) from", from, ":", body);
       if (!body) return twimlResponse("Assalam o Alaikum! How can we help you today?");
       const reply = await askAi(body);
+      await logMessage({
+        direction: "inbound", provider: "twilio",
+        from_number: from, body, ai_reply: reply, message_id: messageSid,
+      });
       return twimlResponse(reply);
     }
 
@@ -114,6 +119,7 @@ Deno.serve(async (req) => {
     const msg = change?.messages?.[0];
     const text = msg?.text?.body?.trim();
     const from = msg?.from;
+    const messageId = msg?.id;
     console.log("WhatsApp inbound (Meta) from", from, ":", text);
 
     if (!text) {
@@ -128,6 +134,7 @@ Deno.serve(async (req) => {
 
     // Send reply back to the user via Meta WhatsApp Cloud API (if configured)
     let sent = false;
+    let sentId: string | undefined;
     if (META_ACCESS_TOKEN && META_PHONE_NUMBER_ID && from) {
       try {
         const sendRes = await fetch(`https://graph.facebook.com/v20.0/${META_PHONE_NUMBER_ID}/messages`, {
@@ -144,10 +151,28 @@ Deno.serve(async (req) => {
           }),
         });
         sent = sendRes.ok;
-        if (!sendRes.ok) console.error("Meta send failed", sendRes.status, await sendRes.text());
+        if (sendRes.ok) {
+          const j = await sendRes.json().catch(() => ({}));
+          sentId = j?.messages?.[0]?.id;
+        } else {
+          console.error("Meta send failed", sendRes.status, await sendRes.text());
+        }
       } catch (e) {
         console.error("Meta send error", e);
       }
+    }
+
+    await logMessage({
+      direction: "inbound", provider: "meta",
+      from_number: from, body: text, ai_reply: reply, message_id: messageId,
+      status: sent ? "replied" : "received",
+      raw_payload: payload,
+    });
+    if (sent) {
+      await logMessage({
+        direction: "outbound", provider: "meta",
+        to_number: from, body: reply, message_id: sentId, status: "sent",
+      });
     }
 
     return new Response(JSON.stringify({ ok: true, reply, to: from, sent }), {
