@@ -10,7 +10,7 @@ import {
   ClipboardCheck, DollarSign, Calendar, Settings, LogOut,
   FileText, Receipt, BarChart3, UserPlus, ShieldCheck, Wallet,
   BookMarked, Megaphone, MessageCircle, Moon, Sun, UserCheck, X, FileBarChart, Wand2, GraduationCap as TeacherIcon,
-  History, Lock, Construction
+  History, Lock, Construction, Inbox
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +28,7 @@ const navItems = [
   { to: "/dashboard/fee-vouchers", icon: Receipt, label: "Fee Vouchers" },
   { to: "/dashboard/voucher-history", icon: History, label: "Voucher History" },
   { to: "/dashboard/whatsapp-broadcast", icon: MessageCircle, label: "WhatsApp Broadcast" },
+  { to: "/dashboard/whatsapp-inbox", icon: Inbox, label: "WhatsApp Inbox" },
   { to: "/dashboard/results", icon: BarChart3, label: "Results" },
   { to: "/dashboard/timetable", icon: Calendar, label: "Timetable" },
   { to: "/dashboard/timetable-generator", icon: Wand2, label: "Timetable Generator" },

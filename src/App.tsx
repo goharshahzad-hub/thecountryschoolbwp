@@ -29,6 +29,7 @@ import ExpensesPage from "./pages/Expenses";
 import Diary from "./pages/Diary";
 import AnnouncementsPage from "./pages/Announcements";
 import WhatsAppBroadcast from "./pages/WhatsAppBroadcast";
+import WhatsAppInbox from "./pages/WhatsAppInbox";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AboutUs from "./pages/AboutUs";
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/dashboard/diary" element={<Diary />} />
             <Route path="/dashboard/announcements" element={<AnnouncementsPage />} />
             <Route path="/dashboard/whatsapp-broadcast" element={<WhatsAppBroadcast />} />
+            <Route path="/dashboard/whatsapp-inbox" element={<WhatsAppInbox />} />
             <Route path="/dashboard/admin-requests" element={<AdminRequests />} />
             <Route path="/dashboard/signedup-parents" element={<SignedupParents />} />
             <Route path="/dashboard/receipt" element={<ReceiptGenerator />} />
