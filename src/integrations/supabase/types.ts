@@ -277,6 +277,48 @@ export type Database = {
           },
         ]
       }
+      campus_visits: {
+        Row: {
+          class_name: string | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          notes: string | null
+          parent_name: string
+          phone: string
+          status: string
+          student_name: string | null
+          time_slot: string
+          visit_date: string
+        }
+        Insert: {
+          class_name?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          parent_name: string
+          phone: string
+          status?: string
+          student_name?: string | null
+          time_slot: string
+          visit_date: string
+        }
+        Update: {
+          class_name?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          notes?: string | null
+          parent_name?: string
+          phone?: string
+          status?: string
+          student_name?: string | null
+          time_slot?: string
+          visit_date?: string
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
           class_teacher_id: string | null
