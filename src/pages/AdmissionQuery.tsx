@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,14 @@ const AdmissionQuery = () => {
     previous_class: "",
     message: "",
   });
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const keys = ["student_name", "father_name", "phone", "whatsapp", "applying_for_class", "date_of_birth"] as const;
+    const patch: Record<string, string> = {};
+    keys.forEach(k => { const v = p.get(k); if (v) patch[k] = v.slice(0, 120); });
+    if (Object.keys(patch).length) setForm(prev => ({ ...prev, ...patch }));
+  }, []);
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
