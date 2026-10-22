@@ -37,7 +37,7 @@ const tools = [
   },
   {
     type: "function", name: "list_visit_slots", strict: true,
-    description: "List open campus visit slots for the next 7 school days (Mon–Sat).",
+    description: "List open campus visit slots for the next 7 school days (Mon–Fri only).",
     parameters: { type: "object", additionalProperties: false, required: [], properties: {} },
   },
   {
@@ -73,7 +73,7 @@ function upcomingDays(): string[] {
   const d = new Date(Date.now() + 5 * 3600 * 1000); // PKT
   while (out.length < 7) {
     d.setUTCDate(d.getUTCDate() + 1);
-    if (d.getUTCDay() !== 0) out.push(d.toISOString().slice(0, 10));
+    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6) out.push(d.toISOString().slice(0, 10)); // Mon–Fri only
   }
   return out;
 }
