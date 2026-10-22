@@ -33,7 +33,6 @@ async function logMessage(row: Record<string, unknown>) {
     console.error("log insert failed", e);
   }
 }
-const META_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") || "";
 const MODEL = "google/gemini-2.5-flash";
 const SCHOOL_NAME = "The Country School Fahad Campus";
 
