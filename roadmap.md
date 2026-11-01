@@ -3,6 +3,7 @@
 ## Open
 - [ ] Website audit & phased improvements (uploaded audit doc, Nov 1 2026) — present audit, get approval, implement in phases
   - Phase A: Identity & homepage (official name/address, remove unverified stats, blue & gold branding question)
+  - CONSTRAINT: keep the current school logo intact (user instruction Nov 1)
   - Phase B: Public pages review (About, Curriculum, Gallery, Admissions, Blog, FAQ, Contact)
   - Phase C: Admissions conversion form (consent, visit date, lead tracking, WhatsApp follow-up)
   - Phase D: Portal gaps (parent leave requests, etc.)
