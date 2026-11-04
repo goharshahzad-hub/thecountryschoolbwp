@@ -33,7 +33,7 @@ const faqs = [
     questions: [
       {
         q: "What is the fee structure?",
-        a: "The Country School offers one of the most affordable fee structures in Bahawalpur for the quality of education provided. Our fee structure is transparent with no hidden charges. Please contact us at 0322-6107000 or visit our campus for detailed fee information.",
+        a: "The Country School offers an affordable fee structure for the quality of education provided. Our fee structure is transparent with no hidden charges. Please contact us at 0322-6107000 or visit our campus for detailed fee information.",
       },
       {
         q: "Are there any fee concessions or scholarships?",
@@ -54,7 +54,7 @@ const faqs = [
       },
       {
         q: "What curriculum does the school follow?",
-        a: "Our curriculum is modeled after Bloomfield Hall's proven academic framework. It combines local educational requirements with modern teaching methodologies, covering English, Urdu, Mathematics, Science, Social Studies, Islamic Studies, Computer Science, and more.",
+        a: "Our curriculum is modeled after Bloomfield Hall's academic framework. It combines local educational requirements with modern teaching methodologies, covering English, Urdu, Mathematics, Science, Social Studies, Islamic Studies, Computer Science, and more.",
       },
       {
         q: "What is the student-to-teacher ratio?",
@@ -71,7 +71,7 @@ const faqs = [
     questions: [
       {
         q: "What safety measures are in place?",
-        a: "Student safety is our top priority. Our campus features CCTV surveillance, controlled access gates, trained security personnel, anti-bullying programs, and regular safety drills. We follow a strict safeguarding policy with zero tolerance for any form of harassment.",
+        a: "Student safety is our top priority. Our campus is supervised during school hours and we maintain clear standards for staff conduct and student well-being. For details, please contact the school office.",
       },
       {
         q: "What are the school timings?",
@@ -92,11 +92,11 @@ const faqs = [
     questions: [
       {
         q: "What is the relationship between The Country School and Bloomfield Hall?",
-        a: "The Country School is a project of Bloomfield Hall, one of Pakistan's most respected educational institutions established in 1984. We follow Bloomfield Hall's academic standards, teaching methodologies, and undergo regular quality audits to maintain excellence.",
+        a: "The Country School is a project of Bloomfield Hall, one of Pakistan's most respected educational institutions established in 1984. We follow Bloomfield Hall's academic standards and teaching methodologies.",
       },
       {
         q: "Where is the school located?",
-        a: "The Country School Fahad Campus is located at 41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur. Our central location makes us easily accessible from all parts of the city.",
+        a: "The Country School Fahad Campus is located at Street No. 2, Near Saraiki Chowk, Model Town B, Bahawalpur. Our central location makes us easily accessible from all parts of the city.",
       },
       {
         q: "How can I visit the campus?",

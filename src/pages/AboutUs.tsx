@@ -9,7 +9,7 @@ const AboutUs = () => {
   const { settings } = useSchoolSettings();
 
   const facilities = [
-    { icon: Shield, title: "Secure Campus", desc: "CCTV surveillance, controlled access gates, and trained security personnel ensure a safe environment for every child." },
+    { icon: Shield, title: "Safe & Caring Campus", desc: "A supervised, well-kept campus environment where staff look after every child's safety and comfort throughout the school day." },
     { icon: Building, title: "Modern Classrooms", desc: "Spacious, well-ventilated classrooms equipped with whiteboards and age-appropriate furniture for comfortable learning." },
     
     { icon: Laptop, title: "Computer Lab", desc: "Equipped with modern computers to provide students hands-on IT education from an early age." },
@@ -32,7 +32,7 @@ const AboutUs = () => {
           email: "thecountryschoolbwp@gmail.com",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "41-A, Street #2, Near Telenor Franchise, Model Town-B",
+            streetAddress: "Street No. 2, Near Saraiki Chowk, Model Town B",
             addressLocality: "Bahawalpur",
             addressRegion: "Punjab",
             addressCountry: "PK",
@@ -98,7 +98,7 @@ const AboutUs = () => {
                 Bloomfield Hall was established in 1984 by educationists from the UK and Pakistan, with the aim of providing British-style education leading to international qualifications. As a project under this esteemed institution, The Country School inherits decades of educational expertise, proven teaching methodologies, and a commitment to nurturing well-rounded individuals.
               </p>
               <p>
-                Located at 41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur, our campus serves as a beacon of quality education in the region. We offer classes from Reception (Playgroup) to Class 8, providing a strong foundation for students to excel in their academic journey.
+                Located at Street No. 2, Near Saraiki Chowk, Model Town B, Bahawalpur, our campus serves the families of Bahawalpur and South Punjab. We offer classes from Reception (Playgroup) to Class 8, providing a strong foundation for students to excel in their academic journey.
               </p>
             </div>
           </div>
@@ -193,7 +193,7 @@ const AboutUs = () => {
             </div>
             <h2 className="font-display text-3xl font-bold text-foreground">Student Protection & Safeguarding</h2>
             <p className="mx-auto mt-4 max-w-2xl text-muted-foreground leading-relaxed">
-              The safety and well-being of our students is our highest priority. We maintain a strict safeguarding policy that includes background checks for all staff, CCTV monitoring across campus, anti-bullying programs, and regular safety drills. Our school follows a zero-tolerance policy against any form of harassment or misconduct.
+              The safety and well-being of our students is our highest priority. We maintain a caring, supervised environment and clear standards for staff conduct, so that every child can learn and grow with confidence.
             </p>
           </div>
         </div>
@@ -205,7 +205,7 @@ const AboutUs = () => {
           <div className="mb-10 text-center">
             <h2 className="font-display text-3xl font-bold text-foreground">Find Us</h2>
             <p className="mt-3 text-muted-foreground flex items-center justify-center gap-2">
-              <MapPin className="h-4 w-4" /> 41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur
+              <MapPin className="h-4 w-4" /> Street No. 2, Near Saraiki Chowk, Model Town B, Bahawalpur
             </p>
           </div>
           <div className="mx-auto max-w-4xl overflow-hidden rounded-lg border border-border shadow-card">
@@ -250,7 +250,7 @@ const AboutUs = () => {
             <img src={logo} alt="Logo" className="h-8 w-8 rounded-full object-cover" />
             <span className="font-display text-sm font-semibold text-primary-foreground">{settings.school_name}</span>
           </div>
-          <p className="text-sm text-primary-foreground/80 text-center">41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur.</p>
+          <p className="text-sm text-primary-foreground/80 text-center">Street No. 2, Near Saraiki Chowk, Model Town B, Bahawalpur.</p>
           <p className="text-xs text-primary-foreground/50">© {new Date().getFullYear()} {settings.school_name}. All rights reserved.</p>
         </div>
       </footer>
