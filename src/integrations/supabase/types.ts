@@ -92,6 +92,7 @@ export type Database = {
       admission_queries: {
         Row: {
           applying_for_class: string
+          consent_contact: boolean
           created_at: string
           email: string | null
           father_name: string
@@ -99,12 +100,14 @@ export type Database = {
           message: string | null
           mother_phone: string | null
           phone: string
+          preferred_visit_date: string | null
           status: string
           student_name: string
           whatsapp: string | null
         }
         Insert: {
           applying_for_class: string
+          consent_contact?: boolean
           created_at?: string
           email?: string | null
           father_name: string
@@ -112,12 +115,14 @@ export type Database = {
           message?: string | null
           mother_phone?: string | null
           phone: string
+          preferred_visit_date?: string | null
           status?: string
           student_name: string
           whatsapp?: string | null
         }
         Update: {
           applying_for_class?: string
+          consent_contact?: boolean
           created_at?: string
           email?: string | null
           father_name?: string
@@ -125,6 +130,7 @@ export type Database = {
           message?: string | null
           mother_phone?: string | null
           phone?: string
+          preferred_visit_date?: string | null
           status?: string
           student_name?: string
           whatsapp?: string | null
@@ -568,6 +574,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fee_vouchers_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          admin_remarks: string | null
+          created_at: string
+          from_date: string
+          id: string
+          parent_user_id: string | null
+          reason: string
+          status: string
+          student_id: string
+          to_date: string
+          updated_at: string
+        }
+        Insert: {
+          admin_remarks?: string | null
+          created_at?: string
+          from_date: string
+          id?: string
+          parent_user_id?: string | null
+          reason: string
+          status?: string
+          student_id: string
+          to_date: string
+          updated_at?: string
+        }
+        Update: {
+          admin_remarks?: string | null
+          created_at?: string
+          from_date?: string
+          id?: string
+          parent_user_id?: string | null
+          reason?: string
+          status?: string
+          student_id?: string
+          to_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
