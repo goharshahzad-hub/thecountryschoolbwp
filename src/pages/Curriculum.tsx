@@ -51,7 +51,7 @@ const levels = [
 ];
 
 const highlights = [
-  { icon: BookOpen, title: "Bloomfield Hall Curriculum", desc: "Modeled after Bloomfield Hall's proven academic framework with regular quality audits" },
+  { icon: BookOpen, title: "Bloomfield Hall Curriculum", desc: "Modeled after Bloomfield Hall's academic framework, refined over four decades" },
   { icon: Globe, title: "English Medium Instruction", desc: "All core subjects taught in English with bilingual Urdu support" },
   { icon: Calculator, title: "STEM Focus", desc: "Strong emphasis on Science, Technology, Engineering, and Mathematics from early grades" },
   { icon: Palette, title: "Creative Arts", desc: "Art, music, and creative expression integrated throughout all levels" },
@@ -101,7 +101,7 @@ const Curriculum = () => {
             Curriculum & Academic Programs
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/70">
-            A comprehensive education from Reception (Playgroup) to Class 8, modeled after Bloomfield Hall's proven academic standards
+            A comprehensive education from Reception (Playgroup) to Class 8, modeled after Bloomfield Hall's academic standards
           </p>
         </div>
       </section>

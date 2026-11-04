@@ -2,7 +2,7 @@ import logo from "@/assets/logo.jpg";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DateTimeFooter from "@/components/DateTimeFooter";
-import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon, ZoomIn, Bell } from "lucide-react";
+import { Phone, Mail, MapPin, GraduationCap, Users, BookOpen, Trophy, Clock, Shield, LucideIcon, ZoomIn, Bell, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSchoolSettings } from "@/hooks/useSchoolSettings";
 import { useWebsiteContent } from "@/hooks/useWebsiteContent";
@@ -43,8 +43,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <SeoHead
-        title="The Country School Fahad Campus — Best School in Bahawalpur"
-        description="Quality English-medium education from Reception to Class 8 at The Country School, a project of Bloomfield Hall in Model Town, Bahawalpur, with an affordable fee structure."
+        title="The Country School — Model Town Fahad Campus, Bahawalpur | A Project of Bloomfield Hall"
+        description="Quality English-medium education from Reception to Class 8 at The Country School, Model Town Fahad Campus, Bahawalpur — a project of Bloomfield Hall, with an affordable fee structure."
         path="/"
       />
       {/* Scrolling Banner */}
@@ -56,7 +56,7 @@ const Index = () => {
             <img src={logo} alt={`${settings.school_name} logo`} className="h-10 w-10 rounded-full object-cover" />
             <div className="hidden sm:block">
               <p className="font-display text-lg font-bold leading-tight text-foreground">{settings.school_name}</p>
-              <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall (Since 1984) — {settings.campus}, {settings.city}</p>
+              <p className="text-xs text-muted-foreground">A Project of Bloomfield Hall — Bloomfield Hall est. 1984 — {settings.campus}, {settings.city}</p>
             </div>
             <div className="sm:hidden">
               <p className="font-display text-sm font-bold leading-tight text-foreground">{settings.school_name}</p>
@@ -82,11 +82,7 @@ const Index = () => {
               <Link to="/dashboard">
                 <Button size="sm" className="gradient-primary border-0 text-primary-foreground text-xs sm:text-sm">Admin</Button>
               </Link>
-            ) : (
-              <Link to="/admin-login">
-                <Button variant="outline" size="sm" className="text-xs sm:text-sm"><Shield className="mr-1 h-3 w-3 hidden sm:inline" />Admin</Button>
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
         {/* Mobile nav */}
@@ -111,7 +107,7 @@ const Index = () => {
           <h1 className="mb-4 font-display text-4xl font-extrabold tracking-tight text-primary-foreground md:text-6xl">
             {settings.school_name} — Excellence in Education
           </h1>
-          <p className="mb-1 text-base font-medium text-primary-foreground/80">A Project of Bloomfield Hall (Since 1984)</p>
+          <p className="mb-1 text-base font-medium text-primary-foreground/80">A Project of Bloomfield Hall — Bloomfield Hall est. 1984</p>
           <p className="mb-2 text-lg font-medium text-primary-foreground/80 md:text-xl">
             {settings.campus}, {settings.city}
           </p>
@@ -124,6 +120,9 @@ const Index = () => {
                 <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Access Dashboard</Button>
               </Link>
             )}
+            <Link to="/admission-query">
+              <Button size="lg" className="gradient-primary border-0 px-8 text-primary-foreground shadow-elevated">Apply Now</Button>
+            </Link>
             <a href="#contact">
               <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">Contact Us</Button>
             </a>
@@ -240,13 +239,14 @@ const Index = () => {
             <h3 className="font-display text-3xl font-bold text-foreground">Get In Touch</h3>
             <p className="mt-3 text-muted-foreground">We'd love to hear from you</p>
           </div>
-          <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2 md:grid-cols-4">
             {[
               { icon: Phone, label: "Phone", value: settings.phone, href: `tel:${settings.phone.replace(/\s/g, "")}` },
               { icon: Mail, label: "Email", value: settings.email, href: `mailto:${settings.email}` },
-              { icon: MapPin, label: "Address", value: `${settings.campus}, ${settings.city}`, href: "#" },
+              { icon: MapPin, label: "Address", value: "Street No. 2, Near Saraiki Chowk, Model Town B, Bahawalpur", href: "https://www.google.com/maps/search/?api=1&query=The+Country+School+Street+No+2+Near+Saraiki+Chowk+Model+Town+B+Bahawalpur" },
+              { icon: MessageCircle, label: "WhatsApp", value: "0322-6107000", href: "https://wa.me/923226107000" },
             ].map((c, i) => (
-              <a key={i} href={c.href} className="flex flex-col items-center rounded-lg border border-border p-6 text-center shadow-card transition-all hover:shadow-elevated">
+              <a key={i} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined} className="flex flex-col items-center rounded-lg border border-border p-6 text-center shadow-card transition-all hover:shadow-elevated">
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10">
                   <c.icon className="h-5 w-5 text-secondary" />
                 </div>
@@ -317,7 +317,7 @@ const Index = () => {
             <img src={logo} alt="Logo" className="h-8 w-8 rounded-full object-cover" />
             <span className="font-display text-sm font-semibold text-primary-foreground">{settings.school_name}</span>
           </div>
-          <p className="text-sm text-primary-foreground/80 text-center">41-A, Street #2, Near Telenor Franchise, Model Town-B, Bahawalpur. Contact# 0322-6107000, 0305-7457171.</p>
+          <p className="text-sm text-primary-foreground/80 text-center">Street No. 2, Near Saraiki Chowk, Model Town B, Bahawalpur. Contact# 0322-6107000, 0305-7457171.</p>
           <p className="text-xs text-primary-foreground/50">© {new Date().getFullYear()} {settings.school_name}. All rights reserved.</p>
         </div>
       </footer>
